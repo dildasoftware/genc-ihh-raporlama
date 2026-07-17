@@ -9,7 +9,7 @@ function getClient() {
       apiKey: process.env.OPENROUTER_API_KEY || 'dummy_key',
       defaultHeaders: {
         'HTTP-Referer': process.env.NEXTAUTH_URL || 'http://localhost:3000',
-        'X-Title': 'GENÇ İHH Raporlama Sistemi',
+        'X-Title': 'GENC IHH Raporlama Sistemi',
       },
     })
   }
