@@ -466,7 +466,7 @@ async function main() {
     year: year,
     title: `Türkiye Geneli Haftalık Trend Değerlendirmesi`,
     prompt: `13. hafta itibariyle Türkiye geneli trendleri analiz et.`,
-    response: `Türkiye genelinde 13. hafta itibarıyla Genç İHH birimleri katılım düzeylerinde istikrarlı bir grafik çizmiştir. Marmara bölgesi liderliğini korurken, İç Anadolu bölgesinde haftalık ders faaliyetleri öne çıkmıştır. Gelecek haftalarda kermes ve sosyal faaliyetlerin yoğunlaşması beklenmektedir.`,
+    response: `Türkiye genelinde 13. hafta itibarıyla Genç İHH birimleri katılım düzeylerinde istikrarlı bir grafik çizmiştir. 1. Bölge bölgesi liderliğini korurken, 2. Bölge bölgesinde haftalık ders faaliyetleri öne çıkmıştır. Gelecek haftalarda kermes ve sosyal faaliyetlerin yoğunlaşması beklenmektedir.`,
     generatedBy: admin.id,
     generatedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)
   })

@@ -26,13 +26,13 @@ async function main() {
   // ==================== BÖLGELER ====================
   const regions = await Promise.all(
     [
-      'Marmara',
-      'Ege',
-      'Akdeniz',
-      'İç Anadolu',
-      'Karadeniz',
-      'Doğu Anadolu',
-      'Güneydoğu Anadolu',
+      '1. Bölge',
+      '3. Bölge',
+      '3. Bölge',
+      '2. Bölge',
+      '4. Bölge',
+      '4. Bölge',
+      '4. Bölge',
     ].map((name) =>
       prisma.region.upsert({
         where: { name },
@@ -48,44 +48,44 @@ async function main() {
 
   // ==================== İLLER ====================
   const provincesData: [string, string][] = [
-    // Marmara
-    ['İstanbul', 'Marmara'], ['Bursa', 'Marmara'], ['Kocaeli', 'Marmara'],
-    ['Tekirdağ', 'Marmara'], ['Balıkesir', 'Marmara'], ['Edirne', 'Marmara'],
-    ['Kırklareli', 'Marmara'], ['Sakarya', 'Marmara'], ['Bilecik', 'Marmara'],
-    ['Çanakkale', 'Marmara'], ['Yalova', 'Marmara'],
-    // Ege
-    ['İzmir', 'Ege'], ['Aydın', 'Ege'], ['Denizli', 'Ege'],
-    ['Manisa', 'Ege'], ['Muğla', 'Ege'], ['Afyonkarahisar', 'Ege'],
-    ['Kütahya', 'Ege'], ['Uşak', 'Ege'],
-    // Akdeniz
-    ['Antalya', 'Akdeniz'], ['Adana', 'Akdeniz'], ['Mersin', 'Akdeniz'],
-    ['Hatay', 'Akdeniz'], ['Kahramanmaraş', 'Akdeniz'], ['Osmaniye', 'Akdeniz'],
-    ['Burdur', 'Akdeniz'], ['Isparta', 'Akdeniz'],
-    // İç Anadolu
-    ['Ankara', 'İç Anadolu'], ['Konya', 'İç Anadolu'], ['Kayseri', 'İç Anadolu'],
-    ['Eskişehir', 'İç Anadolu'], ['Sivas', 'İç Anadolu'], ['Yozgat', 'İç Anadolu'],
-    ['Aksaray', 'İç Anadolu'], ['Niğde', 'İç Anadolu'], ['Nevşehir', 'İç Anadolu'],
-    ['Kırıkkale', 'İç Anadolu'], ['Kırşehir', 'İç Anadolu'], ['Karaman', 'İç Anadolu'],
-    ['Çankırı', 'İç Anadolu'],
-    // Karadeniz
-    ['Trabzon', 'Karadeniz'], ['Samsun', 'Karadeniz'], ['Ordu', 'Karadeniz'],
-    ['Rize', 'Karadeniz'], ['Giresun', 'Karadeniz'], ['Artvin', 'Karadeniz'],
-    ['Gümüşhane', 'Karadeniz'], ['Bayburt', 'Karadeniz'], ['Tokat', 'Karadeniz'],
-    ['Amasya', 'Karadeniz'], ['Çorum', 'Karadeniz'], ['Sinop', 'Karadeniz'],
-    ['Kastamonu', 'Karadeniz'], ['Bartın', 'Karadeniz'], ['Karabük', 'Karadeniz'],
-    ['Zonguldak', 'Karadeniz'], ['Bolu', 'Karadeniz'], ['Düzce', 'Karadeniz'],
-    // Doğu Anadolu
-    ['Erzurum', 'Doğu Anadolu'], ['Van', 'Doğu Anadolu'], ['Malatya', 'Doğu Anadolu'],
-    ['Elazığ', 'Doğu Anadolu'], ['Ağrı', 'Doğu Anadolu'], ['Erzincan', 'Doğu Anadolu'],
-    ['Bingöl', 'Doğu Anadolu'], ['Muş', 'Doğu Anadolu'], ['Bitlis', 'Doğu Anadolu'],
-    ['Hakkari', 'Doğu Anadolu'], ['Kars', 'Doğu Anadolu'], ['Iğdır', 'Doğu Anadolu'],
-    ['Ardahan', 'Doğu Anadolu'], ['Tunceli', 'Doğu Anadolu'],
-    // Güneydoğu Anadolu
-    ['Gaziantep', 'Güneydoğu Anadolu'], ['Diyarbakır', 'Güneydoğu Anadolu'],
-    ['Şanlıurfa', 'Güneydoğu Anadolu'], ['Mardin', 'Güneydoğu Anadolu'],
-    ['Batman', 'Güneydoğu Anadolu'], ['Siirt', 'Güneydoğu Anadolu'],
-    ['Şırnak', 'Güneydoğu Anadolu'], ['Adıyaman', 'Güneydoğu Anadolu'],
-    ['Kilis', 'Güneydoğu Anadolu'],
+    // 1. Bölge
+    ['İstanbul', '1. Bölge'], ['Bursa', '1. Bölge'], ['Kocaeli', '1. Bölge'],
+    ['Tekirdağ', '1. Bölge'], ['Balıkesir', '1. Bölge'], ['Edirne', '1. Bölge'],
+    ['Kırklareli', '1. Bölge'], ['Sakarya', '1. Bölge'], ['Bilecik', '1. Bölge'],
+    ['Çanakkale', '1. Bölge'], ['Yalova', '1. Bölge'],
+    // 3. Bölge
+    ['İzmir', '3. Bölge'], ['Aydın', '3. Bölge'], ['Denizli', '3. Bölge'],
+    ['Manisa', '3. Bölge'], ['Muğla', '3. Bölge'], ['Afyonkarahisar', '3. Bölge'],
+    ['Kütahya', '3. Bölge'], ['Uşak', '3. Bölge'],
+    // 3. Bölge
+    ['Antalya', '3. Bölge'], ['Adana', '3. Bölge'], ['Mersin', '3. Bölge'],
+    ['Hatay', '3. Bölge'], ['Kahramanmaraş', '3. Bölge'], ['Osmaniye', '3. Bölge'],
+    ['Burdur', '3. Bölge'], ['Isparta', '3. Bölge'],
+    // 2. Bölge
+    ['Ankara', '2. Bölge'], ['Konya', '2. Bölge'], ['Kayseri', '2. Bölge'],
+    ['Eskişehir', '2. Bölge'], ['Sivas', '2. Bölge'], ['Yozgat', '2. Bölge'],
+    ['Aksaray', '2. Bölge'], ['Niğde', '2. Bölge'], ['Nevşehir', '2. Bölge'],
+    ['Kırıkkale', '2. Bölge'], ['Kırşehir', '2. Bölge'], ['Karaman', '2. Bölge'],
+    ['Çankırı', '2. Bölge'],
+    // 4. Bölge
+    ['Trabzon', '4. Bölge'], ['Samsun', '4. Bölge'], ['Ordu', '4. Bölge'],
+    ['Rize', '4. Bölge'], ['Giresun', '4. Bölge'], ['Artvin', '4. Bölge'],
+    ['Gümüşhane', '4. Bölge'], ['Bayburt', '4. Bölge'], ['Tokat', '4. Bölge'],
+    ['Amasya', '4. Bölge'], ['Çorum', '4. Bölge'], ['Sinop', '4. Bölge'],
+    ['Kastamonu', '4. Bölge'], ['Bartın', '4. Bölge'], ['Karabük', '4. Bölge'],
+    ['Zonguldak', '4. Bölge'], ['Bolu', '4. Bölge'], ['Düzce', '4. Bölge'],
+    // 4. Bölge
+    ['Erzurum', '4. Bölge'], ['Van', '4. Bölge'], ['Malatya', '4. Bölge'],
+    ['Elazığ', '4. Bölge'], ['Ağrı', '4. Bölge'], ['Erzincan', '4. Bölge'],
+    ['Bingöl', '4. Bölge'], ['Muş', '4. Bölge'], ['Bitlis', '4. Bölge'],
+    ['Hakkari', '4. Bölge'], ['Kars', '4. Bölge'], ['Iğdır', '4. Bölge'],
+    ['Ardahan', '4. Bölge'], ['Tunceli', '4. Bölge'],
+    // 4. Bölge
+    ['Gaziantep', '4. Bölge'], ['Diyarbakır', '4. Bölge'],
+    ['Şanlıurfa', '4. Bölge'], ['Mardin', '4. Bölge'],
+    ['Batman', '4. Bölge'], ['Siirt', '4. Bölge'],
+    ['Şırnak', '4. Bölge'], ['Adıyaman', '4. Bölge'],
+    ['Kilis', '4. Bölge'],
   ]
 
   // Batch iller — 10'ar grupla gönder (timeout önlemek için)
@@ -429,7 +429,7 @@ async function main() {
       { periodId: lastPeriod.id, institutionId: instMap['Ankara Yıldırım Beyazıt Üniversitesi'], facultyId: faculties[2].id, activityTypeId: activityTypes[1].id, participantCount: 28, genderBranch: GenderBranch.E, location: 'Kampüs', note: 'Ders', createdBy: userMap['ankara-e@test.com'] },
       { periodId: lastPeriod.id, institutionId: instMap['Ankara İHL'], activityTypeId: activityTypes[0].id, participantCount: 18, genderBranch: GenderBranch.E, location: 'Okul', note: 'Toplantı', createdBy: userMap['ankara-e@test.com'] },
 
-      // İstanbul — Admin girişi (Marmara bölgesi verileri)
+      // İstanbul — Admin girişi (1. Bölge bölgesi verileri)
       { periodId: currentPeriod.id, institutionId: instMap['İstanbul Üniversitesi'], activityTypeId: activityTypes[0].id, participantCount: 45, genderBranch: GenderBranch.K, location: 'Kampüs', note: 'Genel toplantı', createdBy: userMap['admin@test.com'] },
       { periodId: currentPeriod.id, institutionId: instMap['İstanbul Üniversitesi'], activityTypeId: activityTypes[1].id, participantCount: 60, genderBranch: GenderBranch.E, location: 'Amfi', note: 'Konferans', createdBy: userMap['admin@test.com'] },
       { periodId: currentPeriod.id, institutionId: instMap['Boğaziçi Üniversitesi'], activityTypeId: activityTypes[3].id, participantCount: 12, genderBranch: GenderBranch.K, location: 'Online', note: 'Proje toplantısı', createdBy: userMap['admin@test.com'] },
