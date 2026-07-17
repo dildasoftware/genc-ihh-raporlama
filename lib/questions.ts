@@ -151,7 +151,6 @@ export const ACTIVITY_TYPES: Record<string, ActivityTypeDef> = {
   'Haftalık Ders': { name: 'Haftalık Ders', phrase: 'haftalık ders',       icon: '📖', group: 'Haftalık Dersler' },
   'Sosyal Faaliyet': { name: 'Sosyal Faaliyet', phrase: 'sosyal faaliyet', icon: '🎭', group: 'Sosyal & Kültürel' },
   'Diğer Eğitim':  { name: 'Diğer Eğitim',  phrase: 'eğitim çalışması',    icon: '🎓', group: 'Eğitim' },
-  'Proje/Fon':     { name: 'Proje/Fon',     phrase: 'proje/fon çalışması', icon: '💡', group: 'Proje & Fon' },
   'Tanıtım/Medya': { name: 'Tanıtım/Medya', phrase: 'tanıtım/medya çalışması', icon: '📣', group: 'Tanıtım' },
   'Saha Ziyareti': { name: 'Saha Ziyareti', phrase: 'saha ziyareti',       icon: '🚩', group: 'Saha' },
 }
@@ -159,8 +158,8 @@ export const ACTIVITY_TYPES: Record<string, ActivityTypeDef> = {
 /** Hangi birimde hangi faaliyetler sorulur */
 const UNIT_ACTIVITIES: Record<UnitKey, string[]> = {
   yonetim:    ['Toplantı'],
-  universite: ['Toplantı', 'Haftalık Ders', 'Sosyal Faaliyet', 'Diğer Eğitim', 'Proje/Fon', 'Tanıtım/Medya', 'Saha Ziyareti'],
-  lise:       ['Toplantı', 'Haftalık Ders', 'Sosyal Faaliyet', 'Diğer Eğitim', 'Proje/Fon', 'Tanıtım/Medya', 'Saha Ziyareti'],
+  universite: ['Toplantı', 'Haftalık Ders', 'Sosyal Faaliyet', 'Diğer Eğitim', 'Tanıtım/Medya', 'Saha Ziyareti'],
+  lise:       ['Toplantı', 'Haftalık Ders', 'Sosyal Faaliyet', 'Diğer Eğitim', 'Tanıtım/Medya', 'Saha Ziyareti'],
   ortaokul:   ['Toplantı', 'Haftalık Ders', 'Sosyal Faaliyet', 'Diğer Eğitim', 'Tanıtım/Medya', 'Saha Ziyareti'],
   cocuk:      ['Toplantı', 'Haftalık Ders', 'Sosyal Faaliyet', 'Diğer Eğitim', 'Saha Ziyareti'],
 }

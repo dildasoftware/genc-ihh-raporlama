@@ -37,7 +37,6 @@ export const ACTIVITY_COLOR: Record<string, string> = {
   'Haftalık Ders': '#16A34A',
   'Sosyal Faaliyet': '#D97706',
   'Diğer Eğitim': '#BE185D',
-  'Proje/Fon': '#7C3AED',
   'Tanıtım/Medya': '#0891B2',
   'Saha Ziyareti': '#64748B',
 }

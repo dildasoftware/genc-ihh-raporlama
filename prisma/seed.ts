@@ -147,7 +147,6 @@ async function main() {
     { name: 'Toplantı', defaultWeight: 1 },
     { name: 'Haftalık Ders', defaultWeight: 2 },
     { name: 'Sosyal Faaliyet', defaultWeight: 1.5 },
-    { name: 'Proje/Fon', defaultWeight: 3 },
     { name: 'Diğer Eğitim', defaultWeight: 2 },
     { name: 'Tanıtım/Medya', defaultWeight: 1 },
     { name: 'Saha Ziyareti', defaultWeight: 1.5 },

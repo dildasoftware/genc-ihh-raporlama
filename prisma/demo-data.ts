@@ -300,7 +300,7 @@ async function main() {
           if (chance(0.12)) {
             rows.push({
               periodId: period.id, institutionId: uni.id,
-              activityTypeId: atByName.get('Proje/Fon')!.id,
+              activityTypeId: atByName.get('Toplantı')!.id,
               participantCount: Math.round(between(5, 15) * scale),
               genderBranch: g, createdBy: creator(g),
             })

@@ -58,6 +58,7 @@ export default function KarsilastirClient({ provinces, units, activityTypes, can
   const [gender, setGender] = useState('ALL')
   const [unitId, setUnitId] = useState('')
   const [activityTypeId, setActivityTypeId] = useState('')
+  const [provinceId, setProvinceId] = useState('')
   const [weekFrom, setWeekFrom] = useState('')
   const [weekTo, setWeekTo] = useState('')
   
@@ -87,6 +88,7 @@ export default function KarsilastirClient({ provinces, units, activityTypes, can
       if (gender !== 'ALL') params.set('gender', gender)
       if (unitId) params.set('unitId', unitId)
       if (activityTypeId) params.set('activityTypeId', activityTypeId)
+      if (provinceId) params.set('provinceId', provinceId)
       if (weekFrom) params.set('weekFrom', weekFrom)
       if (weekTo) params.set('weekTo', weekTo)
 
@@ -109,7 +111,7 @@ export default function KarsilastirClient({ provinces, units, activityTypes, can
 
   useEffect(() => { load() }, [load])
 
-  useEffect(() => { setPicker('') }, [year, gender, unitId, activityTypeId, weekFrom, weekTo])
+  useEffect(() => { setPicker('') }, [year, gender, unitId, activityTypeId, provinceId, weekFrom, weekTo])
 
   const entities: Entity[] = useMemo(() => {
     if (!data) return []
@@ -281,6 +283,15 @@ export default function KarsilastirClient({ provinces, units, activityTypes, can
                 <option value="ALL">Birleşik</option>
                 <option value="K">Kadın Kolu</option>
                 <option value="E">Erkek Kolu</option>
+              </select>
+            </div>
+          )}
+          {provinces.length > 1 && (mode === 'birim' || mode === 'faaliyetTuru') && (
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-slate-500">İl Seçimi</label>
+              <select value={provinceId} onChange={e => setProvinceId(e.target.value)} className="h-9 px-3 text-sm border border-slate-200 rounded-lg outline-none bg-white">
+                <option value="">Tüm İller</option>
+                {provinces.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
               </select>
             </div>
           )}
