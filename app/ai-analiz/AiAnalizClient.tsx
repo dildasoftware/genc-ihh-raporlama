@@ -92,11 +92,25 @@ export default function AiAnalizClient({ user, regions = [], provinces = [] }: P
       const { default: h2c } = await import('html2canvas')
       const canvas = await h2c(element, { scale: 2, backgroundColor: '#ffffff', useCORS: true })
       const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
-      const w = pdf.internal.pageSize.getWidth()
-      const h = (canvas.height * w) / canvas.width
+      const pdfWidth = pdf.internal.pageSize.getWidth()
+      const pdfHeight = pdf.internal.pageSize.getHeight() // 297mm
       
-      // Add a header logo or text if we want, but html2canvas already captures the styled div.
-      pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, w, h)
+      const ratio = pdfWidth / canvas.width
+      const imgScaledHeight = canvas.height * ratio
+      
+      let heightLeft = imgScaledHeight
+      let position = 0
+      
+      pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, position, pdfWidth, imgScaledHeight)
+      heightLeft -= pdfHeight
+      
+      while (heightLeft > 0) {
+        position -= pdfHeight
+        pdf.addPage()
+        pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, position, pdfWidth, imgScaledHeight)
+        heightLeft -= pdfHeight
+      }
+      
       pdf.save(`GENC-IHH-Akilli-Karne-${new Date().getTime()}.pdf`)
       
       toast.dismiss(); toast.success('PDF indirildi!')
@@ -179,7 +193,7 @@ export default function AiAnalizClient({ user, regions = [], provinces = [] }: P
           {ANALYSIS_TYPES.map(({ value, label, icon: Icon, desc }) => (
             <button
               key={value}
-              onClick={() => setSelectedType(value)}
+              onClick={() => { setSelectedType(value); setHistory([]); }}
               className={`w-full text-left flex items-center gap-3 p-3 rounded-lg border transition-all ${
                 selectedType === value
                   ? 'border-primary bg-primary/5 shadow-sm'

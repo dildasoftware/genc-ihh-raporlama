@@ -41,6 +41,7 @@ export function reportTypeDef(key: string): ReportTypeDef {
 // ==================== AI ANALİZ TÜRLERİ ====================
 
 export const AI_TYPES: Record<string, { label: string; color: string; bg: string }> = {
+  SMART_KARNE:    { label: 'Akıllı Karne Analizi', color: '#0ea5e9', bg: '#f0f9ff' },
   KARNE:          { label: 'Karne Analizi', color: '#2563EB', bg: '#EFF6FF' },
   HAFTALIK_RAPOR: { label: 'Haftalık Analiz', color: '#16A34A', bg: '#F0FDF4' },
   KARSILASTIRMA:  { label: 'Karşılaştırma Analizi', color: '#7C3AED', bg: '#F5F3FF' },
