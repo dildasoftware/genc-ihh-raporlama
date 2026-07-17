@@ -409,6 +409,39 @@ async function main() {
       generatedBy: admin.id,
       generatedAt: new Date(Date.now() - between(1, 10) * 24 * 60 * 60 * 1000)
     })
+
+    // Her il için 3 haftalık rapor ekle
+    for (let w = 11; w <= 13; w++) {
+      const pCount = Math.round((400 + s * 1200) * (w / 12));
+      const aCount = Math.round((10 + s * 30) * (w / 12));
+      reportsToCreate.push({
+        type: 'HAFTALIK',
+        scopeType: 'PROVINCE',
+        scopeId: province.id,
+        scopeName: province.name,
+        year: year,
+        periodId: periods.find(p => p.weekNo === w)?.id,
+        title: `${province.name} — ${year} Yılı ${w}. Hafta Raporu`,
+        summaryJson: { totalActivities: aCount, totalParticipants: pCount },
+        snapshotJson: { 
+          period: { weekNo: w, year },
+          scopeName: province.name,
+          scopeType: 'PROVINCE',
+          totalActivities: aCount, 
+          totalParticipants: pCount,
+          byActivityType: [
+            { name: "Toplantı", count: Math.round(pCount * 0.4) },
+            { name: "Haftalık Ders", count: Math.round(pCount * 0.6) }
+          ],
+          byUnit: [
+            { name: "Üniversite", participants: Math.round(pCount * 0.7), activities: Math.round(aCount * 0.5) },
+            { name: "Lise", participants: Math.round(pCount * 0.3), activities: Math.round(aCount * 0.5) }
+          ]
+        },
+        generatedBy: admin.id,
+        generatedAt: new Date(Date.now() - (15 - w) * 7 * 24 * 60 * 60 * 1000) // haftalara göre geçmiş zaman
+      })
+    }
   }
 
   // Birkaç genel/bölgesel rapor ekle
