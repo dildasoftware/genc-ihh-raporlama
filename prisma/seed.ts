@@ -288,15 +288,7 @@ async function main() {
       regionId: null,
       unitId: null,
     },
-    {
-      email: 'marmara@test.com',
-      fullName: 'Marmara Bölge Koordinatörü',
-      role: Role.BOLGE_KOORDINATOR,
-      genderBranch: null,
-      provinceId: null,
-      regionId: regionMap['Marmara'],
-      unitId: null,
-    },
+
     {
       email: 'univ-baskan@test.com',
       fullName: 'Üniversite Birim Başkanı',
@@ -566,7 +558,7 @@ async function main() {
   console.log('  admin@test.com          / Test1234!  → ADMIN')
   console.log('  ankara-k@test.com       / Test1234!  → İL_KOORDINATOR (Ankara, Kadın)')
   console.log('  ankara-e@test.com       / Test1234!  → İL_KOORDINATOR (Ankara, Erkek)')
-  console.log('  marmara@test.com        / Test1234!  → BÖLGE_KOORDINATOR (Marmara)')
+
   console.log('  univ-baskan@test.com    / Test1234!  → MERKEZ_BIRIM_BASKANI (Üniversite)')
 }
 

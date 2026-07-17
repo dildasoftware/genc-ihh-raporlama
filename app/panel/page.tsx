@@ -7,6 +7,7 @@ import type { SessionUser } from '@/lib/authz'
 import { formatNumber, calcChangePercent, formatDate } from '@/lib/utils'
 import { Activity, Users, TrendingUp, MapPin, Award, ArrowUp, ArrowDown, Minus, AlertCircle, BarChart3, Building2 } from 'lucide-react'
 import Link from 'next/link'
+import { WeeklyTrendChart, UnitPieChart } from '@/components/shared/DashboardCharts'
 
 export const dynamic = 'force-dynamic'
 
@@ -109,21 +110,6 @@ export default async function PanelPage() {
 
   const unitColors = ['#1B4E6B', '#16A34A', '#D97706', '#BE185D', '#7C3AED']
 
-  const quickLinks = [
-    ...(user.role === 'IL_KOORDINATOR' || user.role === 'ADMIN'
-      ? [{ href: '/veri-girisi', label: 'Veri Girişi', icon: '➕', desc: 'Faaliyet ekle', color: '#1B4E6B' }]
-      : []),
-    ...(user.role !== 'IL_KOORDINATOR'
-      ? [
-          { href: '/kesif', label: 'Keşif', icon: '🔍', desc: 'Drill-down analiz', color: '#16A34A' },
-          { href: '/karne', label: 'Karne', icon: '🏆', desc: 'İl sıralaması', color: '#D97706' },
-          { href: '/trend', label: 'Trend', icon: '📈', desc: 'Haftalık trend', color: '#BE185D' },
-          { href: '/ai-analiz', label: 'AI Analiz', icon: '🤖', desc: 'Akıllı raporlama', color: '#7C3AED' },
-        ]
-      : [{ href: '/il-karsilastir', label: 'Birim Analiz', icon: '📊', desc: 'İl birim karşılaştırma', color: '#16A34A' }]
-    ),
-    { href: '/arsiv', label: 'Arşiv', icon: '📁', desc: 'PDF raporlar', color: '#0891B2' },
-  ]
 
   return (
     <div className="p-5 max-w-7xl mx-auto space-y-5">
@@ -277,31 +263,7 @@ export default async function PanelPage() {
             <TrendingUp className="h-4 w-4" style={{ color: '#1B4E6B' }} />
             Son {weeklyData.length} Hafta Trendi
           </h3>
-          <div className="flex gap-3 items-end h-20">
-            {weeklyData.map((w, i) => {
-              const maxC = Math.max(...weeklyData.map(x => x.count), 1)
-              const h = Math.max(4, (w.count / maxC) * 80)
-              const isLast = i === weeklyData.length - 1
-              return (
-                <div key={w.weekNo} className="flex-1 flex flex-col items-center gap-1 group cursor-pointer relative">
-                  <div className="relative">
-                    <div className="rounded-t-md transition-all group-hover:opacity-80"
-                      style={{
-                        width: '100%', minWidth: 20, height: h,
-                        background: isLast
-                          ? 'linear-gradient(180deg, #1B4E6B, #16A34A)'
-                          : 'linear-gradient(180deg, #CBD5E1, #E2E8F0)',
-                      }} />
-                    {/* Tooltip */}
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 rounded text-xs bg-slate-800 text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none">
-                      H{w.weekNo}: {w.count} faaliyet, {formatNumber(w.participants)} kişi
-                    </div>
-                  </div>
-                  <span className="text-xs text-slate-400">H{w.weekNo}</span>
-                </div>
-              )
-            })}
-          </div>
+          <WeeklyTrendChart data={weeklyData} />
         </div>
       )}
 
@@ -353,27 +315,21 @@ export default async function PanelPage() {
                 <Building2 className="h-4 w-4" style={{ color: '#16A34A' }} />
                 Birim Dağılımı (Bu Hafta)
               </h3>
-              <div className="space-y-2.5">
+              <div className="flex justify-center -mt-4">
+                <UnitPieChart data={unitData} />
+              </div>
+              <div className="space-y-2 mt-2">
                 {unitData.map((u, i) => (
                   <Link
                     key={u.name}
                     href={u.id && currentPeriod
                       ? `/faaliyetler?year=${currentPeriod.year}&weekFrom=${currentPeriod.weekNo}&weekTo=${currentPeriod.weekNo}&unitId=${u.id}`
                       : '/faaliyetler'}
-                    className="flex items-center gap-3 group rounded-lg -mx-1.5 px-1.5 py-0.5 hover:bg-slate-50 transition-colors"
+                    className="flex items-center gap-2 text-xs hover:bg-slate-50 p-1.5 rounded"
                   >
-                    <div className="w-2.5 h-2.5 rounded-full shrink-0"
-                      style={{ background: unitColors[i % unitColors.length] }} />
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-xs font-medium text-slate-700 group-hover:text-primary">{u.name}</span>
-                        <span className="text-xs text-slate-500">{u.count} faaliyet · {formatNumber(u.participants)} kişi</span>
-                      </div>
-                      <div className="progress-bar">
-                        <div className="h-full rounded-full transition-all"
-                          style={{ width: `${(u.count / maxUnitCount) * 100}%`, background: unitColors[i % unitColors.length] }} />
-                      </div>
-                    </div>
+                    <div className="w-2 h-2 rounded-full shrink-0" style={{ background: unitColors[i % unitColors.length] }} />
+                    <span className="font-medium text-slate-700">{u.name}</span>
+                    <span className="text-slate-400 ml-auto">{formatNumber(u.participants)} kişi</span>
                   </Link>
                 ))}
               </div>
@@ -382,21 +338,6 @@ export default async function PanelPage() {
         </div>
       )}
 
-      {/* ── Hızlı Erişim ── */}
-      <div>
-        <h3 className="text-sm font-semibold text-slate-700 mb-3">Hızlı Erişim</h3>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
-          {quickLinks.map(item => (
-            <Link key={item.href} href={item.href}
-              className="premium-card p-4 text-center flex flex-col items-center gap-2 group cursor-pointer"
-              style={{ textDecoration: 'none' }}>
-              <span className="text-2xl">{item.icon}</span>
-              <span className="text-xs font-semibold text-slate-700">{item.label}</span>
-              <span className="text-xs text-slate-400">{item.desc}</span>
-            </Link>
-          ))}
-        </div>
-      </div>
     </div>
   )
 }

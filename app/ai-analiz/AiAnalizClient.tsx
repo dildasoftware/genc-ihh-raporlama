@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { toast } from 'sonner'
-import { Bot, Send, Loader2, Sparkles, FileText, BarChart2, TrendingUp, Award, Building2, MessageSquare, Clock } from 'lucide-react'
+import { Bot, Send, Loader2, Sparkles, FileText, BarChart2, TrendingUp, Award, Building2, MessageSquare, Clock, Download } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -12,11 +12,17 @@ import { Label } from '@/components/ui/label'
 import { formatDate } from '@/lib/utils'
 import { getRoleLabel } from '@/lib/authz'
 import type { SessionUser } from '@/lib/authz'
+import { marked } from 'marked'
 
-interface Props { user: SessionUser }
+interface Props { 
+  user: SessionUser
+  regions?: any[]
+  provinces?: any[]
+}
 
 const ANALYSIS_TYPES = [
-  { value: 'KARNE', label: 'İl Karnesi', icon: Award, desc: 'İl sıralaması ve puan analizi' },
+  { value: 'SMART_KARNE', label: 'Akıllı Karne / Rapor', icon: Award, desc: 'Bölge/İl bazlı otomatik yapay zeka raporu' },
+  { value: 'KARNE', label: 'İl Karnesi Soru', icon: Award, desc: 'İl sıralaması ve puan analizi' },
   { value: 'TREND', label: 'Trend Analizi', icon: TrendingUp, desc: 'Haftalık/aylık trend yorumu' },
   { value: 'KARSILASTIRMA', label: 'Karşılaştırma', icon: BarChart2, desc: 'İller arası karşılaştırma' },
   { value: 'HAFTALIK_RAPOR', label: 'Haftalık Rapor', icon: FileText, desc: 'Otomatik haftalık rapor' },
@@ -61,11 +67,44 @@ interface HistoryItem {
   timestamp: Date
 }
 
-export default function AiAnalizClient({ user }: Props) {
-  const [selectedType, setSelectedType] = useState('SERBEST')
+export default function AiAnalizClient({ user, regions = [], provinces = [] }: Props) {
+  const [selectedType, setSelectedType] = useState('SMART_KARNE')
   const [userPrompt, setUserPrompt] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [history, setHistory] = useState<HistoryItem[]>([])
+
+  // Smart Karne State
+  const [smartScope, setSmartScope] = useState('COUNTRY') // COUNTRY, REGION, PROVINCE
+  const [smartRegionId, setSmartRegionId] = useState('')
+  const [smartProvinceId, setSmartProvinceId] = useState('')
+  const [smartTimeframe, setSmartTimeframe] = useState('YEARLY')
+  const [smartYear, setSmartYear] = useState(new Date().getFullYear().toString())
+  
+  const reportRefs = useRef<{ [key: number]: HTMLDivElement | null }>({})
+
+  async function handlePdf(index: number, type: string) {
+    const element = reportRefs.current[index]
+    if (!element) return
+
+    toast.loading('PDF hazırlanıyor...')
+    try {
+      const { default: jsPDF } = await import('jspdf')
+      const { default: h2c } = await import('html2canvas')
+      const canvas = await h2c(element, { scale: 2, backgroundColor: '#ffffff', useCORS: true })
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
+      const w = pdf.internal.pageSize.getWidth()
+      const h = (canvas.height * w) / canvas.width
+      
+      // Add a header logo or text if we want, but html2canvas already captures the styled div.
+      pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, w, h)
+      pdf.save(`GENC-IHH-Akilli-Karne-${new Date().getTime()}.pdf`)
+      
+      toast.dismiss(); toast.success('PDF indirildi!')
+    } catch (e) {
+      console.error(e)
+      toast.dismiss(); toast.error('PDF oluşturulamadı')
+    }
+  }
 
   async function runAnalysis() {
     if (!userPrompt.trim() && selectedType === 'SERBEST') {
@@ -75,20 +114,34 @@ export default function AiAnalizClient({ user }: Props) {
 
     setIsLoading(true)
     try {
-      const res = await fetch('/api/ai-analiz', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: selectedType,
-          userPrompt: userPrompt.trim() || undefined,
-        }),
-      })
+      let res;
+      if (selectedType === 'SMART_KARNE') {
+        res = await fetch('/api/ai-analiz/smart-report', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            scopeType: smartScope,
+            scopeId: smartScope === 'PROVINCE' ? smartProvinceId : (smartScope === 'REGION' ? smartRegionId : null),
+            timeframe: smartTimeframe,
+            year: smartYear,
+          }),
+        })
+      } else {
+        res = await fetch('/api/ai-analiz', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: selectedType,
+            userPrompt: userPrompt.trim() || undefined,
+          }),
+        })
+      }
       if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'AI hatası') }
       const json = await res.json()
 
       setHistory(prev => [{
         type: selectedType,
-        userPrompt: userPrompt.trim(),
+        userPrompt: selectedType === 'SMART_KARNE' ? 'Akıllı Karne Analizi Oluşturuldu' : userPrompt.trim(),
         response: json.response,
         timestamp: new Date(),
       }, ...prev])
@@ -153,18 +206,85 @@ export default function AiAnalizClient({ user }: Props) {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Textarea
-                value={userPrompt}
-                onChange={e => setUserPrompt(e.target.value)}
-                placeholder={selectedType === 'SERBEST'
-                  ? 'Sorunuzu yazın... (örn: Hangi il en hızlı büyüyor?)'
-                  : 'İsteğe bağlı ek talimat ekleyin veya boş bırakın...'}
-                rows={3}
-                className="text-sm resize-none"
-                onKeyDown={e => {
-                  if (e.key === 'Enter' && e.ctrlKey) runAnalysis()
-                }}
-              />
+              {selectedType === 'SMART_KARNE' ? (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Kapsam Türü</Label>
+                      <Select value={smartScope} onValueChange={(val) => val && setSmartScope(val)}>
+                        <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="COUNTRY">Türkiye Geneli</SelectItem>
+                          <SelectItem value="REGION">Bölge</SelectItem>
+                          <SelectItem value="PROVINCE">İl</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {smartScope === 'REGION' && (
+                      <div className="space-y-1.5">
+                        <Label className="text-xs">Bölge</Label>
+                        <Select value={smartRegionId} onValueChange={(val) => val && setSmartRegionId(val)}>
+                          <SelectTrigger className="h-9"><SelectValue placeholder="Seçiniz" /></SelectTrigger>
+                          <SelectContent>
+                            {regions.map(r => <SelectItem key={r.id} value={r.id.toString()}>{r.name} Bölge</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+
+                    {smartScope === 'PROVINCE' && (
+                      <div className="space-y-1.5">
+                        <Label className="text-xs">İl</Label>
+                        <Select value={smartProvinceId} onValueChange={(val) => val && setSmartProvinceId(val)}>
+                          <SelectTrigger className="h-9"><SelectValue placeholder="Seçiniz" /></SelectTrigger>
+                          <SelectContent>
+                            {provinces.map(p => <SelectItem key={p.id} value={p.id.toString()}>{p.name}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Zaman Aralığı</Label>
+                      <Select value={smartTimeframe} onValueChange={(val) => val && setSmartTimeframe(val)}>
+                        <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="YEARLY">Yıllık (Karne)</SelectItem>
+                          <SelectItem value="MONTHLY">Aylık</SelectItem>
+                          <SelectItem value="WEEKLY">Haftalık</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Yıl</Label>
+                      <Select value={smartYear} onValueChange={(val) => val && setSmartYear(val)}>
+                        <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="2026">2026</SelectItem>
+                          <SelectItem value="2025">2025</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <Textarea
+                  value={userPrompt}
+                  onChange={e => setUserPrompt(e.target.value)}
+                  placeholder={selectedType === 'SERBEST'
+                    ? 'Sorunuzu yazın... (örn: Hangi il en hızlı büyüyor?)'
+                    : 'İsteğe bağlı ek talimat ekleyin veya boş bırakın...'}
+                  rows={3}
+                  className="text-sm resize-none"
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' && e.ctrlKey) runAnalysis()
+                  }}
+                />
+              )}
 
               {/* Örnek Promptlar */}
               {examples.length > 0 && (
@@ -222,9 +342,18 @@ export default function AiAnalizClient({ user }: Props) {
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-sm text-foreground whitespace-pre-wrap leading-relaxed bg-muted/30 rounded-lg p-3">
-                      {item.response}
-                    </div>
+                    <div 
+                      ref={(el) => { reportRefs.current[i] = el }}
+                      className="text-sm text-foreground leading-relaxed bg-white rounded-lg p-5 border shadow-sm prose prose-sm max-w-none"
+                      dangerouslySetInnerHTML={{ __html: marked(item.response) as string }}
+                    />
+                    {item.type === 'SMART_KARNE' && (
+                      <div className="mt-3 flex justify-end">
+                        <Button variant="outline" size="sm" className="h-8 gap-1.5" onClick={() => handlePdf(i, item.type)}>
+                          <Download className="h-4 w-4" /> PDF İndir
+                        </Button>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               ))}

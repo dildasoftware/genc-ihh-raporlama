@@ -16,11 +16,9 @@ const navItems = [
   { href: '/panel',         label: 'Panel',             icon: LayoutDashboard, roles: ['ALL'],        section: 'main' },
   { href: '/veri-girisi',   label: 'Veri Girişi',       icon: PlusCircle,      roles: ['IL_KOORDINATOR','ADMIN'], section: 'main' },
   { href: '/faaliyetler',   label: 'Faaliyet Kayıtları',icon: ClipboardList,   roles: ['ALL'],        section: 'main' },
-  { href: '/kesif',         label: 'Keşif',             icon: Search,          roles: ['BOLGE_KOORDINATOR','MERKEZ_BIRIM_BASKANI','ADMIN'], section: 'analyze' },
   { href: '/karne',         label: 'Karne',             icon: Award,           roles: ['ALL'], section: 'analyze' },
   { href: '/trend',         label: 'Trend',             icon: TrendingUp,      roles: ['BOLGE_KOORDINATOR','MERKEZ_BIRIM_BASKANI','ADMIN'], section: 'analyze' },
   { href: '/karsilastir',   label: 'Karşılaştır',       icon: BarChart2,       roles: ['BOLGE_KOORDINATOR','MERKEZ_BIRIM_BASKANI','ADMIN'], section: 'analyze' },
-  { href: '/il-karsilastir',label: 'İl Birim Analizi',  icon: Building2,       roles: ['IL_KOORDINATOR','ADMIN'], section: 'analyze' },
   { href: '/haftalik-rapor',label: 'Haftalık Rapor',    icon: FileText,        roles: ['BOLGE_KOORDINATOR','MERKEZ_BIRIM_BASKANI','ADMIN'], section: 'reports' },
   { href: '/ai-analiz',     label: 'AI Analiz',         icon: Bot,             roles: ['BOLGE_KOORDINATOR','MERKEZ_BIRIM_BASKANI','ADMIN'], section: 'reports' },
   { href: '/arsiv',         label: 'Arşiv',             icon: Archive,         roles: ['ALL'], section: 'reports' },
@@ -42,7 +40,12 @@ export default function Sidebar() {
 
   const visibleItems = navItems.filter(item =>
     item.roles.includes('ALL') || (userRole && item.roles.includes(userRole))
-  )
+  ).map(item => {
+    if (item.href === '/karne' && userRole === 'IL_KOORDINATOR') {
+      return { ...item, label: 'Performans & Analiz' }
+    }
+    return item
+  })
 
   const sections = ['main', 'analyze', 'reports', 'admin'].filter(s =>
     visibleItems.some(i => i.section === s)

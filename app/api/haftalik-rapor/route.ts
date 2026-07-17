@@ -32,6 +32,21 @@ export async function GET(request: NextRequest) {
   const where = buildActivityFilter(user, 'ALL')
   where.periodId = periodId
 
+  const requestedRegionId = searchParams.get('regionId') ? parseInt(searchParams.get('regionId')!) : null
+  const requestedProvinceId = searchParams.get('provinceId') ? parseInt(searchParams.get('provinceId')!) : null
+
+  // Append requested filters if applicable
+  if (requestedProvinceId) {
+    where.institution = { ...where.institution, provinceId: requestedProvinceId }
+  } else if (requestedRegionId) {
+    where.institution = { ...where.institution, province: { regionId: requestedRegionId } }
+  }
+  
+  const requestedUnitId = searchParams.get('unitId') ? parseInt(searchParams.get('unitId')!) : null
+  if (requestedUnitId) {
+    where.institution = { ...where.institution, unitId: requestedUnitId }
+  }
+
   const activities = await prisma.activity.findMany({
     where,
     include: {
@@ -107,8 +122,11 @@ export async function GET(request: NextRequest) {
         provinceName: i.province.name,
         totalParticipants: instActivities.reduce((s, a) => s + a.participantCount, 0),
         activities: instActivities.map(a => ({
+          id: a.id,
           type: a.activityType.name,
-          participants: a.participantCount
+          participants: a.participantCount,
+          genderBranch: a.genderBranch,
+          note: a.note
         }))
       }
     })
@@ -126,7 +144,22 @@ export async function GET(request: NextRequest) {
     institutions: instList,
     prevTotalParticipants,
     prevTotalActivities,
-    scopeName: user.role === 'BOLGE_KOORDINATOR' ? `${user.regionId} Nolu Bölge` : (user.role === 'ADMIN' || user.role === 'MERKEZ_BIRIM_BASKANI') ? 'Türkiye Geneli' : 'Tüm Kapsam',
+    scopeName: requestedProvinceId ? (instList[0]?.provinceName || 'İl Kapsamı') 
+             : user.role === 'IL_KOORDINATOR' ? (instList[0]?.provinceName || 'İl Kapsamı')
+             : requestedRegionId ? `${requestedRegionId} Nolu Bölge` 
+             : user.role === 'BOLGE_KOORDINATOR' ? `${user.regionId} Nolu Bölge` 
+             : (user.role === 'ADMIN' || user.role === 'MERKEZ_BIRIM_BASKANI') ? 'Türkiye Geneli' 
+             : 'Tüm Kapsam',
+    scopeType: requestedProvinceId ? 'PROVINCE' 
+             : user.role === 'IL_KOORDINATOR' ? 'PROVINCE'
+             : requestedRegionId ? 'REGION' 
+             : user.role === 'BOLGE_KOORDINATOR' ? 'REGION' 
+             : 'COUNTRY',
+    scopeId: requestedProvinceId ? requestedProvinceId 
+           : user.role === 'IL_KOORDINATOR' ? user.provinceId
+           : requestedRegionId ? requestedRegionId 
+           : user.role === 'BOLGE_KOORDINATOR' ? user.regionId 
+           : null,
   })
 }
 
@@ -157,8 +190,8 @@ export async function POST(request: NextRequest) {
         id: uuidv4(),
         type: 'HAFTALIK',
         title,
-        scopeType: user.role === 'BOLGE_KOORDINATOR' ? 'REGION' : 'COUNTRY',
-        scopeId: user.role === 'BOLGE_KOORDINATOR' ? user.regionId : null,
+        scopeType: data.scopeType || 'COUNTRY',
+        scopeId: data.scopeId || null,
         year: period.year,
         periodId: period.id,
         snapshotJson: snapshot,

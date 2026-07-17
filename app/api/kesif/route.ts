@@ -22,6 +22,9 @@ export async function GET(request: NextRequest) {
 
   const { searchParams } = new URL(request.url)
   const periodId = searchParams.get('periodId')
+  const yearStr = searchParams.get('year')
+  const weekFrom = searchParams.get('weekFrom')
+  const weekTo = searchParams.get('weekTo')
   const genderFilter = searchParams.get('gender') as 'K' | 'E' | 'ALL' | null
   const unitId = searchParams.get('unitId')
   const activityTypeId = searchParams.get('activityTypeId')
@@ -30,6 +33,13 @@ export async function GET(request: NextRequest) {
 
   const where = buildActivityFilter(user, genderFilter ?? 'ALL')
   if (periodId) where.periodId = parseInt(periodId)
+  if (yearStr) {
+    const year = parseInt(yearStr)
+    const periodWhere: any = { year }
+    if (weekFrom) periodWhere.weekNo = { ...periodWhere.weekNo, gte: parseInt(weekFrom) }
+    if (weekTo) periodWhere.weekNo = { ...periodWhere.weekNo, lte: parseInt(weekTo) }
+    where.period = periodWhere
+  }
   if (unitId) where.institution = { ...where.institution, unitId: parseInt(unitId) }
   if (activityTypeId) where.activityTypeId = parseInt(activityTypeId)
   if (provinceId && user.role !== 'IL_KOORDINATOR') {
@@ -42,8 +52,9 @@ export async function GET(request: NextRequest) {
       institution: { include: { province: true, unit: true } },
       activityType: true,
       faculty: true,
+      period: true
     },
-    take: 2000,
+    take: 5000,
   })
 
   // Group & aggregate
@@ -51,7 +62,7 @@ export async function GET(request: NextRequest) {
     label: string
     count: number
     participants: number
-    subGroups?: Record<string, { count: number; participants: number }>
+    byWeek: Record<string, { participants: number; activities: number }>
   }> = {}
 
   for (const a of activities) {
@@ -73,9 +84,16 @@ export async function GET(request: NextRequest) {
       label = a.institution.province?.name ?? 'Bilinmiyor'
     }
 
-    if (!grouped[key]) grouped[key] = { label, count: 0, participants: 0 }
+    if (!grouped[key]) grouped[key] = { label, count: 0, participants: 0, byWeek: {} }
     grouped[key].count++
     grouped[key].participants += a.participantCount
+
+    const weekKey = a.period?.weekNo?.toString() || '0'
+    if (!grouped[key].byWeek[weekKey]) {
+      grouped[key].byWeek[weekKey] = { participants: 0, activities: 0 }
+    }
+    grouped[key].byWeek[weekKey].participants += a.participantCount
+    grouped[key].byWeek[weekKey].activities++
   }
 
   const result = Object.entries(grouped)

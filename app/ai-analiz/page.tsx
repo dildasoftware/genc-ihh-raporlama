@@ -1,6 +1,7 @@
 import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
 import type { SessionUser } from '@/lib/authz'
 import AiAnalizClient from './AiAnalizClient'
 
@@ -22,5 +23,13 @@ export default async function AiAnalizPage() {
 
   if (user.role === 'IL_KOORDINATOR') redirect('/panel')
 
-  return <AiAnalizClient user={user} />
+  let regions = await prisma.region.findMany({ orderBy: { id: 'asc' } })
+  let provinces = await prisma.province.findMany({ orderBy: { name: 'asc' } })
+
+  if (user.role === 'BOLGE_KOORDINATOR' && user.regionId) {
+    regions = regions.filter(r => r.id === user.regionId)
+    provinces = provinces.filter(p => p.regionId === user.regionId)
+  }
+
+  return <AiAnalizClient user={user} regions={regions} provinces={provinces} />
 }

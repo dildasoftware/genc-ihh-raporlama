@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
-import { Settings, Users, Building2, Calendar, Scale, Bot, Activity, Search, RefreshCw, Plus } from 'lucide-react'
+import { Settings, Users, Building2, Calendar, Scale, Bot, Activity, Search, RefreshCw, Plus, Trash2, Edit } from 'lucide-react'
+import { getRoleLabel } from '@/lib/authz'
 
 type TabKeys = 'users' | 'institutions' | 'periods' | 'weights' | 'aiLogs' | 'auditLogs'
 
@@ -12,13 +13,14 @@ export default function YonetimClient() {
   const [isLoading, setIsLoading] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
 
+  const [refs, setRefs] = useState<{ regions: any[], provinces: any[], units: any[] }>({ regions: [], provinces: [], units: [] })
+  const [editingUser, setEditingUser] = useState<any>(null)
+  const [isSaving, setIsSaving] = useState(false)
+  const [isBulkInstOpen, setIsBulkInstOpen] = useState(false)
+  const [bulkData, setBulkData] = useState('')
+
   const TABS: { key: TabKeys, label: string, icon: any }[] = [
-    { key: 'users', label: 'Kullanıcı Yönetimi', icon: Users },
-    { key: 'institutions', label: 'Kurum Yönetimi', icon: Building2 },
-    { key: 'periods', label: 'Dönem Yönetimi', icon: Calendar },
-    { key: 'weights', label: 'Puan Ağırlıkları', icon: Scale },
-    { key: 'aiLogs', label: 'AI Geçmişi', icon: Bot },
-    { key: 'auditLogs', label: 'Denetim Kaydı', icon: Activity },
+    { key: 'users', label: 'Kullanıcı Yönetimi', icon: Users }
   ]
 
   const loadData = async (tab: TabKeys) => {
@@ -40,6 +42,97 @@ export default function YonetimClient() {
     loadData(activeTab)
   }, [activeTab])
 
+  useEffect(() => {
+    fetch('/api/referans')
+      .then(res => res.json())
+      .then(d => setRefs({ regions: d.regions || [], provinces: d.provinces || [], units: d.units || [] }))
+      .catch(console.error)
+  }, [])
+
+  const handleSaveUser = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSaving(true)
+    try {
+      const isNew = !editingUser.id
+      const res = await fetch('/api/yonetim', {
+        method: isNew ? 'POST' : 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editingUser)
+      })
+      if (!res.ok) {
+        const d = await res.json()
+        throw new Error(d.error || (isNew ? 'Eklenemedi' : 'Güncellenemedi'))
+      }
+      toast.success(isNew ? 'Kullanıcı eklendi' : 'Kullanıcı güncellendi')
+      setEditingUser(null)
+      loadData('users')
+    } catch (err: any) {
+      toast.error(err.message)
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const handleBulkInstitutionSave = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!bulkData.trim()) return
+
+    setIsSaving(true)
+    try {
+      const lines = bulkData.split('\n').map(l => l.trim()).filter(l => l)
+      const parsedData = lines.map(line => {
+        const parts = line.split('\t').length > 1 ? line.split('\t') : line.split(',')
+        if (parts.length < 3) return null
+        
+        const name = parts[0].trim()
+        const provinceName = parts[1].trim()
+        const unitName = parts[2].trim()
+
+        const province = refs.provinces.find(p => (p.name || '').toLowerCase() === provinceName.toLowerCase())
+        const unit = refs.units.find(u => (u.name || '').toLowerCase() === unitName.toLowerCase())
+
+        if (!province || !unit) return null
+
+        return { name, provinceId: province.id, unitId: unit.id }
+      }).filter(Boolean)
+
+      if (parsedData.length === 0) throw new Error('Eşleşen geçerli bir veri bulunamadı. Lütfen il ve birim isimlerinin doğru olduğundan emin olun.')
+
+      const res = await fetch('/api/yonetim/bulk-institutions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(parsedData)
+      })
+
+      if (!res.ok) {
+        const d = await res.json()
+        throw new Error(d.error || 'Yüklenemedi')
+      }
+      
+      const resData = await res.json()
+      toast.success(`${resData.count} kurum başarıyla eklendi`)
+      setIsBulkInstOpen(false)
+      setBulkData('')
+      loadData('institutions')
+    } catch (err: any) {
+      toast.error(err.message)
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const handleDeleteUser = async (userId: string) => {
+    if (!confirm('Bu kullanıcıyı silmek istediğinize emin misiniz?')) return
+    try {
+      const res = await fetch(`/api/yonetim?userId=${userId}`, { method: 'DELETE' })
+      if (!res.ok) throw new Error('Kullanıcı silinemedi')
+      toast.success('Kullanıcı başarıyla silindi')
+      loadData('users')
+    } catch (e: any) {
+      toast.error(e.message)
+    }
+  }
+
   const renderContent = () => {
     if (isLoading) {
       return (
@@ -53,7 +146,7 @@ export default function YonetimClient() {
     if (!data) return null
 
     if (activeTab === 'users') {
-      const filtered = data.filter((u: any) => u.fullName.toLowerCase().includes(searchTerm.toLowerCase()) || u.email.toLowerCase().includes(searchTerm.toLowerCase()))
+      const filtered = data.filter((u: any) => (u.fullName || '').toLowerCase().includes(searchTerm.toLowerCase()) || (u.email || '').toLowerCase().includes(searchTerm.toLowerCase()))
       return (
         <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
           <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
@@ -63,7 +156,10 @@ export default function YonetimClient() {
                 <Search className="h-4 w-4 absolute left-3 top-2.5 text-slate-400" />
                 <input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Kullanıcı ara..." className="h-9 pl-9 pr-3 text-sm border border-slate-200 rounded-lg outline-none focus:ring-1 focus:ring-teal-500 w-64" />
               </div>
-              <button className="flex items-center gap-1.5 h-9 px-3 bg-teal-600 text-white rounded-lg text-sm hover:bg-teal-700 transition-colors">
+              <button 
+                onClick={() => setEditingUser({ fullName: '', email: '', role: 'IL_KOORDINATOR', genderBranch: 'K' })}
+                className="flex items-center gap-1.5 h-9 px-3 bg-teal-600 text-white rounded-lg text-sm hover:bg-teal-700 transition-colors"
+              >
                 <Plus className="h-4 w-4" /> Yeni Kullanıcı
               </button>
             </div>
@@ -76,7 +172,8 @@ export default function YonetimClient() {
                   <th className="px-4 py-3 font-medium">E-posta</th>
                   <th className="px-4 py-3 font-medium">Rol</th>
                   <th className="px-4 py-3 font-medium">Bölge/İl/Birim</th>
-                  <th className="px-4 py-3 font-medium text-right">Durum</th>
+                  <th className="px-4 py-3 font-medium text-center">Durum</th>
+                  <th className="px-4 py-3 font-medium text-right">İşlemler</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -85,17 +182,35 @@ export default function YonetimClient() {
                     <td className="px-4 py-3 font-medium text-slate-800">{u.fullName}</td>
                     <td className="px-4 py-3 text-slate-500">{u.email}</td>
                     <td className="px-4 py-3">
-                      <span className="px-2 py-1 bg-slate-100 text-slate-600 rounded-md text-xs font-semibold">{u.role}</span>
+                      <span className="px-2 py-1 bg-slate-100 text-slate-600 rounded-md text-xs font-semibold">
+                        {getRoleLabel(u.role) || u.role}
+                      </span>
                     </td>
                     <td className="px-4 py-3 text-slate-500">
                       {[u.region?.name, u.province?.name, u.unit?.name].filter(Boolean).join(' - ') || '-'}
                     </td>
-                    <td className="px-4 py-3 text-right">
+                    <td className="px-4 py-3 text-center">
                       {u.isActive ? (
                         <span className="px-2 py-1 bg-emerald-50 text-emerald-600 rounded-md text-xs font-semibold">Aktif</span>
                       ) : (
                         <span className="px-2 py-1 bg-rose-50 text-rose-600 rounded-md text-xs font-semibold">Pasif</span>
                       )}
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <button 
+                        onClick={() => setEditingUser(u)}
+                        className="p-1.5 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors mr-1"
+                        title="Düzenle"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </button>
+                      <button 
+                        onClick={() => handleDeleteUser(u.id)}
+                        className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors"
+                        title="Sil"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -107,7 +222,7 @@ export default function YonetimClient() {
     }
 
     if (activeTab === 'institutions') {
-      const filtered = data.filter((i: any) => i.name.toLowerCase().includes(searchTerm.toLowerCase()))
+      const filtered = data.filter((i: any) => (i.name || '').toLowerCase().includes(searchTerm.toLowerCase()))
       return (
         <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
           <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
@@ -117,6 +232,18 @@ export default function YonetimClient() {
                 <Search className="h-4 w-4 absolute left-3 top-2.5 text-slate-400" />
                 <input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Kurum ara..." className="h-9 pl-9 pr-3 text-sm border border-slate-200 rounded-lg outline-none focus:ring-1 focus:ring-teal-500 w-64" />
               </div>
+              <button 
+                onClick={() => {
+                  if (refs.provinces.length === 0) {
+                    toast.error('Lütfen referans verilerin yüklenmesini bekleyin')
+                    return
+                  }
+                  setIsBulkInstOpen(true)
+                }}
+                className="flex items-center gap-1.5 h-9 px-3 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700 transition-colors"
+              >
+                Toplu Ekle (CSV/TSV)
+              </button>
               <button className="flex items-center gap-1.5 h-9 px-3 bg-teal-600 text-white rounded-lg text-sm hover:bg-teal-700 transition-colors">
                 <Plus className="h-4 w-4" /> Kurum Ekle
               </button>
@@ -265,6 +392,98 @@ export default function YonetimClient() {
           {renderContent()}
         </div>
       </div>
+
+      {editingUser && (
+        <div className="fixed inset-0 z-50 bg-slate-900/50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden">
+            <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+              <h3 className="font-semibold text-slate-800">Kullanıcı Düzenle</h3>
+              <button onClick={() => setEditingUser(null)} className="text-slate-400 hover:text-slate-600">✕</button>
+            </div>
+            <form onSubmit={handleSaveUser} className="p-4 space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-slate-700 mb-1">Ad Soyad</label>
+                <input required value={editingUser.fullName} onChange={e => setEditingUser({...editingUser, fullName: e.target.value})} className="w-full h-9 px-3 border rounded-lg text-sm" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-slate-700 mb-1">E-posta</label>
+                <input required type="email" value={editingUser.email} onChange={e => setEditingUser({...editingUser, email: e.target.value})} className="w-full h-9 px-3 border rounded-lg text-sm" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 mb-1">Rol</label>
+                  <select disabled value="IL_KOORDINATOR" className="w-full h-9 px-3 border rounded-lg text-sm bg-slate-50 text-slate-500 cursor-not-allowed">
+                    <option value="IL_KOORDINATOR">İl Koordinatörü</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 mb-1">Cinsiyet Kolu</label>
+                  <select value={editingUser.genderBranch || ''} onChange={e => setEditingUser({...editingUser, genderBranch: e.target.value || null})} className="w-full h-9 px-3 border rounded-lg text-sm bg-white">
+                    <option value="">Tümü</option>
+                    <option value="K">Kadın Kolu</option>
+                    <option value="E">Erkek Kolu</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-xs font-medium text-slate-700 mb-1">İl</label>
+                <select value={editingUser.provinceId || ''} onChange={e => setEditingUser({...editingUser, provinceId: e.target.value, role: 'IL_KOORDINATOR'})} className="w-full h-9 px-3 border rounded-lg text-sm bg-white">
+                  <option value="">İl Seçiniz</option>
+                  {refs.provinces.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                </select>
+              </div>
+
+              <div className="flex items-center gap-2 pt-2">
+                <input type="checkbox" id="isActive" checked={editingUser.isActive} onChange={e => setEditingUser({...editingUser, isActive: e.target.checked})} />
+                <label htmlFor="isActive" className="text-sm font-medium text-slate-700">Aktif Hesap</label>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-4 border-t border-slate-100">
+                <button type="button" onClick={() => setEditingUser(null)} className="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg">İptal</button>
+                <button type="submit" disabled={isSaving} className="px-4 py-2 text-sm bg-teal-600 text-white hover:bg-teal-700 rounded-lg disabled:opacity-50">
+                  {isSaving ? 'Kaydediliyor...' : 'Kaydet'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {isBulkInstOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl overflow-hidden">
+            <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+              <h3 className="font-semibold text-slate-800">Toplu Kurum Ekle</h3>
+              <button onClick={() => setIsBulkInstOpen(false)} className="text-slate-400 hover:text-slate-600">✕</button>
+            </div>
+            <form onSubmit={handleBulkInstitutionSave} className="p-4 space-y-4">
+              <div className="bg-indigo-50 p-3 rounded-lg border border-indigo-100 mb-4">
+                <p className="text-sm text-indigo-800 font-medium mb-1">Desteklenen Format: <span className="font-mono bg-white px-1 py-0.5 rounded text-xs border border-indigo-200">Kurum Adı, İl Adı, Birim Adı</span></p>
+                <p className="text-xs text-indigo-600">Excel'den doğrudan kopyalayıp yapıştırabilirsiniz (TSV) ya da virgülle ayırarak (CSV) girebilirsiniz.</p>
+                <p className="text-xs text-indigo-600 mt-1 opacity-75">Örnek: <strong>Gazi Üniversitesi, Ankara, Üniversiteler</strong></p>
+              </div>
+
+              <div>
+                <textarea 
+                  required 
+                  value={bulkData} 
+                  onChange={e => setBulkData(e.target.value)} 
+                  placeholder={`Marmara Üniversitesi, İstanbul, Üniversiteler\nKadıköy İmam Hatip Lisesi, İstanbul, Liseler`}
+                  className="w-full h-64 p-3 border rounded-lg text-sm font-mono whitespace-pre" 
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-4 border-t border-slate-100">
+                <button type="button" onClick={() => setIsBulkInstOpen(false)} className="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg">İptal</button>
+                <button type="submit" disabled={isSaving || !bulkData.trim()} className="px-4 py-2 text-sm bg-indigo-600 text-white hover:bg-indigo-700 rounded-lg disabled:opacity-50">
+                  {isSaving ? 'Yükleniyor...' : 'Verileri İçe Aktar'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

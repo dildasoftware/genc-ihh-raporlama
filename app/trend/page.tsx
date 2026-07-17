@@ -20,8 +20,7 @@ export default async function TrendPage() {
     unitId: (session.user as any).unitId,
     fullName: session.user.name ?? '',
   }
-
-  if (user.role === 'IL_KOORDINATOR') redirect('/panel')
+  // Removed IL_KOORDINATOR restriction so they can analyze their own province
 
   const year = new Date().getFullYear()
 

@@ -38,11 +38,31 @@ export async function GET(
   }
 
   const { searchParams } = new URL(request.url)
-  const year = parseInt(searchParams.get('year') ?? String(new Date().getFullYear()))
   const gender =
     user.role === 'IL_KOORDINATOR'
       ? user.genderBranch
       : (searchParams.get('gender') as 'K' | 'E' | 'ALL' | null)
+
+  const type = searchParams.get('type') || 'YEAR'
+  const p1 = searchParams.get('p1') || String(new Date().getFullYear())
+  const p2 = searchParams.get('p2')
+
+  const parsePeriod = (p: string | null) => {
+    if (!p) return null
+    if (type === 'YEAR') return { year: parseInt(p) }
+    if (type === 'MONTH') {
+      const [y, m] = p.split('-')
+      return { year: parseInt(y), month: parseInt(m) }
+    }
+    if (type === 'WEEK') {
+      const [y, w] = p.split('-')
+      return { year: parseInt(y), weekFrom: w, weekTo: w }
+    }
+    return null
+  }
+
+  const p1Filters = parsePeriod(p1)
+  const p2Filters = parsePeriod(p2)
 
   const province = await prisma.province.findUnique({
     where: { id: provinceId },
@@ -50,31 +70,41 @@ export async function GET(
   })
   if (!province) return NextResponse.json({ error: 'İl bulunamadı' }, { status: 404 })
 
-  const { ranked, summary, institutionsOf, reportMap, periods } = await loadKarne({
-    year,
+  const commonFilters = {
     gender,
     unitId: searchParams.get('unitId'),
     activityTypeId: searchParams.get('activityTypeId'),
-    weekFrom: searchParams.get('weekFrom'),
-    weekTo: searchParams.get('weekTo'),
-  })
+  }
 
-  const karne = ranked.find(r => r.provinceId === provinceId) ?? null
+  const buildData = async (filters: any) => {
+    if (!filters) return null
+    const { ranked, summary, institutionsOf, reportMap, periods } = await loadKarne({
+      ...commonFilters,
+      ...filters,
+    })
+    const karne = ranked.find(r => r.provinceId === provinceId) ?? null
+    const regionRanked = ranked.filter(r => r.regionName === province.region?.name)
+    const regionRank = regionRanked.findIndex(r => r.provinceId === provinceId) + 1
 
-  // Bölge içi sıra
-  const regionRanked = ranked.filter(r => r.regionName === province.region?.name)
-  const regionRank = regionRanked.findIndex(r => r.provinceId === provinceId) + 1
+    return {
+      year: filters.year,
+      weekCount: periods.length,
+      karne,
+      regionRank: regionRank || null,
+      regionCount: regionRanked.length,
+      nationalCount: ranked.length,
+      institutions: institutionsOf(provinceId),
+      report: reportMap.get(provinceId) ?? null,
+      summary,
+    }
+  }
+
+  const data1 = await buildData(p1Filters)
+  const data2 = await buildData(p2Filters)
 
   return NextResponse.json({
-    year,
-    weekCount: periods.length,
     province: { id: province.id, name: province.name, regionName: province.region?.name ?? '' },
-    karne,
-    regionRank: regionRank || null,
-    regionCount: regionRanked.length,
-    nationalCount: ranked.length,
-    institutions: institutionsOf(provinceId),
-    report: reportMap.get(provinceId) ?? null,
-    summary,
+    data1,
+    data2,
   })
 }

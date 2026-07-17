@@ -32,18 +32,26 @@ export default async function KarneDetayPage({
   const visible = await buildProvinceScope(user, prisma)
   if (visible !== null && !visible.includes(provinceId)) redirect('/karne')
 
-  const [units, activityTypes] = await Promise.all([
+  const [units, activityTypes, periods, province] = await Promise.all([
     prisma.unit.findMany({ orderBy: { order: 'asc' }, select: { id: true, name: true } }),
     prisma.activityType.findMany({ orderBy: { name: 'asc' }, select: { id: true, name: true } }),
+    prisma.period.findMany({ orderBy: { startDate: 'desc' } }),
+    prisma.province.findUnique({ where: { id: provinceId }, select: { id: true, name: true } })
   ])
 
+  const year = new Date().getFullYear()
+
   return (
-    <KarneDetayClient
-      provinceId={provinceId}
-      year={new Date().getFullYear()}
-      units={units}
-      activityTypes={activityTypes}
-      canFilterGender={user.role !== 'IL_KOORDINATOR'}
-    />
+    <div className="space-y-8 pb-12">
+      <KarneDetayClient
+        provinceId={provinceId}
+        year={year}
+        units={units}
+        activityTypes={activityTypes}
+        periods={periods}
+        canFilterGender={true}
+        hideScoreAndRank={user.role === 'IL_KOORDINATOR'}
+      />
+    </div>
   )
 }

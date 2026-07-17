@@ -4,30 +4,19 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import {
-  BarChart2, Loader2, X, Plus, ExternalLink, ClipboardList, RotateCcw,
+  BarChart2, Loader2, X, Plus, ExternalLink, ClipboardList, TrendingUp,
+  PieChart as PieChartIcon, Activity
 } from 'lucide-react'
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   Cell, LineChart, Line, Legend, RadarChart, Radar, PolarGrid,
-  PolarAngleAxis, PolarRadiusAxis, LabelList,
+  PolarAngleAxis, PolarRadiusAxis, PieChart, Pie
 } from 'recharts'
 import { DIMENSIONS } from '@/lib/karne'
 import { CATEGORICAL, CHART_CHROME } from '@/lib/chart-colors'
 import { formatNumber } from '@/lib/utils'
 
-/**
- * Karşılaştırma Çalışma Alanı
- *
- * Kullanıcı il veya bölge seçer (en fazla 5 — kategorik palet sınırı),
- * metrik seçer, aynı filtre kümesi tüm grafikleri besler:
- *   metrik çubuğu · haftalık seyir · karne profili (radar) · tam tablo
- * Her satır kaynak kayıtlara (faaliyetler / karne detay) drill-down verir.
- *
- * Renk kuralı: renk VARLIĞI izler, sırayı değil — bir seçim kaldırılınca
- * kalanlar rengini korur (colorMap slot mantığı).
- */
-
-type Mode = 'il' | 'bolge'
+type Mode = 'il' | 'bolge' | 'birim' | 'faaliyetTuru'
 
 const METRICS = [
   { key: 'total', label: 'Karne Puanı', fmt: (v: number) => String(v) },
@@ -36,6 +25,7 @@ const METRICS = [
   { key: 'institutionCount', label: 'Kurum Sayısı', fmt: (v: number) => String(v) },
   { key: 'activeWeeks', label: 'Aktif Hafta', fmt: (v: number) => String(v) },
 ] as const
+
 type MetricKey = typeof METRICS[number]['key']
 
 interface Entity {
@@ -68,18 +58,27 @@ export default function KarsilastirClient({ provinces, units, activityTypes, can
   const [gender, setGender] = useState('ALL')
   const [unitId, setUnitId] = useState('')
   const [activityTypeId, setActivityTypeId] = useState('')
-  const [metric, setMetric] = useState<MetricKey>('total')
   const [weekFrom, setWeekFrom] = useState('')
   const [weekTo, setWeekTo] = useState('')
+  
+  // Eger mode birim/faaliyet ise total anlamsiz
+  const [metric, setMetric] = useState<MetricKey>('total')
 
   const [data, setData] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  // Seçim + renk slotları: ad → palet indeksi. Silinince slot boşalır,
-  // kalanların rengi DEĞİŞMEZ (recolor-on-filter anti-pattern'i).
   const [selected, setSelected] = useState<string[]>([])
   const [colorMap, setColorMap] = useState<Record<string, number>>({})
   const [picker, setPicker] = useState('')
+
+  useEffect(() => {
+    if ((mode === 'birim' || mode === 'faaliyetTuru') && metric === 'total') {
+      setMetric('totalParticipants')
+    }
+    if ((mode === 'il' || mode === 'bolge') && (metric !== 'total' && metric !== 'totalParticipants' && metric !== 'totalActivities' && metric !== 'institutionCount' && metric !== 'activeWeeks')) {
+        setMetric('total')
+    }
+  }, [mode, metric])
 
   const load = useCallback(async () => {
     setIsLoading(true)
@@ -90,7 +89,15 @@ export default function KarsilastirClient({ provinces, units, activityTypes, can
       if (activityTypeId) params.set('activityTypeId', activityTypeId)
       if (weekFrom) params.set('weekFrom', weekFrom)
       if (weekTo) params.set('weekTo', weekTo)
-      const res = await fetch(`/api/karne?${params}`)
+
+      let res
+      if (mode === 'il' || mode === 'bolge') {
+        res = await fetch(`/api/karne?${params}`)
+      } else {
+        params.set('groupBy', mode === 'birim' ? 'unit' : 'activityType')
+        res = await fetch(`/api/kesif?${params}`)
+      }
+      
       if (!res.ok) throw new Error((await res.json()).error ?? 'Veri alınamadı')
       setData(await res.json())
     } catch (e: any) {
@@ -98,70 +105,63 @@ export default function KarsilastirClient({ provinces, units, activityTypes, can
     } finally {
       setIsLoading(false)
     }
-  }, [year, gender, unitId, activityTypeId, weekFrom, weekTo])
+  }, [year, gender, unitId, activityTypeId, weekFrom, weekTo, mode])
 
   useEffect(() => { load() }, [load])
 
-  // Filtre değişince ilk sayfaya veya yüklemeye
-  useEffect(() => {
-    setPicker('')
-  }, [year, gender, unitId, activityTypeId, weekFrom, weekTo])
+  useEffect(() => { setPicker('') }, [year, gender, unitId, activityTypeId, weekFrom, weekTo])
 
-  // ── Varlıklar: il modu doğrudan ranked; bölge modu toplanmış ──
   const entities: Entity[] = useMemo(() => {
-    const ranked: any[] = data?.ranked ?? []
-    if (mode === 'il') {
-      return ranked.map(r => ({
-        key: r.provinceName,
-        name: r.provinceName,
-        provinceId: r.provinceId,
-        regionName: r.regionName,
-        total: r.total,
-        grade: r.grade,
-        rank: r.rank,
-        totalParticipants: r.totalParticipants,
-        totalActivities: r.totalActivities,
-        institutionCount: r.institutionCount,
-        activeWeeks: r.activeWeeks,
-        totalWeeks: r.totalWeeks,
-        scores: r.scores,
-        byWeek: r.byWeek ?? {},
-      }))
-    }
-    // Bölge modu: illeri bölgeye topla
-    const byRegion = new Map<string, Entity & { _provinceCount: number }>()
-    for (const r of ranked) {
-      if (!byRegion.has(r.regionName)) {
-        byRegion.set(r.regionName, {
-          key: r.regionName, name: r.regionName,
-          total: 0, grade: null, totalParticipants: 0, totalActivities: 0,
-          institutionCount: 0, activeWeeks: 0, totalWeeks: r.totalWeeks,
-          scores: Object.fromEntries(DIMENSIONS.map(d => [d.key, 0])),
-          byWeek: {}, _provinceCount: 0,
-        })
+    if (!data) return []
+    
+    if (mode === 'il' || mode === 'bolge') {
+      const ranked: any[] = data?.ranked ?? []
+      if (mode === 'il') {
+        return ranked.map(r => ({
+          key: r.provinceName, name: r.provinceName, provinceId: r.provinceId, regionName: r.regionName,
+          total: r.total, grade: r.grade, rank: r.rank, totalParticipants: r.totalParticipants,
+          totalActivities: r.totalActivities, institutionCount: r.institutionCount, activeWeeks: r.activeWeeks,
+          totalWeeks: r.totalWeeks, scores: r.scores, byWeek: r.byWeek ?? {},
+        }))
       }
-      const e = byRegion.get(r.regionName)!
-      e._provinceCount++
-      e.total += r.total
-      e.totalParticipants += r.totalParticipants
-      e.totalActivities += r.totalActivities
-      e.institutionCount += r.institutionCount
-      e.activeWeeks = Math.max(e.activeWeeks, r.activeWeeks)
-      for (const d of DIMENSIONS) e.scores[d.key] += r.scores[d.key]
-      for (const [w, v] of Object.entries(r.byWeek ?? {}) as any) {
-        if (!e.byWeek[w]) e.byWeek[w] = { participants: 0, activities: 0 }
-        e.byWeek[w].participants += v.participants
-        e.byWeek[w].activities += v.activities
+      const byRegion = new Map<string, Entity & { _provinceCount: number }>()
+      for (const r of ranked) {
+        if (!byRegion.has(r.regionName)) {
+          byRegion.set(r.regionName, {
+            key: r.regionName, name: r.regionName, total: 0, grade: null, totalParticipants: 0, totalActivities: 0,
+            institutionCount: 0, activeWeeks: 0, totalWeeks: r.totalWeeks,
+            scores: Object.fromEntries(DIMENSIONS.map(d => [d.key, 0])),
+            byWeek: {}, _provinceCount: 0,
+          })
+        }
+        const e = byRegion.get(r.regionName)!
+        e._provinceCount++
+        e.total += r.total
+        e.totalParticipants += r.totalParticipants
+        e.totalActivities += r.totalActivities
+        e.institutionCount += r.institutionCount
+        e.activeWeeks = Math.max(e.activeWeeks, r.activeWeeks)
+        for (const d of DIMENSIONS) e.scores[d.key] += r.scores[d.key]
+        for (const [w, v] of Object.entries(r.byWeek ?? {}) as any) {
+          if (!e.byWeek[w]) e.byWeek[w] = { participants: 0, activities: 0 }
+          e.byWeek[w].participants += v.participants
+          e.byWeek[w].activities += v.activities
+        }
       }
-    }
-    // Puan ve boyutlar bölge ortalaması (toplamı il sayısına bağlı olmasın)
-    return [...byRegion.values()].map(e => ({
-      ...e,
-      total: Math.round((e.total / e._provinceCount) * 10) / 10,
-      scores: Object.fromEntries(
-        DIMENSIONS.map(d => [d.key, e.scores[d.key] / e._provinceCount])
-      ),
-    })).sort((a, b) => b.total - a.total)
+      return [...byRegion.values()].map(e => ({
+        ...e, total: Math.round((e.total / e._provinceCount) * 10) / 10,
+        scores: Object.fromEntries(DIMENSIONS.map(d => [d.key, e.scores[d.key] / e._provinceCount])),
+      })).sort((a, b) => b.total - a.total)
+    } 
+    
+    // birim or faaliyetTuru (from kesif API)
+    const grouped: any[] = data?.grouped ?? []
+    return grouped.map(g => ({
+        key: g.key, name: g.label, total: 0, grade: null, totalParticipants: g.participants,
+        totalActivities: g.count, institutionCount: 0, activeWeeks: Object.keys(g.byWeek || {}).length,
+        totalWeeks: 52, scores: {}, byWeek: g.byWeek || {}
+    }))
+
   }, [data, mode])
 
   const entityByKey = useMemo(() => new Map(entities.map(e => [e.key, e])), [entities])
@@ -171,12 +171,9 @@ export default function KarsilastirClient({ provinces, units, activityTypes, can
   const addEntity = (key: string) => {
     if (!key || selected.includes(key)) return
     if (selected.length >= CATEGORICAL.length) {
-      toast.error(`En fazla ${CATEGORICAL.length} seçim`, {
-        description: 'Renk paleti sınırı — okunabilirlik için daha fazlası karşılaştırılamaz.',
-      })
+      toast.error(`En fazla ${CATEGORICAL.length} seçim`, { description: 'Renk paleti sınırı.' })
       return
     }
-    // İlk boş renk slotunu ata
     const used = new Set(selected.map(s => colorMap[s]))
     let slot = 0
     while (used.has(slot)) slot++
@@ -187,219 +184,211 @@ export default function KarsilastirClient({ provinces, units, activityTypes, can
 
   const removeEntity = (key: string) => setSelected(s => s.filter(x => x !== key))
 
-  // Mod değişince seçim sıfırlanır (il adları ile bölge adları ayrı evren)
   useEffect(() => { setSelected([]); setColorMap({}) }, [mode])
 
-  // Veri geldiğinde seçim boşsa ilk 3'ü otomatik seç — boş ekran olmasın
   useEffect(() => {
     if (entities.length > 0 && selected.length === 0) {
       const initial = entities.slice(0, 3).map(e => e.key)
       setColorMap(Object.fromEntries(initial.map((k, i) => [k, i])))
       setSelected(initial)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [entities])
+  }, [entities, mode])
 
-  // ── Grafik verileri ──
-  const metricDef = METRICS.find(m => m.key === metric)!
-  const barData = selectedEntities.map(e => ({
-    name: e.name, value: e[metric] as number, key: e.key,
-  }))
+  const isKarneMode = mode === 'il' || mode === 'bolge'
+  const isBirimFaaliyet = mode === 'birim' || mode === 'faaliyetTuru'
+
+  const weekKeys = useMemo(() => {
+    const ws = new Set<number>()
+    for (const e of selectedEntities) {
+      for (const w of Object.keys(e.byWeek)) ws.add(parseInt(w))
+    }
+    return Array.from(ws).sort((a, b) => a - b)
+  }, [selectedEntities])
 
   const weekLineData = useMemo(() => {
-    const weeks = new Set<number>()
-    for (const e of selectedEntities) {
-      for (const w of Object.keys(e.byWeek)) weeks.add(parseInt(w))
-    }
-    return [...weeks].sort((a, b) => a - b).map(w => {
+    return weekKeys.map(w => {
       const row: any = { hafta: w }
       for (const e of selectedEntities) {
-        row[e.name] = e.byWeek[w]?.participants ?? 0
+        const v = e.byWeek[String(w)]
+        row[e.name] = v ? (metric === 'totalActivities' ? v.activities : v.participants) : 0
       }
+      return row
+    })
+  }, [weekKeys, selectedEntities, metric])
+
+  const radarData = useMemo(() => {
+    return DIMENSIONS.map(d => {
+      const row: any = { boyut: d.label.split(' ')[0] }
+      for (const e of selectedEntities) row[e.name] = e.scores[d.key] || 0
       return row
     })
   }, [selectedEntities])
 
-  const radarData = useMemo(() =>
-    DIMENSIONS.map(d => {
-      const row: any = { boyut: d.label }
-      for (const e of selectedEntities) row[e.name] = Math.round(e.scores[d.key])
-      return row
-    }), [selectedEntities])
-
-  const available = entities.filter(e => !selected.includes(e.key))
-  const selStyle = 'h-8 px-2 text-xs border border-slate-200 rounded-lg bg-white outline-none focus:ring-2 focus:ring-primary/25'
+  const pieData = useMemo(() => {
+      return entities.slice(0, 10).map((e, i) => ({
+          name: e.name,
+          value: metric === 'totalActivities' ? e.totalActivities : e.totalParticipants,
+          fill: CATEGORICAL[i % CATEGORICAL.length]
+      }))
+  }, [entities, metric])
 
   return (
-    <div className="p-5 max-w-7xl mx-auto space-y-4">
-      {/* Başlık */}
-      <div>
-        <h1 className="text-2xl font-bold flex items-center gap-2.5 gradient-text"
-          style={{ fontFamily: 'Outfit, sans-serif' }}>
-          <BarChart2 className="h-6 w-6" style={{ color: '#1B4E6B' }} />
-          Karşılaştırma
-        </h1>
-        <p className="text-sm text-slate-500 mt-0.5">
-          İl veya bölgeleri yan yana koyun — puan, katılım, seyir ve karne profili tek ekranda.
-        </p>
-      </div>
-
-      {/* ── Filtre satırı: kapsam herkes için ortak ── */}
-      <div className="filter-bar flex flex-wrap gap-3 items-end">
-        <div className="space-y-1">
-          <label className="text-xs font-medium text-slate-500">Karşılaştır</label>
-          <div className="flex rounded-lg overflow-hidden border border-slate-200">
-            {(['il', 'bolge'] as Mode[]).map(m => (
-              <button key={m} onClick={() => setMode(m)}
-                className="px-3 h-8 text-xs font-medium transition-all"
-                style={{ background: mode === m ? '#1B4E6B' : '#fff', color: mode === m ? '#fff' : '#64748b' }}>
-                {m === 'il' ? 'İller' : 'Bölgeler'}
-              </button>
-            ))}
-          </div>
+    <div className="p-4 md:p-8 max-w-[1600px] mx-auto space-y-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold flex items-center gap-2.5 text-slate-800">
+            <BarChart2 className="h-7 w-7 text-indigo-600" />
+            Süper Analiz
+          </h1>
+          <p className="text-sm text-slate-500 mt-1">Gelişmiş kırılımlar, trendler ve karşılaştırmalar</p>
         </div>
-        <div className="space-y-1">
-          <label className="text-xs font-medium text-slate-500">Yıl</label>
-          <select value={year} onChange={e => setYear(parseInt(e.target.value))} className={selStyle}>
-            {[2024, 2025, 2026, 2027].map(y => <option key={y} value={y}>{y}</option>)}
-          </select>
-        </div>
-        {canFilterGender && (
-          <div className="space-y-1">
-            <label className="text-xs font-medium text-slate-500">Kol</label>
-            <select value={gender} onChange={e => setGender(e.target.value)} className={selStyle}>
-              <option value="ALL">Birleşik</option>
-              <option value="K">Kadın</option>
-              <option value="E">Erkek</option>
-            </select>
-          </div>
-        )}
-        <div className="space-y-1">
-          <label className="text-xs font-medium text-slate-500">Birim</label>
-          <select value={unitId} onChange={e => setUnitId(e.target.value)} className={selStyle}>
-            <option value="">Tüm birimler</option>
-            {units.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
-          </select>
-        </div>
-        <div className="space-y-1">
-          <label className="text-xs font-medium text-slate-500">Faaliyet türü</label>
-          <select value={activityTypeId} onChange={e => setActivityTypeId(e.target.value)} className={selStyle}>
-            <option value="">Tüm türler</option>
-            {activityTypes.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
-          </select>
-        </div>
-        <div className="space-y-1">
-          <label className="text-xs font-medium text-slate-500">Hafta Aralığı</label>
-          <div className="flex items-center gap-1">
-            <select value={weekFrom} onChange={e => setWeekFrom(e.target.value)} className={selStyle}>
-              <option value="">Baştan</option>
-              {Array.from({ length: 52 }, (_, i) => i + 1).map(w => <option key={w} value={w}>{w}. hf</option>)}
-            </select>
-            <span className="text-xs text-slate-400">–</span>
-            <select value={weekTo} onChange={e => setWeekTo(e.target.value)} className={selStyle}>
-              <option value="">Sona</option>
-              {Array.from({ length: 52 }, (_, i) => i + 1).map(w => <option key={w} value={w}>{w}. hf</option>)}
-            </select>
-          </div>
-        </div>
-        <div className="space-y-1">
-          <label className="text-xs font-medium text-slate-500">Metrik</label>
-          <select value={metric} onChange={e => setMetric(e.target.value as MetricKey)} className={selStyle}>
-            {METRICS.map(m => <option key={m.key} value={m.key}>{m.label}</option>)}
-          </select>
-        </div>
-      </div>
-
-      {/* ── Seçim çipleri ── */}
-      <div className="flex flex-wrap items-center gap-2">
-        {selectedEntities.map(e => (
-          <span key={e.key}
-            className="flex items-center gap-1.5 pl-2.5 pr-1.5 h-8 rounded-lg text-xs font-semibold border-2 bg-white"
-            style={{ borderColor: colorOf(e.key), color: colorOf(e.key) }}>
-            <span className="w-2 h-2 rounded-full" style={{ background: colorOf(e.key) }} />
-            {e.name}
-            <button onClick={() => removeEntity(e.key)} className="p-0.5 rounded hover:bg-slate-100">
-              <X className="h-3 w-3" />
+        
+        {/* MOD SECICI */}
+        <div className="flex bg-slate-100/80 p-1 rounded-xl">
+          {[{k:'il', l:'İl'}, {k:'bolge', l:'Bölge'}, {k:'birim', l:'Birim'}, {k:'faaliyetTuru', l:'Faaliyet'}].map(m => (
+            <button key={m.k} onClick={() => setMode(m.k as Mode)}
+              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                mode === m.k ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+              }`}>
+              {m.l}
             </button>
-          </span>
-        ))}
-        {selected.length < CATEGORICAL.length && (
-          <div className="flex items-center gap-1">
-            <Plus className="h-3.5 w-3.5 text-slate-400" />
-            <select value={picker} onChange={e => addEntity(e.target.value)} className={selStyle}>
-              <option value="">{mode === 'il' ? 'İl ekle…' : 'Bölge ekle…'}</option>
-              {available.map(e => (
-                <option key={e.key} value={e.key}>
-                  {e.name}{mode === 'il' && e.regionName ? ` (${e.regionName})` : ''}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
-        {selected.length > 0 && (
-          <button onClick={() => { setSelected([]); setColorMap({}) }}
-            className="h-8 px-2.5 rounded-lg text-xs text-slate-500 border border-slate-200 bg-white hover:bg-slate-50 flex items-center gap-1">
-            <RotateCcw className="h-3 w-3" /> Sıfırla
-          </button>
-        )}
+          ))}
+        </div>
       </div>
 
-      {isLoading && !data ? (
-        <div className="flex flex-col items-center justify-center py-20">
-          <Loader2 className="h-7 w-7 animate-spin mb-3" style={{ color: '#1B4E6B' }} />
-          <p className="text-sm text-slate-500">Veriler yükleniyor…</p>
+      <div className="filter-bar">
+        <div className="flex flex-wrap gap-3 items-end">
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-slate-500">Yıl</label>
+            <select value={year} onChange={e => setYear(parseInt(e.target.value))} className="h-9 px-3 text-sm border border-slate-200 rounded-lg outline-none bg-white">
+              {[2024, 2025, 2026].map(y => <option key={y} value={y}>{y}</option>)}
+            </select>
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-slate-500">Hafta Aralığı</label>
+            <div className="flex items-center gap-1">
+              <input type="number" placeholder="İlk" value={weekFrom} onChange={e => setWeekFrom(e.target.value)}
+                className="h-9 w-16 px-2 text-sm border border-slate-200 rounded-lg outline-none bg-white text-center" min={1} max={53} />
+              <span className="text-slate-400">-</span>
+              <input type="number" placeholder="Son" value={weekTo} onChange={e => setWeekTo(e.target.value)}
+                className="h-9 w-16 px-2 text-sm border border-slate-200 rounded-lg outline-none bg-white text-center" min={1} max={53} />
+            </div>
+          </div>
+          {canFilterGender && (
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-slate-500">Cinsiyet</label>
+              <select value={gender} onChange={e => setGender(e.target.value)} className="h-9 px-3 text-sm border border-slate-200 rounded-lg outline-none bg-white">
+                <option value="ALL">Birleşik</option>
+                <option value="K">Kadın Kolu</option>
+                <option value="E">Erkek Kolu</option>
+              </select>
+            </div>
+          )}
+          {mode !== 'birim' && (
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-slate-500">Birim</label>
+              <select value={unitId} onChange={e => setUnitId(e.target.value)} className="h-9 px-3 text-sm border border-slate-200 rounded-lg outline-none bg-white">
+                <option value="">Tümü</option>
+                {units.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+              </select>
+            </div>
+          )}
+          {mode !== 'faaliyetTuru' && (
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-slate-500">Faaliyet Türü</label>
+              <select value={activityTypeId} onChange={e => setActivityTypeId(e.target.value)} className="h-9 px-3 text-sm border border-slate-200 rounded-lg outline-none bg-white">
+                <option value="">Tümü</option>
+                {activityTypes.map(at => <option key={at.id} value={at.id}>{at.name}</option>)}
+              </select>
+            </div>
+          )}
         </div>
-      ) : selectedEntities.length === 0 ? (
-        <div className="premium-card p-12 text-center">
-          <BarChart2 className="h-12 w-12 mx-auto mb-3 opacity-20" />
-          <p className="text-slate-600 font-medium">Karşılaştırılacak {mode === 'il' ? 'il' : 'bölge'} seçin</p>
-          <p className="text-sm text-slate-400 mt-1">Yukarıdaki menüden en fazla {CATEGORICAL.length} seçim yapabilirsiniz.</p>
+      </div>
+
+      {isLoading ? (
+        <div className="h-64 flex flex-col items-center justify-center space-y-4">
+          <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
+          <p className="text-sm font-medium text-slate-500">Süper analiz yükleniyor...</p>
         </div>
       ) : (
-        <div className={`space-y-4 transition-opacity ${isLoading ? 'opacity-60' : ''}`}>
-
-          {/* ── Metrik çubuğu ── */}
+        <div className="space-y-6 fade-in">
           <div className="premium-card p-5">
-            <h3 className="text-sm font-semibold text-slate-800 mb-4">{metricDef.label} Karşılaştırması</h3>
-            <ResponsiveContainer width="100%" height={Math.max(120, barData.length * 52 + 30)}>
-              <BarChart data={barData} layout="vertical" margin={{ left: 0, right: 64, top: 4, bottom: 4 }}>
-                <CartesianGrid horizontal={false} stroke={CHART_CHROME.grid} />
-                <XAxis type="number" tick={CHART_CHROME.tick} axisLine={false} tickLine={false}
+            <div className="flex flex-col md:flex-row gap-4 justify-between md:items-start mb-6">
+              <div className="flex-1 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-slate-800">
+                    Karşılaştırılacak {mode === 'il' ? 'İller' : mode === 'bolge' ? 'Bölgeler' : mode === 'birim' ? 'Birimler' : 'Faaliyet Türleri'}
+                  </h3>
+                  <div className="flex items-center gap-1.5">
+                    {METRICS.filter(m => isKarneMode || (m.key !== 'total' && m.key !== 'institutionCount')).map(m => (
+                      <button key={m.key} onClick={() => setMetric(m.key)}
+                        className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors ${
+                          metric === m.key ? 'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200/50' : 'text-slate-500 hover:bg-slate-50'
+                        }`}>
+                        {m.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="flex flex-wrap gap-2 items-center">
+                  {selectedEntities.map(e => (
+                    <div key={e.key} className="flex items-center gap-1.5 pl-2 pr-1 py-1 rounded-full text-sm font-medium border"
+                      style={{ background: `${colorOf(e.key)}10`, borderColor: `${colorOf(e.key)}20`, color: colorOf(e.key) }}>
+                      <span>{e.name}</span>
+                      <button onClick={() => removeEntity(e.key)}
+                        className="p-1 rounded-full hover:bg-black/5 transition-colors"><X className="h-3 w-3" /></button>
+                    </div>
+                  ))}
+                  {selectedEntities.length < CATEGORICAL.length && (
+                    <div className="relative">
+                      <select value={picker} onChange={e => addEntity(e.target.value)}
+                        className="appearance-none pl-8 pr-4 py-1.5 text-sm font-medium border-2 border-dashed border-slate-200 rounded-full text-slate-500 hover:border-slate-300 hover:text-slate-700 bg-transparent outline-none cursor-pointer">
+                        <option value="" disabled>Ekle...</option>
+                        {entities.filter(e => !selected.includes(e.key)).map(e => (
+                          <option key={e.key} value={e.key}>{e.name}</option>
+                        ))}
+                      </select>
+                      <Plus className="h-3.5 w-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <ResponsiveContainer width="100%" height={260}>
+              <BarChart data={selectedEntities} margin={{ top: 10, bottom: 20, left: 0, right: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={CHART_CHROME.grid} />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748B' }} dy={10} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#94A3B8' }}
                   tickFormatter={v => formatNumber(v)} />
-                <YAxis type="category" dataKey="name" tick={CHART_CHROME.tick} width={92} axisLine={false} tickLine={false} />
                 <Tooltip cursor={{ fill: '#F8FAFC' }} contentStyle={CHART_CHROME.tooltip}
-                  formatter={(v: any) => [metricDef.fmt(v), metricDef.label]} />
-                <Bar dataKey="value" radius={CHART_CHROME.barRadius} barSize={20}>
-                  {barData.map(d => <Cell key={d.key} fill={colorOf(d.key)} />)}
-                  <LabelList dataKey="value" position="right"
-                    formatter={(v: any) => metricDef.fmt(v)}
-                    style={{ fontSize: 11, fill: '#475569', fontWeight: 600 }} />
+                  formatter={(v: any) => [METRICS.find(m => m.key === metric)?.fmt(v as number) ?? v, METRICS.find(m => m.key === metric)?.label]} />
+                <Bar dataKey={metric} radius={[4, 4, 0, 0]} maxBarSize={60}>
+                  {selectedEntities.map((entry) => <Cell key={entry.key} fill={colorOf(entry.key)} />)}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
 
-          {/* ── Haftalık seyir + radar ── */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div className="premium-card p-5">
-              <h3 className="text-sm font-semibold text-slate-800 mb-4">Haftalık Katılım Seyri</h3>
+              <h3 className="text-sm font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-indigo-500" />
+                Haftalık Seyir
+              </h3>
               {weekLineData.length === 0 ? (
                 <p className="text-sm text-slate-400 py-8 text-center">Haftalık veri yok</p>
               ) : (
                 <ResponsiveContainer width="100%" height={240}>
                   <LineChart data={weekLineData} margin={{ left: 0, right: 12, top: 8, bottom: 4 }}>
                     <CartesianGrid vertical={false} stroke={CHART_CHROME.grid} />
-                    <XAxis dataKey="hafta" tick={CHART_CHROME.tick} axisLine={false} tickLine={false}
-                      tickFormatter={v => `${v}.hf`} />
-                    <YAxis tick={CHART_CHROME.tick} axisLine={false} tickLine={false}
-                      tickFormatter={v => formatNumber(v)} />
-                    <Tooltip contentStyle={CHART_CHROME.tooltip}
-                      labelFormatter={l => `${l}. hafta`}
-                      formatter={(v: any, name: any) => [formatNumber(v) + ' kişi', name]} />
+                    <XAxis dataKey="hafta" tick={CHART_CHROME.tick} axisLine={false} tickLine={false} tickFormatter={v => `${v}.hf`} />
+                    <YAxis tick={CHART_CHROME.tick} axisLine={false} tickLine={false} tickFormatter={v => formatNumber(v)} />
+                    <Tooltip contentStyle={CHART_CHROME.tooltip} labelFormatter={l => `${l}. hafta`} />
                     <Legend wrapperStyle={{ fontSize: 11 }} />
                     {selectedEntities.map(e => (
-                      <Line key={e.key} type="monotone" dataKey={e.name}
-                        stroke={colorOf(e.key)} strokeWidth={2}
+                      <Line key={e.key} type="monotone" dataKey={e.name} stroke={colorOf(e.key)} strokeWidth={2}
                         dot={{ r: 2.5, fill: colorOf(e.key), strokeWidth: 1.5, stroke: '#fff' }} />
                     ))}
                   </LineChart>
@@ -408,42 +397,62 @@ export default function KarsilastirClient({ provinces, units, activityTypes, can
             </div>
 
             <div className="premium-card p-5">
-              <h3 className="text-sm font-semibold text-slate-800 mb-4">Karne Profili (5 Boyut)</h3>
-              <ResponsiveContainer width="100%" height={240}>
-                <RadarChart data={radarData} outerRadius="70%">
-                  <PolarGrid stroke={CHART_CHROME.grid} />
-                  <PolarAngleAxis dataKey="boyut" tick={{ fontSize: 10, fill: '#64748B' }} />
-                  <PolarRadiusAxis domain={[0, 100]} tick={{ fontSize: 9, fill: '#94A3B8' }} />
-                  <Tooltip contentStyle={CHART_CHROME.tooltip} formatter={(v: any, n: any) => [`${v}/100`, n]} />
-                  <Legend wrapperStyle={{ fontSize: 11 }} />
-                  {selectedEntities.map(e => (
-                    <Radar key={e.key} name={e.name} dataKey={e.name}
-                      stroke={colorOf(e.key)} fill={colorOf(e.key)} fillOpacity={0.12} strokeWidth={2} />
-                  ))}
-                </RadarChart>
-              </ResponsiveContainer>
+              {isKarneMode ? (
+                <>
+                  <h3 className="text-sm font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                    <Activity className="h-4 w-4 text-indigo-500" /> Karne Profili (5 Boyut)
+                  </h3>
+                  <ResponsiveContainer width="100%" height={240}>
+                    <RadarChart data={radarData} outerRadius="70%">
+                      <PolarGrid stroke={CHART_CHROME.grid} />
+                      <PolarAngleAxis dataKey="boyut" tick={{ fontSize: 10, fill: '#64748B' }} />
+                      <PolarRadiusAxis domain={[0, 100]} tick={{ fontSize: 9, fill: '#94A3B8' }} />
+                      <Tooltip contentStyle={CHART_CHROME.tooltip} formatter={(v: any, n: any) => [`${v}/100`, n]} />
+                      <Legend wrapperStyle={{ fontSize: 11 }} />
+                      {selectedEntities.map(e => (
+                        <Radar key={e.key} name={e.name} dataKey={e.name}
+                          stroke={colorOf(e.key)} fill={colorOf(e.key)} fillOpacity={0.12} strokeWidth={2} />
+                      ))}
+                    </RadarChart>
+                  </ResponsiveContainer>
+                </>
+              ) : (
+                <>
+                  <h3 className="text-sm font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                    <PieChartIcon className="h-4 w-4 text-indigo-500" /> Genel Dağılım
+                  </h3>
+                  <ResponsiveContainer width="100%" height={240}>
+                    <PieChart>
+                      <Pie data={pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} fill="#8884d8" label>
+                        {pieData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
+                      </Pie>
+                      <Tooltip contentStyle={CHART_CHROME.tooltip} formatter={(v: any) => formatNumber(v)} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </>
+              )}
             </div>
           </div>
 
-          {/* ── Tam karşılaştırma tablosu + drill-down ── */}
           <div className="premium-card overflow-hidden">
-            <div className="px-5 py-3.5 border-b border-slate-100">
-              <h3 className="text-sm font-semibold text-slate-800">Tüm Metrikler</h3>
-              <p className="text-xs text-slate-400 mt-0.5">Her satırdan kaynak kayıtlara inebilirsiniz</p>
+            <div className="px-5 py-3.5 border-b border-slate-100 flex justify-between items-center">
+              <div>
+                <h3 className="text-sm font-semibold text-slate-800">Tüm Metrikler</h3>
+                <p className="text-xs text-slate-400 mt-0.5">Seçili olan öğelerin tam dökümü</p>
+              </div>
             </div>
             <div className="overflow-x-auto">
               <table className="data-table">
                 <thead>
                   <tr>
-                    <th style={{ textAlign: 'left' }}>{mode === 'il' ? 'İl' : 'Bölge'}</th>
-                    {mode === 'il' && <th className="text-center" style={{ textAlign: 'center' }}>Sıra</th>}
-                    <th className="text-center" style={{ textAlign: 'center' }}>Not</th>
-                    <th className="text-right" style={{ textAlign: 'right' }}>Puan</th>
-                    <th className="text-right" style={{ textAlign: 'right' }}>Katılımcı</th>
-                    <th className="text-right" style={{ textAlign: 'right' }}>Faaliyet</th>
-                    <th className="text-right" style={{ textAlign: 'right' }}>Kurum</th>
-                    <th className="text-right" style={{ textAlign: 'right' }}>Aktif Hafta</th>
-                    {DIMENSIONS.map(d => <th key={d.key} className="text-right" style={{ textAlign: 'right' }}>{d.label.split(' ')[0]}</th>)}
+                    <th style={{ textAlign: 'left' }}>İsim</th>
+                    {isKarneMode && <th className="text-center">Not</th>}
+                    {isKarneMode && <th className="text-right">Puan</th>}
+                    <th className="text-right">Katılımcı</th>
+                    <th className="text-right">Faaliyet</th>
+                    {isKarneMode && <th className="text-right">Kurum</th>}
+                    {isKarneMode && <th className="text-right">Aktif Hafta</th>}
+                    {isKarneMode && DIMENSIONS.map(d => <th key={d.key} className="text-right">{d.label.split(' ')[0]}</th>)}
                     <th style={{ textAlign: 'right' }}>Aksiyonlar</th>
                   </tr>
                 </thead>
@@ -456,24 +465,23 @@ export default function KarsilastirClient({ provinces, units, activityTypes, can
                           {e.name}
                         </span>
                       </td>
-                      {mode === 'il' && (
-                        <td className="text-center tabular-nums text-slate-600" style={{ textAlign: 'center' }}>{e.rank ?? '—'}</td>
+                      {isKarneMode && (
+                        <td className="text-center">
+                          {e.grade ? (
+                            <span className="text-xs font-bold px-2 py-0.5 rounded-md inline-block min-w-[28px]"
+                              style={{ background: e.grade.bg, color: e.grade.color }}>
+                              {e.grade.letter}
+                            </span>
+                          ) : <span className="text-xs text-slate-400">ort.</span>}
+                        </td>
                       )}
-                      <td className="text-center" style={{ textAlign: 'center' }}>
-                        {e.grade ? (
-                          <span className="text-xs font-bold px-2 py-0.5 rounded-md inline-block min-w-[28px]"
-                            style={{ background: e.grade.bg, color: e.grade.color }}>
-                            {e.grade.letter}
-                          </span>
-                        ) : <span className="text-xs text-slate-400">ort.</span>}
-                      </td>
-                      <td className="text-right font-bold tabular-nums" style={{ color: '#1B4E6B', textAlign: 'right' }}>{e.total}</td>
-                      <td className="text-right tabular-nums" style={{ textAlign: 'right' }}>{formatNumber(e.totalParticipants)}</td>
-                      <td className="text-right tabular-nums" style={{ textAlign: 'right' }}>{formatNumber(e.totalActivities)}</td>
-                      <td className="text-right tabular-nums" style={{ textAlign: 'right' }}>{e.institutionCount}</td>
-                      <td className="text-right tabular-nums" style={{ textAlign: 'right' }}>{e.activeWeeks}/{e.totalWeeks}</td>
-                      {DIMENSIONS.map(d => (
-                        <td key={d.key} className="text-right tabular-nums text-slate-600" style={{ textAlign: 'right' }}>
+                      {isKarneMode && <td className="text-right font-bold tabular-nums text-indigo-600">{e.total}</td>}
+                      <td className="text-right tabular-nums">{formatNumber(e.totalParticipants)}</td>
+                      <td className="text-right tabular-nums">{formatNumber(e.totalActivities)}</td>
+                      {isKarneMode && <td className="text-right tabular-nums">{e.institutionCount}</td>}
+                      {isKarneMode && <td className="text-right tabular-nums">{e.activeWeeks}/{e.totalWeeks}</td>}
+                      {isKarneMode && DIMENSIONS.map(d => (
+                        <td key={d.key} className="text-right tabular-nums text-slate-600">
                           {Math.round(e.scores[d.key])}
                         </td>
                       ))}
@@ -481,17 +489,17 @@ export default function KarsilastirClient({ provinces, units, activityTypes, can
                         <div className="flex items-center gap-1.5 justify-end">
                           {e.provinceId && (
                             <Link href={`/karne/${e.provinceId}?year=${year}`}
-                              className="px-2 py-1 rounded-md text-xs font-semibold flex items-center gap-1 bg-teal-600 hover:bg-teal-700 text-white transition-all shadow-xs hover:shadow active:scale-95">
+                              className="px-2 py-1 rounded-md text-xs font-semibold flex items-center gap-1 bg-teal-600 hover:bg-teal-700 text-white transition-all shadow-xs">
                               <ExternalLink className="h-3 w-3" /> Karne
                             </Link>
                           )}
-                          <Link
-                            href={e.provinceId
-                              ? `/faaliyetler?year=${year}&provinceId=${e.provinceId}`
-                              : `/faaliyetler?year=${year}`}
-                            className="px-2 py-1 rounded-md text-xs font-semibold flex items-center gap-1 bg-slate-800 hover:bg-slate-900 text-white transition-all shadow-xs hover:shadow active:scale-95">
-                            <ClipboardList className="h-3 w-3" /> Kayıtlar
-                          </Link>
+                          {isKarneMode && (
+                              <Link
+                                href={e.provinceId ? `/faaliyetler?year=${year}&provinceId=${e.provinceId}` : `/faaliyetler?year=${year}`}
+                                className="px-2 py-1 rounded-md text-xs font-semibold flex items-center gap-1 bg-slate-800 hover:bg-slate-900 text-white transition-all shadow-xs">
+                                <ClipboardList className="h-3 w-3" /> Kayıtlar
+                              </Link>
+                          )}
                         </div>
                       </td>
                     </tr>

@@ -173,7 +173,7 @@ export default function ArsivClient({ provinces, regions, years }: Props) {
           <select value={type} onChange={e => setType(e.target.value)}
             className="h-8 px-2 text-xs border border-slate-200 rounded-lg bg-white outline-none focus:ring-2 focus:ring-primary/25">
             <option value="">Tüm türler</option>
-            {typeOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+            {typeOptions.map((o, i) => <option key={`${o.value}-${i}`} value={o.value}>{o.label}</option>)}
           </select>
         </div>
 

@@ -114,7 +114,10 @@ export async function GET(request: NextRequest) {
       orderBy: { generatedAt: 'desc' },
       take: 200,
     })
+    const currentYear = new Date().getFullYear()
     for (const r of reports) {
+      if (r.type === 'KARNE' && r.year === currentYear) continue
+
       const def = reportTypeDef(r.type)
       items.push({
         id: r.id,

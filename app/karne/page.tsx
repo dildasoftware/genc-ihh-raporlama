@@ -21,6 +21,10 @@ export default async function KarnePage() {
     fullName: session.user.name ?? '',
   }
 
+  if (user.role === 'IL_KOORDINATOR' && user.provinceId) {
+    redirect(`/karne/${user.provinceId}`)
+  }
+
   const year = new Date().getFullYear()
   const [units, activityTypes, regions] = await Promise.all([
     prisma.unit.findMany({ orderBy: { order: 'asc' }, select: { id: true, name: true } }),

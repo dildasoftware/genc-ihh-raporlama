@@ -10,7 +10,7 @@ import {
 } from 'lucide-react'
 import {
   ResponsiveContainer, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell, PieChart, Pie
 } from 'recharts'
 import { DIMENSIONS } from '@/lib/karne'
 import { unitColor, CHART_CHROME } from '@/lib/chart-colors'
@@ -104,6 +104,7 @@ export default function ArsivDetayClient({ id }: { id: string }) {
 
   const snap = data.snapshot
   const isKarne = data.kind === 'REPORT' && snap?.karne
+  const isHaftalik = data.kind === 'REPORT' && snap && !snap.karne && snap.totalParticipants !== undefined
 
   return (
     <div className="p-5 max-w-5xl mx-auto space-y-4 print-full">
@@ -367,6 +368,123 @@ export default function ArsivDetayClient({ id }: { id: string }) {
                 </div>
               </div>
             )}
+          </>
+        )
+      })()}
+
+      {/* ── Haftalık Rapor snapshot'ı ── */}
+      {isHaftalik && (() => {
+        const change = snap.prevTotalParticipants ? ((snap.totalParticipants - snap.prevTotalParticipants) / snap.prevTotalParticipants * 100) : null
+        const COLORS = ['#1B4E6B', '#16A34A', '#D97706', '#BE185D', '#2563EB', '#7C3AED']
+
+        return (
+          <>
+            {/* KPI'lar */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 print-avoid-break">
+              {[
+                { label: 'Toplam Katılımcı', value: snap.totalParticipants, prev: snap.prevTotalParticipants, icon: Users, color: '#1B4E6B' },
+                { label: 'Faaliyet Sayısı', value: snap.totalActivities, prev: snap.prevTotalActivities, icon: BarChart3, color: '#16A34A' },
+                { label: 'Farklı Kurum', value: snap.institutionCount, icon: Building2, color: '#D97706' },
+                { label: 'Kadın/Erkek', value: `${snap.femaleParticipants} / ${snap.maleParticipants}`, icon: Users, color: '#BE185D' },
+              ].map(s => {
+                const perc = s.prev ? ((s.value as number - s.prev) / (s.prev || 1) * 100) : null
+                return (
+                  <div key={s.label} className="premium-card p-4 flex flex-col justify-between">
+                    <div className="flex justify-between items-start mb-2">
+                      <p className="text-xs font-medium text-slate-500">{s.label}</p>
+                      <s.icon className="h-4 w-4" style={{ color: s.color }} />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold" style={{ color: '#0F172A' }}>
+                        {typeof s.value === 'number' ? formatNumber(s.value) : s.value}
+                      </p>
+                      {perc !== null && (
+                        <div className="flex items-center gap-1 mt-1 text-[10px] font-medium" style={{ color: perc >= 0 ? '#16A34A' : '#DC2626' }}>
+                          {perc >= 0 ? '▲' : '▼'} {Math.abs(perc).toFixed(1)}%
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+
+            {/* Grafikler */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 print-avoid-break">
+              {/* Birim Kırılımı */}
+              <div className="premium-card p-5">
+                <h3 className="text-sm font-semibold text-slate-700 mb-4">Birim Bazında Katılım</h3>
+                <ResponsiveContainer width="100%" height={240}>
+                  <BarChart data={snap.byUnit} layout="vertical" margin={{ left: 0, right: 20 }}>
+                    <CartesianGrid horizontal={false} stroke={CHART_CHROME.grid} />
+                    <XAxis type="number" hide />
+                    <YAxis dataKey="name" type="category" width={80} tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
+                    <Tooltip contentStyle={CHART_CHROME.tooltip} />
+                    <Bar dataKey="participants" name="Katılımcı" radius={[0, 4, 4, 0]}>
+                      {snap.byUnit?.map((u: any) => <Cell key={u.name} fill={unitColor(u.name)} />)}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+
+              {/* Faaliyet Türü */}
+              <div className="premium-card p-5">
+                <h3 className="text-sm font-semibold text-slate-700 mb-4">Faaliyet Türü Dağılımı</h3>
+                <ResponsiveContainer width="100%" height={240}>
+                  <PieChart>
+                    <Pie data={snap.byActivityType} dataKey="count" nameKey="name" cx="50%" cy="50%" outerRadius={80} label={({ name, percent }) => (percent || 0) > 0.05 ? `${name}` : ''} labelLine={false}>
+                      {snap.byActivityType?.map((_: any, i: number) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                    </Pie>
+                    <Tooltip contentStyle={CHART_CHROME.tooltip} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* Kurum Detayları */}
+            <div className="premium-card p-5 print-avoid-break">
+              <h3 className="text-sm font-semibold text-slate-700 mb-4">Kurum Performansları (İlk 20)</h3>
+              <div className="overflow-x-auto">
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>Kurum</th>
+                      <th>Birim</th>
+                      <th>İl</th>
+                      <th>Faaliyet Özeti</th>
+                      <th className="text-right">Katılımcı</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {snap.institutions?.slice(0, 20).map((inst: any) => (
+                      <tr key={inst.id}>
+                        <td className="font-medium text-slate-800">{inst.name}</td>
+                        <td>
+                          <span className="inline-flex items-center gap-1.5 text-xs">
+                            <span className="w-2 h-2 rounded-full" style={{ background: unitColor(inst.unitName) }} />
+                            {inst.unitName}
+                          </span>
+                        </td>
+                        <td className="text-xs text-slate-600">{inst.provinceName}</td>
+                        <td className="text-xs text-slate-500">
+                          <div className="flex flex-wrap gap-1">
+                            {inst.activities?.map((a: any) => (
+                              <span key={a.id} className="inline-flex items-center gap-1 bg-slate-50 px-2 py-1 rounded text-slate-700">
+                                <span>{a.type}:</span>
+                                <span className="font-semibold">{a.participants}</span>
+                              </span>
+                            ))}
+                          </div>
+                        </td>
+                        <td className="text-right font-bold" style={{ color: '#1B4E6B' }}>
+                          {formatNumber(inst.totalParticipants)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </>
         )
       })()}

@@ -20,7 +20,7 @@ export default async function YonetimPage() {
     fullName: session.user.name ?? '',
   }
 
-  if (user.role !== 'ADMIN') redirect('/panel')
+  if (user.role !== 'ADMIN' && user.role !== 'MERKEZ_BIRIM_BASKANI') redirect('/panel')
 
   return <YonetimClient />
 }

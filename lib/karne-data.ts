@@ -13,6 +13,7 @@ const ORG_POSITION_COUNT = 12
 
 export interface KarneFilters {
   year: number
+  month?: number | null
   gender?: 'K' | 'E' | 'ALL' | null
   unitId?: string | null
   regionId?: string | null
@@ -70,6 +71,7 @@ export async function loadKarne(f: KarneFilters) {
   const periods = await prisma.period.findMany({
     where: {
       year: f.year,
+      ...(f.month ? { month: f.month } : {}),
       ...(f.weekFrom || f.weekTo
         ? {
             weekNo: {
@@ -290,5 +292,18 @@ export async function loadKarne(f: KarneFilters) {
       .sort((a, b) => b.totalParticipants - a.totalParticipants)
   }
 
-  return { periods, ranked, summary, institutionsOf, reportMap }
+  /** Tüm Türkiye kurum kırılımını döndürür (En iyi 200) */
+  const allInstitutions = (): InstitutionDetail[] => {
+    const all = []
+    for (const e of acc.values()) {
+      all.push(...e.institutions.values())
+    }
+    return all
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      .map(({ _types, ...rest }) => rest)
+      .sort((a, b) => b.totalParticipants - a.totalParticipants)
+      .slice(0, 200)
+  }
+
+  return { periods, ranked, summary, institutionsOf, allInstitutions, reportMap }
 }

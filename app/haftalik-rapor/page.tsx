@@ -21,8 +21,6 @@ export default async function HaftalikRaporPage() {
     fullName: session.user.name ?? '',
   }
 
-  if (user.role === 'IL_KOORDINATOR') redirect('/panel')
-
   const year = new Date().getFullYear()
 
   // Son 12 dönemi (haftayı) çek
@@ -37,5 +35,14 @@ export default async function HaftalikRaporPage() {
     select: { id: true, name: true }
   })
 
-  return <HaftalikRaporClient user={user} periods={periods} units={units} />
+  // Yetkiye göre bölge ve illeri getir
+  let regions = await prisma.region.findMany({ orderBy: { id: 'asc' } })
+  let provinces = await prisma.province.findMany({ orderBy: { name: 'asc' } })
+
+  if (user.role === 'BOLGE_KOORDINATOR' && user.regionId) {
+    regions = regions.filter(r => r.id === user.regionId)
+    provinces = provinces.filter(p => p.regionId === user.regionId)
+  }
+
+  return <HaftalikRaporClient user={user} periods={periods} units={units} regions={regions} provinces={provinces} />
 }

@@ -347,18 +347,6 @@ export default function IlKunyesi({
                       {active ? 'Aktif (Dolu)' : 'Pasif (Boş)'}
                     </button>
                   </div>
-                  {active && (
-                    <Input
-                      disabled={isDisabled}
-                      value={form.orgNames[pos.key] || ''}
-                      onChange={e => setForm(p => ({
-                        ...p,
-                        orgNames: { ...p.orgNames, [pos.key]: e.target.value }
-                      }))}
-                      className="h-8 text-xs placeholder:text-slate-300"
-                      placeholder="Ad Soyad giriniz..."
-                    />
-                  )}
                 </div>
               )
             })}

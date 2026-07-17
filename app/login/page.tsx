@@ -149,7 +149,6 @@ export default function LoginPage() {
                 <p>admin@test.com — Admin</p>
                 <p>ankara-k@test.com — İl Koord. (K)</p>
                 <p>ankara-e@test.com — İl Koord. (E)</p>
-                <p>marmara@test.com — Bölge Koord.</p>
                 <p className="mt-1 text-primary/70">Parola: Test1234!</p>
               </div>
             </div>

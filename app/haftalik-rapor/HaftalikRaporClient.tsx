@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { toast } from 'sonner'
-import { FileText, Save, Download, RefreshCw, Users, Activity, Building2, TrendingUp, TrendingDown, Clock, CheckCircle } from 'lucide-react'
+import { FileText, Save, Download, RefreshCw, Users, Activity, Building2, TrendingUp, TrendingDown, Clock, CheckCircle, Edit } from 'lucide-react'
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell,
   PieChart, Pie
@@ -15,20 +15,33 @@ interface Props {
   user: SessionUser
   periods: any[]
   units: any[]
+  regions: any[]
+  provinces: any[]
 }
 
-export default function HaftalikRaporClient({ user, periods, units }: Props) {
+export default function HaftalikRaporClient({ user, periods, units, regions, provinces }: Props) {
   const [periodId, setPeriodId] = useState<string>(periods[0]?.id?.toString() || '')
+  const [regionId, setRegionId] = useState<string>('')
+  const [provinceId, setProvinceId] = useState<string>('')
+  const [unitId, setUnitId] = useState<string>('')
   const [data, setData] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
+  const [editingActivity, setEditingActivity] = useState<any>(null)
   const printRef = useRef<HTMLDivElement>(null)
 
-  const loadData = useCallback(async (pid = periodId) => {
-    if (!pid) return
+  const loadData = useCallback(async () => {
+    if (!periodId) return
     setIsLoading(true)
     try {
-      const res = await fetch(`/api/haftalik-rapor?periodId=${pid}`)
+      let url = `/api/haftalik-rapor?periodId=${periodId}`
+      if (provinceId) url += `&provinceId=${provinceId}`
+      else if (regionId) url += `&regionId=${regionId}`
+      
+      if (unitId) url += `&unitId=${unitId}`
+
+
+      const res = await fetch(url)
       if (!res.ok) throw new Error('Veri alınamadı')
       setData(await res.json())
     } catch (e: any) {
@@ -36,7 +49,7 @@ export default function HaftalikRaporClient({ user, periods, units }: Props) {
     } finally {
       setIsLoading(false)
     }
-  }, [periodId])
+  }, [periodId, regionId, provinceId, unitId])
 
   useEffect(() => { loadData() }, [loadData])
 
@@ -51,6 +64,31 @@ export default function HaftalikRaporClient({ user, periods, units }: Props) {
       })
       if (!res.ok) throw new Error('Kaydedilemedi')
       toast.success('Rapor arşive kaydedildi')
+    } catch (e: any) {
+      toast.error(e.message)
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const handleSaveActivity = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editingActivity) return
+    setIsSaving(true)
+    try {
+      const res = await fetch(`/api/activities/${editingActivity.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          participantCount: editingActivity.participants,
+          note: editingActivity.note || '',
+          location: '' // or whatever it had
+        })
+      })
+      if (!res.ok) throw new Error('Güncellenemedi')
+      toast.success('Faaliyet güncellendi')
+      setEditingActivity(null)
+      loadData() // Yeniden yükle
     } catch (e: any) {
       toast.error(e.message)
     } finally {
@@ -101,6 +139,31 @@ export default function HaftalikRaporClient({ user, periods, units }: Props) {
               <option key={p.id} value={p.id}>{p.year} - {p.weekNo}. Hafta</option>
             ))}
           </select>
+
+          {(user.role === 'ADMIN' || user.role === 'MERKEZ_BIRIM_BASKANI') && (
+            <select value={regionId} onChange={e => { setRegionId(e.target.value); setProvinceId('') }}
+              className="h-9 px-3 text-sm border border-slate-200 rounded-lg bg-white outline-none">
+              <option value="">Tüm Bölgeler</option>
+              {regions.map(r => <option key={r.id} value={r.id}>{r.name} Bölge</option>)}
+            </select>
+          )}
+
+          {(user.role === 'ADMIN' || user.role === 'MERKEZ_BIRIM_BASKANI' || user.role === 'BOLGE_KOORDINATOR') && (
+            <select value={provinceId} onChange={e => setProvinceId(e.target.value)}
+              className="h-9 px-3 text-sm border border-slate-200 rounded-lg bg-white outline-none">
+              <option value="">Tüm İller</option>
+              {provinces
+                .filter(p => !regionId || p.regionId.toString() === regionId)
+                .map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+            </select>
+          )}
+
+          <select value={unitId} onChange={e => setUnitId(e.target.value)}
+            className="h-9 px-3 text-sm border border-slate-200 rounded-lg bg-white outline-none">
+            <option value="">Tüm Birimler</option>
+            {units.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+          </select>
+
           <button onClick={() => loadData()} disabled={isLoading}
             className="flex items-center gap-1.5 h-9 px-3 rounded-lg text-sm font-medium border border-slate-200 bg-white hover:bg-slate-50">
             <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} /> Yenile
@@ -224,7 +287,20 @@ export default function HaftalikRaporClient({ user, periods, units }: Props) {
                       </td>
                       <td className="text-xs text-slate-600">{inst.provinceName}</td>
                       <td className="text-xs text-slate-500">
-                        {inst.activities.map((a: any) => `${a.type}: ${a.participants}`).join(' · ')}
+                        <div className="flex flex-wrap gap-1">
+                          {inst.activities.map((a: any) => (
+                            <button
+                              key={a.id}
+                              onClick={() => setEditingActivity(a)}
+                              className="inline-flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 px-2 py-1 rounded-md text-slate-700 transition-colors border border-slate-200 group"
+                              title="Düzenlemek için tıklayın"
+                            >
+                              <span>{a.type}:</span>
+                              <span className="font-semibold">{a.participants}</span>
+                              <Edit className="h-3 w-3 text-slate-400 group-hover:text-teal-600 transition-colors ml-1" />
+                            </button>
+                          ))}
+                        </div>
                       </td>
                       <td className="text-right font-bold" style={{ color: '#1B4E6B' }}>
                         {formatNumber(inst.totalParticipants)}
@@ -238,6 +314,33 @@ export default function HaftalikRaporClient({ user, periods, units }: Props) {
 
         </div>
       ) : null}
+
+      {editingActivity && (
+        <div className="fixed inset-0 z-50 bg-slate-900/50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden">
+            <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+              <h3 className="font-semibold text-slate-800">Faaliyet Düzenle</h3>
+              <button onClick={() => setEditingActivity(null)} className="text-slate-400 hover:text-slate-600">✕</button>
+            </div>
+            <form onSubmit={handleSaveActivity} className="p-4 space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-slate-700 mb-1">Faaliyet Türü</label>
+                <input type="text" disabled value={editingActivity.type} className="w-full h-9 px-3 border rounded-lg text-sm bg-slate-50 text-slate-500" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-slate-700 mb-1">Katılımcı Sayısı</label>
+                <input required type="number" min="0" value={editingActivity.participants} onChange={e => setEditingActivity({...editingActivity, participants: e.target.value})} className="w-full h-9 px-3 border rounded-lg text-sm" />
+              </div>
+              <div className="flex justify-end gap-2 pt-4 border-t border-slate-100">
+                <button type="button" onClick={() => setEditingActivity(null)} className="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg">İptal</button>
+                <button type="submit" disabled={isSaving} className="px-4 py-2 text-sm bg-teal-600 text-white hover:bg-teal-700 rounded-lg disabled:opacity-50">
+                  {isSaving ? 'Kaydediliyor...' : 'Kaydet'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
