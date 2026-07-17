@@ -30,34 +30,99 @@ const ANALYSIS_TYPES = [
   { value: 'SERBEST', label: 'Serbest Soru', icon: MessageSquare, desc: 'Özel soru & analiz' },
 ]
 
-const EXAMPLE_PROMPTS: Record<string, string[]> = {
-  KARNE: [
-    'Hangi bölge en iyi performansı gösteriyor? Neden?',
-    'Alt sıralardaki iller için öneriler ver.',
-    'Birim bazında hangi eksiklikler göze çarpıyor?',
-  ],
-  TREND: [
-    'Katılımcı sayısındaki düşüşün olası nedenleri neler?',
-    'Gelecek 4 hafta için projeksiyon yap.',
-    'Yaz dönemi etkisini değerlendir.',
-  ],
-  HAFTALIK_RAPOR: [
-    'Bu haftanın özet raporunu hazırla.',
-    'Genel Merkez için sunum formatında rapor oluştur.',
-  ],
-  KARSILASTIRMA: [
-    'Doğu ve Batı bölgeleri arasındaki farkları analiz et.',
-    'Neden bazı iller tutarsız performans gösteriyor?',
-  ],
-  IL_BIRIM: [
-    'Üniversite birimi neden zayıf? Önerilerin neler?',
-    'Lise birimi için başarı faktörlerini listele.',
-  ],
-  SERBEST: [
-    'En etkili faaliyet türü hangisi ve neden?',
-    'Katılımcı başına düşen puan neyi ifade ediyor?',
-    'GENÇ İHH için stratejik önerilerin nelerdir?',
-  ],
+const getExamplePrompts = (role: string): Record<string, string[]> => {
+  if (role === 'IL_KOORDINATOR') {
+    return {
+      KARNE: [
+        'İlimizin genel performansını nasıl artırabiliriz?',
+        'Hangi ilçelerde eksikliğimiz var?',
+        'Geçen aya göre performansımız nasıl?',
+      ],
+      TREND: [
+        'Katılımcı sayısındaki dalgalanmaların nedeni ne olabilir?',
+        'Gelecek ayki faaliyetler için projeksiyon yap.',
+        'Yaz dönemi ilimizi nasıl etkiledi?',
+      ],
+      HAFTALIK_RAPOR: [
+        'Bu haftaki faaliyetlerimizin özetini çıkar.',
+        'Haftalık bazda hangi birimimiz daha aktif?',
+      ],
+      KARSILASTIRMA: [
+        'Birimlerimiz (Üniversite, Lise vb.) arasındaki performans farkları neler?',
+        'İlçelerimizi birbiriyle karşılaştır.',
+      ],
+      IL_BIRIM: [
+        'Üniversite birimimiz neden hedefinin gerisinde? Öneriler ver.',
+        'Lise birimimizin başarı faktörlerini analiz et.',
+      ],
+      SERBEST: [
+        'İlimizde en çok ilgi gören faaliyet türü hangisi?',
+        'Teşkilatlanma eksiklerimiz performansımızı nasıl etkiliyor?',
+        'İl teşkilatı olarak nelere odaklanmalıyız?',
+      ],
+    }
+  }
+
+  if (role === 'BOLGE_KOORDINATOR') {
+    return {
+      KARNE: [
+        'Bölgemizdeki illerin genel performansını değerlendir.',
+        'Bölgemizde en başarılı il hangisi ve neden?',
+        'Alt sıralardaki illerimiz için öneriler ver.',
+      ],
+      TREND: [
+        'Bölgemizdeki genel düşüş trendinin sebepleri neler?',
+        'Gelecek 4 hafta için bölgemize dair projeksiyon yap.',
+        'Yaz dönemi bölgemizi nasıl etkiledi?',
+      ],
+      HAFTALIK_RAPOR: [
+        'Bölgemizin bu haftaki özet raporunu hazırla.',
+        'Haftalık raporda en çok öne çıkan il hangisi?',
+      ],
+      KARSILASTIRMA: [
+        'Bölgemizdeki illeri birbirleriyle kıyasla.',
+        'Neden bazı iller tutarsız performans gösteriyor?',
+      ],
+      IL_BIRIM: [
+        'Bölgemizde Üniversite birimi genel olarak neden zayıf?',
+        'Lise birimi güçlü olan illerimizin ortak özellikleri neler?',
+      ],
+      SERBEST: [
+        'Bölgemizde en etkili faaliyet türü hangisi?',
+        'Bölgemiz için genel stratejik önerilerin nelerdir?',
+      ],
+    }
+  }
+
+  return {
+    KARNE: [
+      'Hangi bölge en iyi performansı gösteriyor? Neden?',
+      'Alt sıralardaki iller için öneriler ver.',
+      'Birim bazında Türkiye genelinde hangi eksiklikler göze çarpıyor?',
+    ],
+    TREND: [
+      'Türkiye genelindeki katılımcı düşüşünün olası nedenleri neler?',
+      'Gelecek 4 hafta için projeksiyon yap.',
+      'Yaz dönemi etkisini değerlendir.',
+    ],
+    HAFTALIK_RAPOR: [
+      'Türkiye geneli bu haftanın özet raporunu hazırla.',
+      'Genel Merkez için sunum formatında rapor oluştur.',
+    ],
+    KARSILASTIRMA: [
+      'Doğu ve Batı bölgeleri arasındaki farkları analiz et.',
+      'Neden bazı iller tutarsız performans gösteriyor?',
+    ],
+    IL_BIRIM: [
+      'Türkiye genelinde Üniversite birimi neden zayıf? Önerilerin neler?',
+      'Lise birimi için başarı faktörlerini listele.',
+    ],
+    SERBEST: [
+      'En etkili faaliyet türü hangisi ve neden?',
+      'Katılımcı başına düşen puan neyi ifade ediyor?',
+      'GENÇ İHH için stratejik önerilerin nelerdir?',
+    ],
+  }
 }
 
 interface HistoryItem {
@@ -167,7 +232,7 @@ export default function AiAnalizClient({ user, regions = [], provinces = [] }: P
   }
 
   const currentType = ANALYSIS_TYPES.find(t => t.value === selectedType)
-  const examples = EXAMPLE_PROMPTS[selectedType] ?? []
+  const examples = getExamplePrompts(user.role)[selectedType] ?? []
 
   return (
     <div className="p-6 max-w-5xl mx-auto">
@@ -312,7 +377,11 @@ export default function AiAnalizClient({ user, regions = [], provinces = [] }: P
                   value={userPrompt}
                   onChange={e => setUserPrompt(e.target.value)}
                   placeholder={selectedType === 'SERBEST'
-                    ? 'Sorunuzu yazın... (örn: Hangi il en hızlı büyüyor?)'
+                    ? (user.role === 'IL_KOORDINATOR' 
+                        ? 'Sorunuzu yazın... (örn: Hangi ilçede eksikliğimiz var?)' 
+                        : user.role === 'BOLGE_KOORDINATOR' 
+                          ? 'Sorunuzu yazın... (örn: Hangi ilimiz en hızlı büyüyor?)' 
+                          : 'Sorunuzu yazın... (örn: Hangi bölge en hızlı büyüyor?)')
                     : 'İsteğe bağlı ek talimat ekleyin veya boş bırakın...'}
                   rows={3}
                   className="text-sm resize-none"
