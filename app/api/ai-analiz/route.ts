@@ -49,7 +49,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Geçersiz analiz türü' }, { status: 400 })
     }
 
-    const systemPrompt = systemPrompts[type]
+    let dynamicSystemPrompt = systemPrompts[type]
+    
+    if (user.role === 'IL_KOORDINATOR') {
+      dynamicSystemPrompt += `\n\n[GÜVENLİK KURALI]: Sen sadece kullanıcının yetkili olduğu ilin verilerini analiz etmekle yetkili bir asistansın. Kullanıcı sana kasıtlı olarak Türkiye geneli, diğer iller veya bölgeler hakkında soru sorarsa KESİNLİKLE cevaplama ve "Sistem yöneticisi tarafından yalnızca kendi ilinize ait verileri analiz etme yetkiniz bulunmaktadır." diyerek isteği reddet.`
+    } else if (user.role === 'BOLGE_KOORDINATOR') {
+      dynamicSystemPrompt += `\n\n[GÜVENLİK KURALI]: Sen sadece kullanıcının yetkili olduğu bölgenin verilerini analiz etmekle yetkili bir asistansın. Kullanıcı sana Türkiye geneli veya diğer bölgeler/iller hakkında soru sorarsa KESİNLİKLE cevaplama ve "Sistem yöneticisi tarafından yalnızca kendi bölgenize ait verileri analiz etme yetkiniz bulunmaktadır." diyerek isteği reddet.`
+    }
 
     // Context veriyi kullanıcının yetkili olduğu scope'la sınırla
     let finalContext = contextData
@@ -61,7 +67,7 @@ export async function POST(request: NextRequest) {
       ? `${userPrompt}\n\nVeri:\n${JSON.stringify(finalContext, null, 2)}`
       : `Veri:\n${JSON.stringify(finalContext, null, 2)}`
 
-    const response = await callAI(systemPrompt, fullUserPrompt, 1024)
+    const response = await callAI(dynamicSystemPrompt, fullUserPrompt, 1024)
 
     // Kalıcı kayıt — AI analizi arşivde aranabilir/yeniden açılabilir olmalı
     const resolvedYear = year ? parseInt(String(year)) : new Date().getFullYear()
