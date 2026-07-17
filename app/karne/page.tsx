@@ -21,12 +21,20 @@ export default async function KarnePage() {
     fullName: session.user.name ?? '',
   }
 
-  if (user.role === 'IL_KOORDINATOR') redirect('/panel')
-
   const year = new Date().getFullYear()
-  const [units] = await Promise.all([
-    prisma.unit.findMany({ orderBy: { order: 'asc' } }),
+  const [units, activityTypes, regions] = await Promise.all([
+    prisma.unit.findMany({ orderBy: { order: 'asc' }, select: { id: true, name: true } }),
+    prisma.activityType.findMany({ orderBy: { name: 'asc' }, select: { id: true, name: true } }),
+    prisma.region.findMany({ orderBy: { name: 'asc' }, select: { id: true, name: true } }),
   ])
 
-  return <KarneClient user={user} year={year} units={units} />
+  return (
+    <KarneClient
+      user={user}
+      year={year}
+      units={units}
+      activityTypes={activityTypes}
+      regions={regions}
+    />
+  )
 }

@@ -285,13 +285,6 @@ body {
   box-shadow: 0 8px 24px rgba(0,0,0,0.3) !important;
 }
 
-/* PDF Print Area */
-@media print {
-  .no-print { display: none !important; }
-  .print-only { display: block !important; }
-  body { background: white; }
-}
-
 /* Animations */
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(12px); }
@@ -342,14 +335,80 @@ body {
   z-index: 10;
 }
 
-/* Print / PDF Styles */
+/* ============================================================
+   PRINT / PDF
+   ------------------------------------------------------------
+   Karne PDF'i tarayıcının kendi "Yazdır → PDF olarak kaydet"
+   motoruyla üretilir. html2canvas KULLANILMAZ: html2canvas 1.4.1
+   yalnızca rgb/rgba/hsl/hsla ayrıştırır, Tailwind v4 ise slate
+   paletini lab() olarak yayar → capture sırasında hata verir.
+   Native print ayrıca vektörel (seçilebilir) metin ve doğru
+   sayfalama sağlar.
+   ============================================================ */
+
+.print-only { display: none; }
+
 @media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm 10mm;
+  }
+
   .no-print { display: none !important; }
   .print-only { display: block !important; }
-  body { background: white !important; }
-  .premium-card { box-shadow: none !important; border: 1px solid #E2E8F0 !important; }
+
+  html, body {
+    background: #fff !important;
+    /* Grafik/rozet renkleri yazdırmada korunsun */
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Uygulama kabuğunu (sidebar vb.) gizle, içeriği tam genişliğe yay */
+  .print-hide-shell { display: none !important; }
+  .print-full {
+    margin: 0 !important;
+    padding: 0 !important;
+    max-width: none !important;
+    width: 100% !important;
+  }
+
+  /* Kabuk h-screen + overflow-hidden; yazdırmada tüm içerik akmalı,
+     yoksa sadece görünen ekran basılır. */
+  .app-shell {
+    display: block !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+  .app-main {
+    overflow: visible !important;
+    height: auto !important;
+  }
+
+  .premium-card {
+    box-shadow: none !important;
+    border: 1px solid #E2E8F0 !important;
+    /* Kart sayfa ortasından bölünmesin */
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Karne bölümleri arası sayfa kırılımı */
+  .print-break-before { break-before: page; page-break-before: always; }
+  .print-avoid-break { break-inside: avoid; page-break-inside: avoid; }
+
+  /* Yazdırmada animasyon olmaz */
+  .animate-fade-in-up,
+  .stagger-children > * {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  table { break-inside: auto; }
+  tr    { break-inside: avoid; page-break-inside: avoid; }
+  thead { display: table-header-group; }
 }
-.print-only { display: none; }
 
 /* Karne Animations */
 @keyframes shimmer {

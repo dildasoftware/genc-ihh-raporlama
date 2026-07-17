@@ -3,11 +3,11 @@ import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { buildProvinceScope, type SessionUser } from '@/lib/authz'
-import KarsilastirClient from './KarsilastirClient'
+import FaaliyetlerClient from './FaaliyetlerClient'
 
 export const dynamic = 'force-dynamic'
 
-export default async function KarsilastirPage() {
+export default async function FaaliyetlerPage() {
   const session = await getServerSession(authOptions)
   if (!session?.user) redirect('/login')
 
@@ -21,25 +21,27 @@ export default async function KarsilastirPage() {
     fullName: session.user.name ?? '',
   }
 
-  if (user.role === 'IL_KOORDINATOR') redirect('/panel')
-
   const visible = await buildProvinceScope(user, prisma)
-  const [provinces, units, activityTypes] = await Promise.all([
+
+  const [provinces, regions, units, activityTypes] = await Promise.all([
     prisma.province.findMany({
       where: visible === null ? {} : { id: { in: visible } },
       orderBy: { name: 'asc' },
-      select: { id: true, name: true, region: { select: { name: true } } },
+      select: { id: true, name: true },
     }),
+    prisma.region.findMany({ orderBy: { name: 'asc' }, select: { id: true, name: true } }),
     prisma.unit.findMany({ orderBy: { order: 'asc' }, select: { id: true, name: true } }),
     prisma.activityType.findMany({ orderBy: { name: 'asc' }, select: { id: true, name: true } }),
   ])
 
   return (
-    <KarsilastirClient
-      provinces={provinces.map(p => ({ id: p.id, name: p.name, regionName: p.region.name }))}
+    <FaaliyetlerClient
+      provinces={provinces}
+      regions={regions}
       units={units}
       activityTypes={activityTypes}
-      canFilterGender={true}
+      canFilterGender={user.role !== 'IL_KOORDINATOR'}
+      canFilterRegion={user.role === 'ADMIN' || user.role === 'MERKEZ_BIRIM_BASKANI'}
     />
   )
 }

@@ -86,10 +86,10 @@ export default async function PanelPage() {
       })
     : []
 
-  const byProvince: Record<string, { name: string; count: number; participants: number }> = {}
+  const byProvince: Record<string, { name: string; id: number | null; count: number; participants: number }> = {}
   for (const a of topActivities) {
     const key = a.institution.province?.name ?? 'Bilinmiyor'
-    if (!byProvince[key]) byProvince[key] = { name: key, count: 0, participants: 0 }
+    if (!byProvince[key]) byProvince[key] = { name: key, id: a.institution.provinceId ?? null, count: 0, participants: 0 }
     byProvince[key].count++
     byProvince[key].participants += a.participantCount
   }
@@ -97,10 +97,10 @@ export default async function PanelPage() {
   const maxParticipants = top5[0]?.participants || 1
 
   // Birim dağılımı
-  const byUnit: Record<string, { name: string; count: number; participants: number }> = {}
+  const byUnit: Record<string, { name: string; id: number | null; count: number; participants: number }> = {}
   for (const a of topActivities) {
     const key = a.institution.unit?.name ?? 'Diğer'
-    if (!byUnit[key]) byUnit[key] = { name: key, count: 0, participants: 0 }
+    if (!byUnit[key]) byUnit[key] = { name: key, id: a.institution.unitId ?? null, count: 0, participants: 0 }
     byUnit[key].count++
     byUnit[key].participants += a.participantCount
   }
@@ -161,10 +161,15 @@ export default async function PanelPage() {
         </div>
       </div>
 
-      {/* ── KPI Kartları ── */}
+      {/* ── KPI Kartları — hepsi kaynak kayıtlara iner ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 stagger-children">
         {/* Bu Hafta Faaliyet */}
-        <div className="premium-card p-4 animate-fade-in-up">
+        <Link
+          href={currentPeriod
+            ? `/faaliyetler?year=${currentPeriod.year}&weekFrom=${currentPeriod.weekNo}&weekTo=${currentPeriod.weekNo}`
+            : '/faaliyetler'}
+          className="premium-card p-4 animate-fade-in-up block group"
+        >
           <div className="flex items-center justify-between mb-3">
             <p className="text-xs font-medium text-slate-500">Bu Hafta Faaliyet</p>
             <Activity className="h-4 w-4" style={{ color: '#1B4E6B' }} />
@@ -182,10 +187,18 @@ export default async function PanelPage() {
             )}
             <span className="text-xs text-slate-400 ml-1">geçen haftaya göre</span>
           </div>
-        </div>
+          <p className="text-xs mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: '#1B4E6B' }}>
+            Kayıtları gör →
+          </p>
+        </Link>
 
         {/* Bu Hafta Katılımcı */}
-        <div className="premium-card p-4 animate-fade-in-up">
+        <Link
+          href={currentPeriod
+            ? `/faaliyetler?year=${currentPeriod.year}&weekFrom=${currentPeriod.weekNo}&weekTo=${currentPeriod.weekNo}`
+            : '/faaliyetler'}
+          className="premium-card p-4 animate-fade-in-up block group"
+        >
           <div className="flex items-center justify-between mb-3">
             <p className="text-xs font-medium text-slate-500">Bu Hafta Katılımcı</p>
             <Users className="h-4 w-4" style={{ color: '#16A34A' }} />
@@ -194,10 +207,16 @@ export default async function PanelPage() {
             {formatNumber(participantsThisWeek)}
           </p>
           <p className="text-xs text-slate-400 mt-1.5">kişi ulaşıldı</p>
-        </div>
+          <p className="text-xs mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: '#16A34A' }}>
+            Kayıtları gör →
+          </p>
+        </Link>
 
         {/* Toplam Katılımcı */}
-        <div className="premium-card p-4 animate-fade-in-up">
+        <Link
+          href={`/faaliyetler?year=${currentPeriod?.year ?? now.getFullYear()}`}
+          className="premium-card p-4 animate-fade-in-up block group"
+        >
           <div className="flex items-center justify-between mb-3">
             <p className="text-xs font-medium text-slate-500">Toplam Katılımcı</p>
             <TrendingUp className="h-4 w-4" style={{ color: '#D97706' }} />
@@ -206,7 +225,10 @@ export default async function PanelPage() {
             {formatNumber(participantsAllTime)}
           </p>
           <p className="text-xs text-slate-400 mt-1.5">tüm zamanlar</p>
-        </div>
+          <p className="text-xs mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: '#D97706' }}>
+            Kayıtları gör →
+          </p>
+        </Link>
 
         {/* Aktif Dönem */}
         <div className="premium-card p-4 animate-fade-in-up">
@@ -298,21 +320,27 @@ export default async function PanelPage() {
               </h3>
               <div className="space-y-2.5">
                 {top5.map((p, i) => (
-                  <div key={p.name} className="flex items-center gap-3">
+                  <Link
+                    key={p.name}
+                    href={p.id && currentPeriod
+                      ? `/faaliyetler?year=${currentPeriod.year}&weekFrom=${currentPeriod.weekNo}&weekTo=${currentPeriod.weekNo}&provinceId=${p.id}`
+                      : '/faaliyetler'}
+                    className="flex items-center gap-3 group rounded-lg -mx-1.5 px-1.5 py-0.5 hover:bg-slate-50 transition-colors"
+                  >
                     <span className="text-xs font-bold w-5 text-center"
                       style={{ color: i < 3 ? ['#F59E0B','#94A3B8','#D97706'][i] : '#CBD5E1' }}>
                       {i + 1}
                     </span>
                     <div className="flex-1">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-xs font-medium text-slate-700">{p.name}</span>
-                        <span className="text-xs text-slate-500">{formatNumber(p.participants)} kişi</span>
+                        <span className="text-xs font-medium text-slate-700 group-hover:text-primary">{p.name}</span>
+                        <span className="text-xs text-slate-500">{formatNumber(p.participants)} kişi · {p.count} kayıt</span>
                       </div>
                       <div className="progress-bar">
                         <div className="progress-fill" style={{ width: `${(p.participants / maxParticipants) * 100}%` }} />
                       </div>
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             </div>
@@ -327,20 +355,26 @@ export default async function PanelPage() {
               </h3>
               <div className="space-y-2.5">
                 {unitData.map((u, i) => (
-                  <div key={u.name} className="flex items-center gap-3">
+                  <Link
+                    key={u.name}
+                    href={u.id && currentPeriod
+                      ? `/faaliyetler?year=${currentPeriod.year}&weekFrom=${currentPeriod.weekNo}&weekTo=${currentPeriod.weekNo}&unitId=${u.id}`
+                      : '/faaliyetler'}
+                    className="flex items-center gap-3 group rounded-lg -mx-1.5 px-1.5 py-0.5 hover:bg-slate-50 transition-colors"
+                  >
                     <div className="w-2.5 h-2.5 rounded-full shrink-0"
                       style={{ background: unitColors[i % unitColors.length] }} />
                     <div className="flex-1">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-xs font-medium text-slate-700">{u.name}</span>
-                        <span className="text-xs text-slate-500">{u.count} faaliyet</span>
+                        <span className="text-xs font-medium text-slate-700 group-hover:text-primary">{u.name}</span>
+                        <span className="text-xs text-slate-500">{u.count} faaliyet · {formatNumber(u.participants)} kişi</span>
                       </div>
                       <div className="progress-bar">
                         <div className="h-full rounded-full transition-all"
                           style={{ width: `${(u.count / maxUnitCount) * 100}%`, background: unitColors[i % unitColors.length] }} />
                       </div>
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             </div>

@@ -24,74 +24,32 @@ export default async function VeriGirisPage() {
 
   if (!canWrite(user)) redirect('/panel')
 
-  // Sunucu tarafında ilk verileri çek
-  const [currentPeriod, institutions, activityTypes, units, provinces] = await Promise.all([
+  const now = new Date()
+
+  const [currentPeriod, periods, provinces] = await Promise.all([
     prisma.period.findFirst({
-      where: {
-        startDate: { lte: new Date() },
-        endDate: { gte: new Date() },
-      },
+      where: { startDate: { lte: now }, endDate: { gte: now } },
       orderBy: { startDate: 'desc' },
     }),
-    prisma.institution.findMany({
-      where: user.role === 'IL_KOORDINATOR'
-        ? { provinceId: user.provinceId! }
-        : {},
-      include: {
-        province: { select: { name: true } },
-        unit: { select: { name: true } },
-      },
-      orderBy: { name: 'asc' },
-      take: 200,
-    }),
-    prisma.activityType.findMany({ orderBy: { name: 'asc' } }),
-    prisma.unit.findMany({ orderBy: { order: 'asc' } }),
-    // İl listesi (rapor verisi formu için)
+    // Son 12 hafta — geriye dönük düzeltme yapılabilsin
+    prisma.period.findMany({ orderBy: { startDate: 'desc' }, take: 12 }),
     prisma.province.findMany({
-      where: user.role === 'IL_KOORDINATOR'
-        ? { id: user.provinceId! }
-        : user.role === 'BOLGE_KOORDINATOR'
-          ? { regionId: user.regionId! }
+      where:
+        user.role === 'IL_KOORDINATOR'
+          ? { id: user.provinceId! }
           : {},
       orderBy: { name: 'asc' },
       select: { id: true, name: true },
     }),
   ])
 
-  // Bu hafta kayıtlar
-  const recentActivities = currentPeriod
-    ? await prisma.activity.findMany({
-        where: {
-          createdBy: user.id,
-          periodId: currentPeriod.id,
-          deletedAt: null,
-        },
-        include: {
-          institution: { include: { province: true } },
-          activityType: true,
-          faculty: true,
-        },
-        orderBy: { createdAt: 'desc' },
-        take: 20,
-      })
-    : []
-
-  const periods = await prisma.period.findMany({
-    orderBy: { startDate: 'desc' },
-    take: 10,
-  })
-
   return (
     <VeriGirisClient
       user={user}
       currentPeriod={currentPeriod}
       periods={periods}
-      institutions={institutions}
-      activityTypes={activityTypes}
-      units={units}
-      recentActivities={recentActivities}
       provinces={provinces}
-      currentYear={new Date().getFullYear()}
+      currentYear={now.getFullYear()}
     />
   )
 }
