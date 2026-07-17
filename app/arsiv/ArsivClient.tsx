@@ -12,6 +12,7 @@ import { formatNumber } from '@/lib/utils'
 
 interface Props {
   provinces: { id: number; name: string }[]
+  regions: { id: number; name: string }[]
   years: number[]
 }
 
@@ -27,11 +28,12 @@ const STATUSES = [
   { key: 'ALL', label: 'Hepsi' },
 ] as const
 
-export default function ArsivClient({ provinces, years }: Props) {
+export default function ArsivClient({ provinces, regions, years }: Props) {
   const [kind, setKind] = useState<'ALL' | 'REPORT' | 'AI'>('ALL')
   const [status, setStatus] = useState<'ACTIVE' | 'ARCHIVED' | 'ALL'>('ACTIVE')
   const [type, setType] = useState('')
   const [scopeId, setScopeId] = useState('')
+  const [regionId, setRegionId] = useState('')
   const [year, setYear] = useState('')
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
@@ -55,6 +57,7 @@ export default function ArsivClient({ provinces, years }: Props) {
       const params = new URLSearchParams({ kind, status, page: String(page), pageSize: '12' })
       if (type) params.set('type', type)
       if (scopeId) params.set('scopeId', scopeId)
+      if (regionId) params.set('regionId', regionId)
       if (year) params.set('year', year)
       if (from) params.set('from', from)
       if (to) params.set('to', to)
@@ -67,12 +70,12 @@ export default function ArsivClient({ provinces, years }: Props) {
     } finally {
       setIsLoading(false)
     }
-  }, [kind, status, type, scopeId, year, from, to, debouncedQ, page])
+  }, [kind, status, type, scopeId, regionId, year, from, to, debouncedQ, page])
 
   useEffect(() => { load() }, [load])
 
   // Filtre değişince ilk sayfaya dön
-  useEffect(() => { setPage(1) }, [kind, status, type, scopeId, year, from, to])
+  useEffect(() => { setPage(1) }, [kind, status, type, scopeId, regionId, year, from, to])
 
   async function toggleArchive(item: ArchiveItem) {
     setBusyId(item.id)
@@ -102,10 +105,10 @@ export default function ArsivClient({ provinces, years }: Props) {
     ]
   }, [kind])
 
-  const hasFilters = !!(type || scopeId || year || from || to || debouncedQ || status !== 'ACTIVE')
+  const hasFilters = !!(type || scopeId || regionId || year || from || to || debouncedQ || status !== 'ACTIVE')
 
   function clearFilters() {
-    setType(''); setScopeId(''); setYear(''); setFrom(''); setTo('')
+    setType(''); setScopeId(''); setRegionId(''); setYear(''); setFrom(''); setTo('')
     setQ(''); setDebouncedQ(''); setStatus('ACTIVE'); setPage(1)
   }
 
@@ -171,6 +174,15 @@ export default function ArsivClient({ provinces, years }: Props) {
             className="h-8 px-2 text-xs border border-slate-200 rounded-lg bg-white outline-none focus:ring-2 focus:ring-primary/25">
             <option value="">Tüm türler</option>
             {typeOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+          </select>
+        </div>
+
+        <div className="space-y-1">
+          <label className="text-xs font-medium text-slate-500">Bölge</label>
+          <select value={regionId} onChange={e => setRegionId(e.target.value)}
+            className="h-8 px-2 text-xs border border-slate-200 rounded-lg bg-white outline-none focus:ring-2 focus:ring-primary/25">
+            <option value="">Tüm bölgeler</option>
+            {regions.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
           </select>
         </div>
 

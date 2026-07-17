@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useCallback, useRef } from 'react'
+import Link from 'next/link'
 import { toast } from 'sonner'
 import { Search, Download, BarChart3, Table2, Grid3x3, RefreshCw, TrendingUp, Users, Activity, ChevronUp, ChevronDown } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell, ResponsiveContainer } from 'recharts'
@@ -13,6 +14,7 @@ interface Props {
   periods: any[]
   units: any[]
   activityTypes: any[]
+  provinces: any[]
   currentPeriodId: number | null
   initialData: { total: { count: number; participants: number }; grouped: any[] }
 }
@@ -34,7 +36,7 @@ const COLORS = ['#1B4E6B','#2a6d94','#16A34A','#22c55e','#D97706','#BE185D','#7C
 type ViewMode = 'bar' | 'table' | 'heatmap'
 type SortKey = 'participants' | 'count' | 'label'
 
-export default function KesifClient({ user, periods, units, activityTypes, currentPeriodId, initialData }: Props) {
+export default function KesifClient({ user, periods, units, activityTypes, provinces, currentPeriodId, initialData }: Props) {
   const [data, setData] = useState(initialData)
   const [isLoading, setIsLoading] = useState(false)
   const [viewMode, setViewMode] = useState<ViewMode>('bar')
@@ -266,24 +268,39 @@ export default function KesifClient({ user, periods, units, activityTypes, curre
                   <table className="data-table">
                     <thead>
                       <tr>
-                        <th className="w-10">#</th>
-                        <th><SortBtn col="label" /></th>
-                        <th className="text-right"><SortBtn col="count" /></th>
-                        <th className="text-right"><SortBtn col="participants" /></th>
-                        <th className="w-48">Oran</th>
-                        <th className="text-right">Ort. Katılımcı</th>
+                        <th className="w-10 text-center" style={{ textAlign: 'center' }}>#</th>
+                        <th style={{ textAlign: 'left' }}><SortBtn col="label" /></th>
+                        <th className="text-right" style={{ textAlign: 'right' }}><SortBtn col="count" /></th>
+                        <th className="text-right" style={{ textAlign: 'right' }}><SortBtn col="participants" /></th>
+                        <th className="w-48" style={{ textAlign: 'left' }}>Oran</th>
+                        <th className="text-right" style={{ textAlign: 'right' }}>Ort. Katılımcı</th>
+                        <th className="text-right text-xs" style={{ textAlign: 'right' }}>Aksiyonlar</th>
                       </tr>
                     </thead>
                     <tbody>
                       {items.map((item, i) => {
                         const pct = data.total.participants > 0 ? (item.participants / data.total.participants) * 100 : 0
                         const maxP = items[0]?.participants || 1
+                        
+                        // Drill-down link parameters
+                        let drillDownUrl = '/faaliyetler?year=2026'
+                        if (filters.groupBy === 'province') {
+                          const prov = provinces.find((p: any) => p.name === item.label)
+                          if (prov) drillDownUrl += `&provinceId=${prov.id}`
+                        } else if (filters.groupBy === 'unit') {
+                          const un = units.find((u: any) => u.name === item.label)
+                          if (un) drillDownUrl += `&unitId=${un.id}`
+                        } else if (filters.groupBy === 'activityType') {
+                          const act = activityTypes.find((a: any) => a.name === item.label)
+                          if (act) drillDownUrl += `&activityTypeId=${act.id}`
+                        }
+
                         return (
-                          <tr key={item.key}>
-                            <td className="font-mono text-xs text-slate-400">{i + 1}</td>
-                            <td><span className="font-medium text-slate-800">{item.label}</span></td>
-                            <td className="text-right text-slate-600">{formatNumber(item.count)}</td>
-                            <td className="text-right font-semibold" style={{ color: '#1B4E6B' }}>{formatNumber(item.participants)}</td>
+                          <tr key={item.key} className="hover:bg-slate-50/80 transition-colors">
+                            <td className="font-mono text-xs text-slate-400 text-center" style={{ textAlign: 'center' }}>{i + 1}</td>
+                            <td style={{ textAlign: 'left' }}><span className="font-medium text-slate-800">{item.label}</span></td>
+                            <td className="text-right text-slate-600" style={{ textAlign: 'right' }}>{formatNumber(item.count)}</td>
+                            <td className="text-right font-semibold" style={{ color: '#1B4E6B', textAlign: 'right' }}>{formatNumber(item.participants)}</td>
                             <td>
                               <div className="flex items-center gap-2">
                                 <div className="progress-bar flex-1">
@@ -292,8 +309,16 @@ export default function KesifClient({ user, periods, units, activityTypes, curre
                                 <span className="text-xs text-slate-400 w-10 text-right">{pct.toFixed(1)}%</span>
                               </div>
                             </td>
-                            <td className="text-right text-slate-600">
+                            <td className="text-right text-slate-600" style={{ textAlign: 'right' }}>
                               {item.count > 0 ? formatNumber(Math.round(item.participants / item.count)) : '-'}
+                            </td>
+                            <td style={{ textAlign: 'right' }}>
+                              <div className="flex items-center justify-end">
+                                <Link href={drillDownUrl}
+                                  className="px-2.5 py-1 bg-teal-600 hover:bg-teal-700 text-white rounded text-xs font-semibold shadow-xs hover:shadow transition-all active:scale-95">
+                                  Detaylar
+                                </Link>
+                              </div>
                             </td>
                           </tr>
                         )
@@ -301,13 +326,14 @@ export default function KesifClient({ user, periods, units, activityTypes, curre
                     </tbody>
                     <tfoot>
                       <tr style={{ background: '#F8FAFC', fontWeight: 600 }}>
-                        <td colSpan={2} className="px-3 py-2 text-xs text-slate-600">TOPLAM</td>
-                        <td className="text-right text-xs text-slate-700">{formatNumber(data.total.count)}</td>
-                        <td className="text-right text-xs font-bold" style={{ color: '#1B4E6B' }}>{formatNumber(data.total.participants)}</td>
+                        <td colSpan={2} className="px-3 py-2 text-xs text-slate-600" style={{ textAlign: 'left' }}>TOPLAM</td>
+                        <td className="text-right text-xs text-slate-700" style={{ textAlign: 'right' }}>{formatNumber(data.total.count)}</td>
+                        <td className="text-right text-xs font-bold" style={{ color: '#1B4E6B', textAlign: 'right' }}>{formatNumber(data.total.participants)}</td>
                         <td />
-                        <td className="text-right text-xs text-slate-600">
+                        <td className="text-right text-xs text-slate-600" style={{ textAlign: 'right' }}>
                           {data.total.count > 0 ? formatNumber(Math.round(data.total.participants / data.total.count)) : '-'}
                         </td>
+                        <td />
                       </tr>
                     </tfoot>
                   </table>

@@ -23,14 +23,20 @@ export default async function ArsivPage() {
 
   // İl filtresi yalnızca kullanıcının görebildiği illeri listeler
   const visible = await buildProvinceScope(user, prisma)
-  const provinces = await prisma.province.findMany({
-    where: visible === null ? {} : { id: { in: visible } },
-    orderBy: { name: 'asc' },
-    select: { id: true, name: true },
-  })
+  const [provinces, regions] = await Promise.all([
+    prisma.province.findMany({
+      where: visible === null ? {} : { id: { in: visible } },
+      orderBy: { name: 'asc' },
+      select: { id: true, name: true },
+    }),
+    prisma.region.findMany({
+      orderBy: { name: 'asc' },
+      select: { id: true, name: true },
+    }),
+  ])
 
   const currentYear = new Date().getFullYear()
   const years = [currentYear + 1, currentYear, currentYear - 1, currentYear - 2]
 
-  return <ArsivClient provinces={provinces} years={years} />
+  return <ArsivClient provinces={provinces} regions={regions} years={years} />
 }

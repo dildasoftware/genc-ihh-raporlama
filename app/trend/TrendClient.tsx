@@ -14,6 +14,8 @@ import type { SessionUser } from '@/lib/authz'
 interface Props {
   user: SessionUser
   year: number
+  units: { id: number; name: string }[]
+  activityTypes: { id: number; name: string }[]
 }
 
 const GENDER_OPTIONS = [
@@ -22,29 +24,33 @@ const GENDER_OPTIONS = [
   { value: 'E', label: 'Erkek Kolu' },
 ]
 
-export default function TrendClient({ user, year }: Props) {
+export default function TrendClient({ user, year, units, activityTypes }: Props) {
   const [data, setData] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [aiResponse, setAiResponse] = useState('')
   const [gender, setGender] = useState('ALL')
   const [weeks, setWeeks] = useState('12')
+  const [unitId, setUnitId] = useState('')
+  const [activityTypeId, setActivityTypeId] = useState('')
   const [chartType, setChartType] = useState<'area' | 'bar' | 'line'>('area')
   const printRef = useRef<HTMLDivElement>(null)
 
-  const loadData = useCallback(async (g = gender, w = weeks) => {
+  const loadData = useCallback(async (g = gender, w = weeks, u = unitId, a = activityTypeId) => {
     setIsLoading(true)
     try {
       const params = new URLSearchParams({ year: year.toString(), weeks: w })
       if (g !== 'ALL') params.set('gender', g)
+      if (u) params.set('unitId', u)
+      if (a) params.set('activityTypeId', a)
       const res = await fetch(`/api/trend?${params}`)
       if (!res.ok) throw new Error('Veri alınamadı')
       setData(await res.json())
     } catch (e: any) { toast.error(e.message) }
     finally { setIsLoading(false) }
-  }, [year])
+  }, [year, gender, weeks, unitId, activityTypeId])
 
-  useEffect(() => { loadData() }, [])
+  useEffect(() => { loadData() }, [loadData])
 
   const handlePdf = useCallback(async () => {
     if (!printRef.current) return
@@ -150,6 +156,22 @@ export default function TrendClient({ user, year }: Props) {
           </select>
         </div>
         <div className="space-y-1">
+          <label className="text-xs font-medium text-slate-500">Birim</label>
+          <select value={unitId} onChange={e => setUnitId(e.target.value)}
+            className="h-8 px-2 text-xs border border-slate-200 rounded-lg bg-white outline-none">
+            <option value="">Tüm birimler</option>
+            {units.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+          </select>
+        </div>
+        <div className="space-y-1">
+          <label className="text-xs font-medium text-slate-500">Faaliyet Türü</label>
+          <select value={activityTypeId} onChange={e => setActivityTypeId(e.target.value)}
+            className="h-8 px-2 text-xs border border-slate-200 rounded-lg bg-white outline-none">
+            <option value="">Tüm türler</option>
+            {activityTypes.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+          </select>
+        </div>
+        <div className="space-y-1">
           <label className="text-xs font-medium text-slate-500">Son Hafta Sayısı</label>
           <select value={weeks} onChange={e => setWeeks(e.target.value)}
             className="h-8 px-2 text-xs border border-slate-200 rounded-lg bg-white outline-none">
@@ -168,7 +190,7 @@ export default function TrendClient({ user, year }: Props) {
             ))}
           </div>
         </div>
-        <button onClick={() => loadData(gender, weeks)} disabled={isLoading}
+        <button onClick={() => loadData(gender, weeks, unitId, activityTypeId)} disabled={isLoading}
           className="flex items-center gap-1 h-8 px-4 rounded-lg text-xs font-medium text-white" style={{ background: '#1B4E6B' }}>
           <RefreshCw className={`h-3 w-3 ${isLoading ? 'animate-spin' : ''}`} />
           {isLoading ? 'Yükleniyor' : 'Uygula'}

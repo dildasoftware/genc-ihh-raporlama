@@ -24,10 +24,11 @@ export default async function KesifPage() {
 
   if (user.role === 'IL_KOORDINATOR') redirect('/panel')
 
-  const [periods, units, activityTypes] = await Promise.all([
+  const [periods, units, activityTypes, provinces] = await Promise.all([
     prisma.period.findMany({ orderBy: { startDate: 'desc' }, take: 20 }),
     prisma.unit.findMany({ orderBy: { order: 'asc' } }),
     prisma.activityType.findMany({ orderBy: { name: 'asc' } }),
+    prisma.province.findMany({ orderBy: { name: 'asc' } }),
   ])
 
   // İlk yük: bu haftanın verisi
@@ -73,6 +74,7 @@ export default async function KesifPage() {
       periods={periods}
       units={units}
       activityTypes={activityTypes}
+      provinces={provinces}
       currentPeriodId={currentPeriod?.id ?? null}
       initialData={initialData}
     />

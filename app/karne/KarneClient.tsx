@@ -290,15 +290,15 @@ export default function KarneClient({ user, year: initialYear, units, activityTy
               <table className="data-table">
                 <thead>
                   <tr>
-                    <th className="w-10">#</th>
-                    <th>İl</th>
-                    <th>Bölge</th>
-                    <th className="text-center">Not</th>
-                    <th className="text-right">Puan</th>
-                    <th className="text-right">Katılımcı</th>
-                    <th className="text-right">Kurum</th>
-                    <th className="text-right">Hafta</th>
-                    <th className="w-8"></th>
+                    <th className="w-10 text-center" style={{ textAlign: 'center' }}>#</th>
+                    <th style={{ textAlign: 'left' }}>İl</th>
+                    <th style={{ textAlign: 'left' }}>Bölge</th>
+                    <th className="text-center" style={{ textAlign: 'center' }}>Not</th>
+                    <th className="text-right" style={{ textAlign: 'right' }}>Puan</th>
+                    <th className="text-right" style={{ textAlign: 'right' }}>Katılımcı</th>
+                    <th className="text-right" style={{ textAlign: 'right' }}>Kurum</th>
+                    <th className="text-right" style={{ textAlign: 'right' }}>Hafta</th>
+                    <th className="w-24 text-center" style={{ textAlign: 'center' }}>Aksiyon</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -308,29 +308,37 @@ export default function KarneClient({ user, year: initialYear, units, activityTy
                       // key fragment'te olmalı — iki <tr> döndüğü için
                       <Fragment key={item.provinceId}>
                         <tr
-                          className="cursor-pointer"
+                          className="cursor-pointer hover:bg-slate-50/80 transition-colors"
                           onClick={() => setExpanded(isExp ? null : item.provinceId)}>
-                          <td>
+                          <td className="text-center" style={{ textAlign: 'center' }}>
                             <span className="font-bold text-xs" style={{ color: i < 3 ? item.grade.color : '#94A3B8' }}>
                               {item.rank}
                             </span>
                           </td>
-                          <td className="font-semibold text-slate-800">{item.provinceName}</td>
-                          <td>
+                          <td className="font-semibold text-slate-800" style={{ textAlign: 'left' }}>{item.provinceName}</td>
+                          <td style={{ textAlign: 'left' }}>
                             <span className="text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">{item.regionName}</span>
                           </td>
-                          <td className="text-center">
-                            <span className="text-xs font-bold px-2 py-0.5 rounded-md"
+                          <td className="text-center" style={{ textAlign: 'center' }}>
+                            <span className="text-xs font-bold px-2 py-0.5 rounded-md inline-block min-w-[28px] text-center"
                               style={{ background: item.grade.bg, color: item.grade.color }}>
                               {item.grade.letter}
                             </span>
                           </td>
-                          <td className="text-right font-bold tabular-nums" style={{ color: '#1B4E6B' }}>{item.total}</td>
-                          <td className="text-right tabular-nums text-slate-600">{formatNumber(item.totalParticipants)}</td>
-                          <td className="text-right tabular-nums text-slate-600">{item.institutionCount}</td>
-                          <td className="text-right tabular-nums text-slate-500">{item.activeWeeks}/{item.totalWeeks}</td>
-                          <td>
-                            {isExp ? <ChevronUp className="h-3.5 w-3.5 text-slate-400" /> : <ChevronDown className="h-3.5 w-3.5 text-slate-400" />}
+                          <td className="text-right font-bold tabular-nums" style={{ color: '#1B4E6B', textAlign: 'right' }}>{item.total}</td>
+                          <td className="text-right tabular-nums text-slate-600" style={{ textAlign: 'right' }}>{formatNumber(item.totalParticipants)}</td>
+                          <td className="text-right tabular-nums text-slate-600" style={{ textAlign: 'right' }}>{item.institutionCount}</td>
+                          <td className="text-right tabular-nums text-slate-500" style={{ textAlign: 'right' }}>{item.activeWeeks}/{item.totalWeeks}</td>
+                          <td className="text-center" style={{ textAlign: 'center' }} onClick={e => e.stopPropagation()}>
+                            <div className="flex items-center justify-center gap-1.5">
+                              <Link href={`/karne/${item.provinceId}?year=${year}`}
+                                className="px-2.5 py-1 rounded bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold transition-all shadow-sm hover:shadow active:scale-95">
+                                Karne
+                              </Link>
+                              <button onClick={() => setExpanded(isExp ? null : item.provinceId)} className="p-1 rounded hover:bg-slate-100 transition-colors">
+                                {isExp ? <ChevronUp className="h-4 w-4 text-slate-400" /> : <ChevronDown className="h-4 w-4 text-slate-400" />}
+                              </button>
+                            </div>
                           </td>
                         </tr>
                         {isExp && (
@@ -368,11 +376,11 @@ export default function KarneClient({ user, year: initialYear, units, activityTy
                                       </li>
                                     ))}
                                   </ul>
-                                  <Link href={`/karne/${item.provinceId}`}
+                                  <Link href={`/karne/${item.provinceId}?year=${year}`}
                                     onClick={e => e.stopPropagation()}
-                                    className="px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 shrink-0"
-                                    style={{ background: '#EFF6FF', color: '#1B4E6B' }}>
-                                    <ExternalLink className="h-3.5 w-3.5" /> Detaylı karne
+                                    className="px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 shrink-0 text-white shadow-md transition-all active:scale-95"
+                                    style={{ background: 'linear-gradient(135deg, #1B4E6B 0%, #16A34A 100%)' }}>
+                                    <ExternalLink className="h-3.5 w-3.5" /> Detaylı Karne Sayfası
                                   </Link>
                                 </div>
                               </div>

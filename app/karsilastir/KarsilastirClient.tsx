@@ -69,6 +69,8 @@ export default function KarsilastirClient({ provinces, units, activityTypes, can
   const [unitId, setUnitId] = useState('')
   const [activityTypeId, setActivityTypeId] = useState('')
   const [metric, setMetric] = useState<MetricKey>('total')
+  const [weekFrom, setWeekFrom] = useState('')
+  const [weekTo, setWeekTo] = useState('')
 
   const [data, setData] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -86,6 +88,8 @@ export default function KarsilastirClient({ provinces, units, activityTypes, can
       if (gender !== 'ALL') params.set('gender', gender)
       if (unitId) params.set('unitId', unitId)
       if (activityTypeId) params.set('activityTypeId', activityTypeId)
+      if (weekFrom) params.set('weekFrom', weekFrom)
+      if (weekTo) params.set('weekTo', weekTo)
       const res = await fetch(`/api/karne?${params}`)
       if (!res.ok) throw new Error((await res.json()).error ?? 'Veri alınamadı')
       setData(await res.json())
@@ -94,9 +98,14 @@ export default function KarsilastirClient({ provinces, units, activityTypes, can
     } finally {
       setIsLoading(false)
     }
-  }, [year, gender, unitId, activityTypeId])
+  }, [year, gender, unitId, activityTypeId, weekFrom, weekTo])
 
   useEffect(() => { load() }, [load])
+
+  // Filtre değişince ilk sayfaya veya yüklemeye
+  useEffect(() => {
+    setPicker('')
+  }, [year, gender, unitId, activityTypeId, weekFrom, weekTo])
 
   // ── Varlıklar: il modu doğrudan ranked; bölge modu toplanmış ──
   const entities: Entity[] = useMemo(() => {
@@ -280,6 +289,20 @@ export default function KarsilastirClient({ provinces, units, activityTypes, can
           </select>
         </div>
         <div className="space-y-1">
+          <label className="text-xs font-medium text-slate-500">Hafta Aralığı</label>
+          <div className="flex items-center gap-1">
+            <select value={weekFrom} onChange={e => setWeekFrom(e.target.value)} className={selStyle}>
+              <option value="">Baştan</option>
+              {Array.from({ length: 52 }, (_, i) => i + 1).map(w => <option key={w} value={w}>{w}. hf</option>)}
+            </select>
+            <span className="text-xs text-slate-400">–</span>
+            <select value={weekTo} onChange={e => setWeekTo(e.target.value)} className={selStyle}>
+              <option value="">Sona</option>
+              {Array.from({ length: 52 }, (_, i) => i + 1).map(w => <option key={w} value={w}>{w}. hf</option>)}
+            </select>
+          </div>
+        </div>
+        <div className="space-y-1">
           <label className="text-xs font-medium text-slate-500">Metrik</label>
           <select value={metric} onChange={e => setMetric(e.target.value as MetricKey)} className={selStyle}>
             {METRICS.map(m => <option key={m.key} value={m.key}>{m.label}</option>)}
@@ -412,54 +435,53 @@ export default function KarsilastirClient({ provinces, units, activityTypes, can
               <table className="data-table">
                 <thead>
                   <tr>
-                    <th>{mode === 'il' ? 'İl' : 'Bölge'}</th>
-                    {mode === 'il' && <th className="text-center">Sıra</th>}
-                    <th className="text-center">Not</th>
-                    <th className="text-right">Puan</th>
-                    <th className="text-right">Katılımcı</th>
-                    <th className="text-right">Faaliyet</th>
-                    <th className="text-right">Kurum</th>
-                    <th className="text-right">Aktif Hafta</th>
-                    {DIMENSIONS.map(d => <th key={d.key} className="text-right">{d.label.split(' ')[0]}</th>)}
-                    <th></th>
+                    <th style={{ textAlign: 'left' }}>{mode === 'il' ? 'İl' : 'Bölge'}</th>
+                    {mode === 'il' && <th className="text-center" style={{ textAlign: 'center' }}>Sıra</th>}
+                    <th className="text-center" style={{ textAlign: 'center' }}>Not</th>
+                    <th className="text-right" style={{ textAlign: 'right' }}>Puan</th>
+                    <th className="text-right" style={{ textAlign: 'right' }}>Katılımcı</th>
+                    <th className="text-right" style={{ textAlign: 'right' }}>Faaliyet</th>
+                    <th className="text-right" style={{ textAlign: 'right' }}>Kurum</th>
+                    <th className="text-right" style={{ textAlign: 'right' }}>Aktif Hafta</th>
+                    {DIMENSIONS.map(d => <th key={d.key} className="text-right" style={{ textAlign: 'right' }}>{d.label.split(' ')[0]}</th>)}
+                    <th style={{ textAlign: 'right' }}>Aksiyonlar</th>
                   </tr>
                 </thead>
                 <tbody>
                   {selectedEntities.map(e => (
                     <tr key={e.key}>
-                      <td>
+                      <td style={{ textAlign: 'left' }}>
                         <span className="inline-flex items-center gap-2 font-semibold text-slate-800">
                           <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: colorOf(e.key) }} />
                           {e.name}
                         </span>
                       </td>
                       {mode === 'il' && (
-                        <td className="text-center tabular-nums text-slate-600">{e.rank ?? '—'}</td>
+                        <td className="text-center tabular-nums text-slate-600" style={{ textAlign: 'center' }}>{e.rank ?? '—'}</td>
                       )}
-                      <td className="text-center">
+                      <td className="text-center" style={{ textAlign: 'center' }}>
                         {e.grade ? (
-                          <span className="text-xs font-bold px-2 py-0.5 rounded-md"
+                          <span className="text-xs font-bold px-2 py-0.5 rounded-md inline-block min-w-[28px]"
                             style={{ background: e.grade.bg, color: e.grade.color }}>
                             {e.grade.letter}
                           </span>
                         ) : <span className="text-xs text-slate-400">ort.</span>}
                       </td>
-                      <td className="text-right font-bold tabular-nums" style={{ color: '#1B4E6B' }}>{e.total}</td>
-                      <td className="text-right tabular-nums">{formatNumber(e.totalParticipants)}</td>
-                      <td className="text-right tabular-nums">{formatNumber(e.totalActivities)}</td>
-                      <td className="text-right tabular-nums">{e.institutionCount}</td>
-                      <td className="text-right tabular-nums">{e.activeWeeks}/{e.totalWeeks}</td>
+                      <td className="text-right font-bold tabular-nums" style={{ color: '#1B4E6B', textAlign: 'right' }}>{e.total}</td>
+                      <td className="text-right tabular-nums" style={{ textAlign: 'right' }}>{formatNumber(e.totalParticipants)}</td>
+                      <td className="text-right tabular-nums" style={{ textAlign: 'right' }}>{formatNumber(e.totalActivities)}</td>
+                      <td className="text-right tabular-nums" style={{ textAlign: 'right' }}>{e.institutionCount}</td>
+                      <td className="text-right tabular-nums" style={{ textAlign: 'right' }}>{e.activeWeeks}/{e.totalWeeks}</td>
                       {DIMENSIONS.map(d => (
-                        <td key={d.key} className="text-right tabular-nums text-slate-600">
+                        <td key={d.key} className="text-right tabular-nums text-slate-600" style={{ textAlign: 'right' }}>
                           {Math.round(e.scores[d.key])}
                         </td>
                       ))}
-                      <td>
+                      <td style={{ textAlign: 'right' }}>
                         <div className="flex items-center gap-1.5 justify-end">
                           {e.provinceId && (
                             <Link href={`/karne/${e.provinceId}?year=${year}`}
-                              className="px-2 py-1 rounded-md text-xs font-medium flex items-center gap-1"
-                              style={{ background: '#EFF6FF', color: '#1B4E6B' }}>
+                              className="px-2 py-1 rounded-md text-xs font-semibold flex items-center gap-1 bg-teal-600 hover:bg-teal-700 text-white transition-all shadow-xs hover:shadow active:scale-95">
                               <ExternalLink className="h-3 w-3" /> Karne
                             </Link>
                           )}
@@ -467,8 +489,7 @@ export default function KarsilastirClient({ provinces, units, activityTypes, can
                             href={e.provinceId
                               ? `/faaliyetler?year=${year}&provinceId=${e.provinceId}`
                               : `/faaliyetler?year=${year}`}
-                            className="px-2 py-1 rounded-md text-xs font-medium flex items-center gap-1"
-                            style={{ background: '#F0FDF4', color: '#16A34A' }}>
+                            className="px-2 py-1 rounded-md text-xs font-semibold flex items-center gap-1 bg-slate-800 hover:bg-slate-900 text-white transition-all shadow-xs hover:shadow active:scale-95">
                             <ClipboardList className="h-3 w-3" /> Kayıtlar
                           </Link>
                         </div>

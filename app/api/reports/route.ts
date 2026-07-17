@@ -33,6 +33,7 @@ export async function GET(request: NextRequest) {
   const kind = searchParams.get('kind') ?? 'ALL'          // ALL | REPORT | AI
   const type = searchParams.get('type')
   const scopeId = searchParams.get('scopeId')
+  const regionId = searchParams.get('regionId')
   const year = searchParams.get('year')
   const from = searchParams.get('from')
   const to = searchParams.get('to')
@@ -70,10 +71,25 @@ export async function GET(request: NextRequest) {
         }
       : {}
 
+  const regionWhere: any = {}
+  if (regionId) {
+    const regionIdInt = parseInt(regionId)
+    const regionProvinces = await prisma.province.findMany({
+      where: { regionId: regionIdInt },
+      select: { id: true }
+    })
+    const provIds = regionProvinces.map(p => p.id)
+    regionWhere.OR = [
+      { scopeType: 'REGION', scopeId: regionIdInt },
+      { scopeType: 'PROVINCE', scopeId: { in: provIds } }
+    ]
+  }
+
   const commonWhere: any = {
     ...archiveWhere,
     ...dateWhere,
     ...scopeWhere,
+    ...regionWhere,
     ...(scopeId ? { scopeId: parseInt(scopeId) } : {}),
     ...(year ? { year: parseInt(year) } : {}),
     ...(type ? { type } : {}),

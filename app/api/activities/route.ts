@@ -117,6 +117,7 @@ export async function GET(request: NextRequest) {
       participantCount: a.participantCount,
       gender: a.genderBranch,
       note: a.note,
+      location: a.location,
       createdByName: a.user.fullName,
       createdAt: a.createdAt,
     })),

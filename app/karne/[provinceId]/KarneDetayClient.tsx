@@ -246,6 +246,7 @@ export default function KarneDetayClient({
 
   const report = data.report
   const orgStatus = (report?.orgStatus ?? {}) as Record<string, boolean>
+  const orgNames = (report?.orgNames ?? {}) as Record<string, string | null>
   const targets = (report?.targets ?? {}) as Record<string, number>
   const grade = karne.grade
 
@@ -640,19 +641,25 @@ export default function KarneDetayClient({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <Section title="Teşkilat Durumu" icon={Shield} color="#7C3AED"
           subtitle={`${karne.orgFilled}/${karne.orgTotal} kadro dolu`}>
-          <div className="grid grid-cols-2 gap-1.5">
+          <div className="flex flex-col gap-2">
             {ORG_LABELS.map(p => {
               const active = orgStatus[p.key]
+              const personName = orgNames[p.key]
               return (
                 <div key={p.key}
-                  className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-xs font-medium border ${
-                    active ? 'bg-green-50 text-green-700 border-green-200'
-                           : 'bg-slate-50 text-slate-400 border-slate-200'
+                  className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium border ${
+                    active ? 'bg-green-50/50 text-green-800 border-green-200'
+                           : 'bg-slate-50/50 text-slate-400 border-slate-100'
                   }`}>
-                  {active
-                    ? <CheckCircle2 className="h-3.5 w-3.5 text-green-500 shrink-0" />
-                    : <XCircle className="h-3.5 w-3.5 text-slate-300 shrink-0" />}
-                  <span className="truncate">{p.label}</span>
+                  <div className="flex items-center gap-2 min-w-0">
+                    {active
+                      ? <CheckCircle2 className="h-3.5 w-3.5 text-green-500 shrink-0" />
+                      : <XCircle className="h-3.5 w-3.5 text-slate-300 shrink-0" />}
+                    <span className="font-semibold truncate">{p.label}</span>
+                  </div>
+                  <span className="text-xs text-slate-600 truncate font-normal max-w-[150px]">
+                    {active ? (personName ?? 'Atanmamış') : 'Mevcut Değil'}
+                  </span>
                 </div>
               )
             })}
@@ -661,26 +668,49 @@ export default function KarneDetayClient({
 
         <Section title="İlçe Yayılımı" icon={MapPin} color="#D97706" subtitle="Genç İHH kaç ilçede aktif">
           {report ? (
-            <div className="space-y-3">
-              {[
-                { label: 'İldeki toplam ilçe', value: report.totalDistrictCount, color: '#94A3B8' },
-                { label: 'İHH bulunan ilçe', value: report.ihhDistrictCount, color: '#2563EB' },
-                { label: 'Genç İHH bulunan ilçe', value: report.gencIhhDistrictCount, color: '#16A34A' },
-              ].map(r => {
-                const pct = report.totalDistrictCount
-                  ? Math.round(((r.value ?? 0) / report.totalDistrictCount) * 100) : 0
-                return (
-                  <div key={r.label}>
-                    <div className="flex justify-between mb-1">
-                      <span className="text-xs text-slate-600">{r.label}</span>
-                      <span className="text-xs font-bold tabular-nums" style={{ color: r.color }}>{r.value ?? '—'}</span>
+            <div className="space-y-4">
+              <div className="space-y-3">
+                {[
+                  { label: 'İldeki toplam ilçe', value: report.totalDistrictCount, color: '#94A3B8' },
+                  { label: 'İHH bulunan ilçe', value: report.ihhDistrictCount, color: '#2563EB' },
+                  { label: 'Genç İHH bulunan ilçe', value: report.gencIhhDistrictCount, color: '#16A34A' },
+                ].map(r => {
+                  const pct = report.totalDistrictCount
+                    ? Math.round(((r.value ?? 0) / report.totalDistrictCount) * 100) : 0
+                  return (
+                    <div key={r.label}>
+                      <div className="flex justify-between mb-1">
+                        <span className="text-xs text-slate-600">{r.label}</span>
+                        <span className="text-xs font-bold tabular-nums" style={{ color: r.color }}>{r.value ?? '—'}</span>
+                      </div>
+                      <div className="h-2 rounded-full" style={{ background: '#F1F5F9' }}>
+                        <div className="h-full rounded-full" style={{ width: `${pct}%`, background: r.color }} />
+                      </div>
                     </div>
-                    <div className="h-2 rounded-full" style={{ background: '#F1F5F9' }}>
-                      <div className="h-full rounded-full" style={{ width: `${pct}%`, background: r.color }} />
-                    </div>
+                  )
+                })}
+              </div>
+
+              {((report as any).districtDetails ?? []).length > 0 && (
+                <div className="border-t border-slate-100 pt-3">
+                  <p className="text-xs font-semibold text-slate-500 mb-2">İlçe Detay Listesi</p>
+                  <div className="flex flex-col gap-1.5 max-h-[180px] overflow-y-auto pr-1">
+                    {((report as any).districtDetails ?? []).map((d: any) => (
+                      <div key={d.name} className="flex items-center justify-between py-1 px-2 rounded bg-slate-50 border border-slate-100 text-xs">
+                        <span className="font-medium text-slate-700">{d.name}</span>
+                        <div className="flex gap-1.5">
+                          <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                            d.hasIhh ? 'bg-blue-50 text-blue-600 border border-blue-100' : 'bg-slate-100 text-slate-400'
+                          }`}>İHH</span>
+                          <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                            d.hasGencIhh ? 'bg-green-50 text-green-600 border border-green-100' : 'bg-slate-100 text-slate-400'
+                          }`}>Genç İHH</span>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                )
-              })}
+                </div>
+              )}
             </div>
           ) : <Empty text="İl künyesi girilmemiş" />}
         </Section>

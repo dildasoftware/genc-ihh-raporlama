@@ -25,5 +25,10 @@ export default async function TrendPage() {
 
   const year = new Date().getFullYear()
 
-  return <TrendClient user={user} year={year} />
+  const [units, activityTypes] = await Promise.all([
+    prisma.unit.findMany({ orderBy: { order: 'asc' }, select: { id: true, name: true } }),
+    prisma.activityType.findMany({ orderBy: { name: 'asc' }, select: { id: true, name: true } }),
+  ])
+
+  return <TrendClient user={user} year={year} units={units} activityTypes={activityTypes} />
 }

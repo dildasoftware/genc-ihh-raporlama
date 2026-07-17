@@ -18,15 +18,36 @@ import type { SessionUser } from '@/lib/authz'
  * kadrosu, dönem hedefleri) — karnede hedef/gerçekleşme kıyası için kullanılır.
  */
 
+const DISTRICTS_MAP: Record<string, string[]> = {
+  'Ankara': ['Çankaya', 'Keçiören', 'Yenimahalle', 'Mamak', 'Etimesgut', 'Sincan', 'Altındağ', 'Pursaklar'],
+  'İstanbul': ['Fatih', 'Üsküdar', 'Kadıköy', 'Pendik', 'Ümraniye', 'Esenyurt', 'Bağcılar', 'Beşiktaş'],
+  'Konya': ['Selçuklu', 'Meram', 'Karatay', 'Ereğli', 'Akşehir', 'Beyşehir'],
+  'Bursa': ['Osmangazi', 'Nilüfer', 'Yıldırım', 'İnegöl', 'Gemlik', 'Mudanya'],
+  'İzmir': ['Konak', 'Karşıyaka', 'Buca', 'Bornova', 'Bayraklı', 'Çiğli'],
+  'Kocaeli': ['İzmit', 'Gebze', 'Darıca', 'Gölcük', 'Körfez', 'Kartepe'],
+  'Gaziantep': ['Şahinbey', 'Şehitkamil', 'Nizip', 'İslahiye'],
+  'Kayseri': ['Melikgazi', 'Kocasinan', 'Talas', 'Develi'],
+  'Trabzon': ['Ortahisar', 'Akçaabat', 'Araklı', 'Of'],
+  'Samsun': ['İlkadım', 'Atakum', 'Bafra', 'Çarşamba'],
+  'Erzurum': ['Yakutiye', 'Palandöken', 'Aziziye', 'Oltu'],
+  'Van': ['İpekyolu', 'Tuşba', 'Edremit', 'Erciş']
+}
+
 interface OrgStatus {
   ilBaskani: boolean; teskilatBsk: boolean; egitimBsk: boolean; universiteBsk: boolean
   liseBsk: boolean; ortaokulBsk: boolean; ihhCocukBsk: boolean; tanitimMedya: boolean
   projeFonBsk: boolean; sosyalFaal: boolean; atomBsk: boolean; aktifGenclik: boolean
 }
 
+interface DistrictDetail {
+  name: string
+  hasIhh: boolean
+  hasGencIhh: boolean
+}
+
 interface Targets {
   teskilatHedefi: number; ilceHedefi: number; fakulteBaskanHedefi: number
-  liseTemsilciHedefi: number; fonHedefi: number
+  liseTemsilciHedefi: number; fontHedefi?: number; fonHedefi?: number
 }
 
 const ORG_POSITIONS: { key: keyof OrgStatus; label: string }[] = [
@@ -64,9 +85,11 @@ interface FormState {
   kykCount: number
   dormCount: number
   orgStatus: OrgStatus
+  orgNames: Record<string, string>
   totalDistrictCount: number
   ihhDistrictCount: number
   gencIhhDistrictCount: number
+  districtDetails: DistrictDetail[]
   targets: Targets
 }
 
@@ -74,7 +97,9 @@ const EMPTY: FormState = {
   population: 0, districtCount: 0, studentCount: 0,
   universityCount: 0, highSchoolCount: 0, middleSchoolCount: 0, kykCount: 0, dormCount: 0,
   orgStatus: { ...DEFAULT_ORG },
+  orgNames: {},
   totalDistrictCount: 0, ihhDistrictCount: 0, gencIhhDistrictCount: 0,
+  districtDetails: [],
   targets: { ...DEFAULT_TARGETS },
 }
 
@@ -92,6 +117,50 @@ export default function IlKunyesi({
   const [form, setForm] = useState<FormState>(EMPTY)
   const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
+  const [newDistrictName, setNewDistrictName] = useState('')
+
+  const handleToggleDistrict = (index: number, key: 'hasIhh' | 'hasGencIhh') => {
+    const list = [...form.districtDetails]
+    list[index] = {
+      ...list[index],
+      [key]: !list[index][key]
+    }
+    
+    if (key === 'hasGencIhh' && list[index].hasGencIhh) {
+      list[index].hasIhh = true
+    }
+
+    const ihhCount = list.filter(d => d.hasIhh).length
+    const gencIhhCount = list.filter(d => d.hasGencIhh).length
+
+    setForm(p => ({
+      ...p,
+      districtDetails: list,
+      totalDistrictCount: list.length,
+      ihhDistrictCount: ihhCount,
+      gencIhhDistrictCount: gencIhhCount,
+      districtCount: list.length
+    }))
+  }
+
+  const handleAddDistrict = () => {
+    if (!newDistrictName.trim()) return
+    if (form.districtDetails.some(d => d.name.toLowerCase() === newDistrictName.trim().toLowerCase())) {
+      toast.error('Bu ilçe zaten ekli')
+      return
+    }
+    const newDistrict = { name: newDistrictName.trim(), hasIhh: false, hasGencIhh: false }
+    const list = [...form.districtDetails, newDistrict]
+    
+    setForm(p => ({
+      ...p,
+      districtDetails: list,
+      totalDistrictCount: list.length,
+      districtCount: list.length
+    }))
+    setNewDistrictName('')
+    toast.success('İlçe eklendi')
+  }
 
   useEffect(() => {
     if (!provinceId) return
@@ -99,6 +168,10 @@ export default function IlKunyesi({
     fetch(`/api/province-report?provinceId=${provinceId}&year=${selectedYear}`)
       .then(r => (r.ok ? r.json() : null))
       .then(d => {
+        const provinceName = provinces.find(p => p.id === provinceId)?.name ?? ''
+        const defaultDistricts = (DISTRICTS_MAP[provinceName] ?? []).map(name => ({
+          name, hasIhh: false, hasGencIhh: false
+        }))
         setForm(d ? {
           population: d.population ?? 0,
           districtCount: d.districtCount ?? 0,
@@ -109,15 +182,21 @@ export default function IlKunyesi({
           kykCount: d.kykCount ?? 0,
           dormCount: d.dormCount ?? 0,
           orgStatus: d.orgStatus ?? { ...DEFAULT_ORG },
-          totalDistrictCount: d.totalDistrictCount ?? 0,
+          orgNames: d.orgNames ?? {},
+          totalDistrictCount: d.totalDistrictCount ?? defaultDistricts.length,
           ihhDistrictCount: d.ihhDistrictCount ?? 0,
           gencIhhDistrictCount: d.gencIhhDistrictCount ?? 0,
+          districtDetails: d.districtDetails ?? defaultDistricts,
           targets: d.targets ?? { ...DEFAULT_TARGETS },
-        } : EMPTY)
+        } : {
+          ...EMPTY,
+          totalDistrictCount: defaultDistricts.length,
+          districtDetails: defaultDistricts
+        })
       })
       .catch(() => {})
       .finally(() => setIsLoading(false))
-  }, [provinceId, selectedYear])
+  }, [provinceId, selectedYear, provinces])
 
   async function handleSave() {
     if (!provinceId) return toast.error('İl seçiniz')
@@ -234,28 +313,53 @@ export default function IlKunyesi({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {ORG_POSITIONS.map(pos => {
               const active = form.orgStatus[pos.key]
+              
+              // Hiyerarşik yetki kontrolü
+              let isDisabled = false
+              if (user.role === 'BOLGE_KOORDINATOR') {
+                // Bölge yöneticisi sadece il başkanını atayabilir/düzenleyebilir
+                if (pos.key !== 'ilBaskani') isDisabled = true
+              } else if (user.role === 'IL_KOORDINATOR') {
+                // İl yöneticisi il başkanını düzenleyemez (Bölge atar), diğerlerini düzenler
+                if (pos.key === 'ilBaskani') isDisabled = true
+              }
+
               return (
-                <button
-                  key={pos.key}
-                  onClick={() => setForm(p => ({
-                    ...p,
-                    orgStatus: { ...p.orgStatus, [pos.key]: !p.orgStatus[pos.key] },
-                  }))}
-                  className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl border-2 text-sm font-medium
-                              transition-all active:scale-95 ${
-                    active
-                      ? 'border-green-400 bg-green-50 text-green-700'
-                      : 'border-slate-200 bg-slate-50/60 text-slate-400'
-                  }`}
-                >
-                  {active
-                    ? <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
-                    : <XCircle className="h-4 w-4 text-slate-300 shrink-0" />}
-                  {pos.label}
-                </button>
+                <div key={pos.key} className="flex flex-col gap-1.5 p-3 rounded-xl border border-slate-100 bg-slate-50/50">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-700">{pos.label}</span>
+                    <button
+                      disabled={isDisabled}
+                      onClick={() => setForm(p => ({
+                        ...p,
+                        orgStatus: { ...p.orgStatus, [pos.key]: !p.orgStatus[pos.key] },
+                        orgNames: { ...p.orgNames, [pos.key]: !p.orgStatus[pos.key] ? (p.orgNames[pos.key] || '') : '' }
+                      }))}
+                      className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border-2 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ${
+                        active
+                          ? 'border-green-400 bg-green-50 text-green-700'
+                          : 'border-slate-200 bg-white text-slate-400'
+                      }`}
+                    >
+                      {active ? 'Aktif (Dolu)' : 'Pasif (Boş)'}
+                    </button>
+                  </div>
+                  {active && (
+                    <Input
+                      disabled={isDisabled}
+                      value={form.orgNames[pos.key] || ''}
+                      onChange={e => setForm(p => ({
+                        ...p,
+                        orgNames: { ...p.orgNames, [pos.key]: e.target.value }
+                      }))}
+                      className="h-8 text-xs placeholder:text-slate-300"
+                      placeholder="Ad Soyad giriniz..."
+                    />
+                  )}
+                </div>
               )
             })}
           </div>
@@ -265,31 +369,76 @@ export default function IlKunyesi({
       {/* İlçe çalışmaları */}
       <Card className="premium-card">
         <CardHeader className="pb-3">
-          <CardTitle className="text-base flex items-center gap-2">
-            <Building2 className="h-4 w-4" style={{ color: '#D97706' }} />
-            İlçe Çalışmaları
+          <CardTitle className="text-base flex items-center justify-between">
+            <span className="flex items-center gap-2">
+              <Building2 className="h-4 w-4" style={{ color: '#D97706' }} />
+              İlçe Teşkilatlanması
+            </span>
+            <span className="text-xs font-normal text-slate-400">
+              Toplam: {form.totalDistrictCount} · İHH: {form.ihhDistrictCount} · Genç İHH: {form.gencIhhDistrictCount}
+            </span>
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {([
-              { label: 'İlde kaç ilçe var?', key: 'totalDistrictCount' },
-              { label: 'İHH kaç ilçede var?', key: 'ihhDistrictCount' },
-              { label: 'Genç İHH Hanımlar kaç ilçede?', key: 'gencIhhDistrictCount' },
-            ] as const).map(item => (
-              <div key={item.key} className="space-y-1.5">
-                <Label className="text-xs">{item.label}</Label>
+        <CardContent className="space-y-4">
+          {/* Yeni ilçe ekleme (Bölge yöneticisi hariç) */}
+          {user.role !== 'BOLGE_KOORDINATOR' && (
+            <div className="flex gap-2 items-end bg-slate-50 p-3 rounded-lg border border-slate-100">
+              <div className="space-y-1.5 flex-1">
+                <Label className="text-xs">Yeni İlçe Ekle</Label>
                 <Input
-                  type="number"
-                  min={0}
-                  value={form[item.key] || ''}
-                  onChange={e => setForm(p => ({ ...p, [item.key]: parseInt(e.target.value) || 0 }))}
+                  value={newDistrictName}
+                  onChange={e => setNewDistrictName(e.target.value)}
+                  placeholder="İlçe adı yazın..."
                   className="h-9"
-                  placeholder="0"
                 />
               </div>
-            ))}
-          </div>
+              <button
+                onClick={handleAddDistrict}
+                type="button"
+                className="px-4 h-9 rounded-lg text-xs font-semibold text-white bg-slate-800 hover:bg-slate-900 active:scale-95 transition-all"
+              >
+                Ekle
+              </button>
+            </div>
+          )}
+
+          {/* İlçeler listesi */}
+          {form.districtDetails.length === 0 ? (
+            <p className="text-xs text-slate-400 text-center py-4">Kayıtlı ilçe bulunamadı.</p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 max-h-[250px] overflow-y-auto pr-1">
+              {form.districtDetails.map((district, idx) => {
+                const isDistrictDisabled = user.role === 'BOLGE_KOORDINATOR'
+                return (
+                  <div key={district.name} className="flex flex-col gap-2 p-3 rounded-lg border border-slate-100 bg-white shadow-xs">
+                    <span className="text-xs font-bold text-slate-700">{district.name}</span>
+                    <div className="flex items-center gap-2">
+                      <label className="flex items-center gap-1 text-xs cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          disabled={isDistrictDisabled}
+                          checked={district.hasIhh}
+                          onChange={() => handleToggleDistrict(idx, 'hasIhh')}
+                          className="rounded border-slate-300 text-primary focus:ring-primary h-3.5 w-3.5"
+                        />
+                        <span className="text-slate-500">İHH</span>
+                      </label>
+                      <label className="flex items-center gap-1 text-xs cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          disabled={isDistrictDisabled}
+                          checked={district.hasGencIhh}
+                          onChange={() => handleToggleDistrict(idx, 'hasGencIhh')}
+                          className="rounded border-slate-300 text-primary focus:ring-primary h-3.5 w-3.5"
+                        />
+                        <span className="text-slate-500">Genç İHH</span>
+                      </label>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
         </CardContent>
       </Card>
 

@@ -24,6 +24,8 @@ export async function GET(request: NextRequest) {
   const year = parseInt(searchParams.get('year') ?? new Date().getFullYear().toString())
   const genderFilter = searchParams.get('gender') as 'K' | 'E' | 'ALL' | null
   const weeks = parseInt(searchParams.get('weeks') ?? '12')
+  const unitId = searchParams.get('unitId')
+  const activityTypeId = searchParams.get('activityTypeId')
 
   // Son N hafta
   const periods = await prisma.period.findMany({
@@ -37,6 +39,14 @@ export async function GET(request: NextRequest) {
 
   const where = buildActivityFilter(user, genderFilter ?? 'ALL')
   if (periodIds.length > 0) where.periodId = { in: periodIds }
+
+  if (activityTypeId) where.activityTypeId = parseInt(activityTypeId)
+  if (unitId) {
+    where.institution = {
+      ...(where.institution ?? {}),
+      unitId: parseInt(unitId)
+    }
+  }
 
   const activities = await prisma.activity.findMany({
     where,

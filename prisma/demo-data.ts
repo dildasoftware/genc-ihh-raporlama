@@ -20,10 +20,37 @@ import { PrismaClient, GenderBranch } from '@prisma/client'
 import { PrismaPg } from '@prisma/adapter-pg'
 import { Pool } from 'pg'
 import { universitiesOfProvince } from '../lib/universities'
+import { lisesOfProvince, ortaokulsOfProvince } from '../lib/schools'
 
 // .env yerel Prisma dev adresi taşıyor; gerçek Neon adresi .env.local'da.
 // override:true olmadan .env kazanır ve bağlantı reddedilir.
 config({ path: '.env.local', override: true })
+
+const DISTRICTS_MAP: Record<string, string[]> = {
+  'Ankara': ['Çankaya', 'Keçiören', 'Yenimahalle', 'Mamak', 'Etimesgut', 'Sincan', 'Altındağ', 'Pursaklar'],
+  'İstanbul': ['Fatih', 'Üsküdar', 'Kadıköy', 'Pendik', 'Ümraniye', 'Esenyurt', 'Bağcılar', 'Beşiktaş'],
+  'Konya': ['Selçuklu', 'Meram', 'Karatay', 'Ereğli', 'Akşehir', 'Beyşehir'],
+  'Bursa': ['Osmangazi', 'Nilüfer', 'Yıldırım', 'İnegöl', 'Gemlik', 'Mudanya'],
+  'İzmir': ['Konak', 'Karşıyaka', 'Buca', 'Bornova', 'Bayraklı', 'Çiğli'],
+  'Kocaeli': ['İzmit', 'Gebze', 'Darıca', 'Gölcük', 'Körfez', 'Kartepe'],
+  'Gaziantep': ['Şahinbey', 'Şehitkamil', 'Nizip', 'İslahiye'],
+  'Kayseri': ['Melikgazi', 'Kocasinan', 'Talas', 'Develi'],
+  'Trabzon': ['Ortahisar', 'Akçaabat', 'Araklı', 'Of'],
+  'Samsun': ['İlkadım', 'Atakum', 'Bafra', 'Çarşamba'],
+  'Erzurum': ['Yakutiye', 'Palandöken', 'Aziziye', 'Oltu'],
+  'Van': ['İpekyolu', 'Tuşba', 'Edremit', 'Erciş']
+}
+
+const NAME_SAMPLES = {
+  first: ['Ahmet', 'Mehmet', 'Ali', 'Mustafa', 'Hüseyin', 'Zeynep', 'Fatma', 'Ayşe', 'Emine', 'Hatice', 'Ömer', 'Yusuf', 'Ebru', 'Seda', 'Merve', 'Elif', 'Esra', 'Tarık', 'Burak', 'Hakan'],
+  last: ['Yılmaz', 'Demir', 'Kaya', 'Şahin', 'Çelik', 'Yıldız', 'Yıldırım', 'Öztürk', 'Aydın', 'Aslan', 'Kılıç', 'Arslan', 'Çetin', 'Kara', 'Koç', 'Kurt', 'Özdemir']
+}
+
+function getRandomName(randFn: () => number) {
+  const f = NAME_SAMPLES.first[Math.floor(randFn() * NAME_SAMPLES.first.length)]
+  const l = NAME_SAMPLES.last[Math.floor(randFn() * NAME_SAMPLES.last.length)]
+  return `${f} ${l}`
+}
 
 const DATABASE_URL = process.env.DATABASE_URL
 if (!DATABASE_URL || !DATABASE_URL.startsWith('postgresql://')) {
@@ -95,7 +122,9 @@ async function main() {
 
   // ── Temizle: tüm faaliyetler yeniden üretilir ──
   const del = await prisma.activity.deleteMany({})
-  console.log(`🧹 ${del.count} eski faaliyet silindi`)
+  const delR = await prisma.report.deleteMany({})
+  const delAi = await prisma.aiInsight.deleteMany({})
+  console.log(`🧹 ${del.count} eski faaliyet, ${delR.count} eski rapor ve ${delAi.count} eski AI analizi silindi`)
 
   const year = periods[0]?.year ?? new Date().getFullYear()
   let totalActivities = 0
@@ -145,15 +174,27 @@ async function main() {
       return inst.id
     }
 
-    const liseIds = [
-      await ensureInst(`${profile.name} Fen Lisesi`, 'Lise', 'Fen Lisesi'),
-      await ensureInst(`${profile.name} Anadolu İmam Hatip Lisesi`, 'Lise', 'İHL'),
-      await ensureInst(`${profile.name} Anadolu Lisesi`, 'Lise', 'Anadolu Lisesi'),
-    ]
-    const ortaokulIds = [
-      await ensureInst(`${profile.name} Fatih Ortaokulu`, 'Ortaokul'),
-      await ensureInst(`${profile.name} Atatürk Ortaokulu`, 'Ortaokul'),
-    ]
+    const liseEntries = lisesOfProvince(profile.name)
+    const liseIds: number[] = []
+    for (const l of liseEntries) {
+      liseIds.push(await ensureInst(l.name, 'Lise', l.schoolType))
+    }
+    if (liseIds.length === 0) {
+      liseIds.push(await ensureInst(`${profile.name} Fen Lisesi`, 'Lise', 'Fen Lisesi'))
+      liseIds.push(await ensureInst(`${profile.name} Anadolu İmam Hatip Lisesi`, 'Lise', 'İHL'))
+      liseIds.push(await ensureInst(`${profile.name} Anadolu Lisesi`, 'Lise', 'Anadolu Lisesi'))
+    }
+
+    const ortaokulEntries = ortaokulsOfProvince(profile.name)
+    const ortaokulIds: number[] = []
+    for (const o of ortaokulEntries) {
+      ortaokulIds.push(await ensureInst(o.name, 'Ortaokul'))
+    }
+    if (ortaokulIds.length === 0) {
+      ortaokulIds.push(await ensureInst(`${profile.name} Fatih Ortaokulu`, 'Ortaokul'))
+      ortaokulIds.push(await ensureInst(`${profile.name} Atatürk Ortaokulu`, 'Ortaokul'))
+    }
+
     const cocukIds = [await ensureInst(`${profile.name} Çocuk Kulübü`, 'Çocuk')]
     const yonetimId = await ensureInst(`${profile.name} İl Yönetimi`, 'Yönetim')
 
@@ -162,14 +203,28 @@ async function main() {
       'ihhCocukBsk', 'tanitimMedya', 'projeFonBsk', 'sosyalFaal', 'atomBsk', 'aktifGenclik']
     const filledCount = Math.round(s * 12)
     const orgStatus = Object.fromEntries(orgKeys.map((k, i) => [k, i < filledCount]))
-    const totalDistricts = between(8, 25)
+    const orgNames = Object.fromEntries(orgKeys.map(k => [k, orgStatus[k] ? getRandomName(rand) : null]))
+
+    const districtList = DISTRICTS_MAP[profile.name] ?? ['Merkez']
+    const totalDistricts = districtList.length
+    const districtDetails = districtList.map(name => {
+      const hasIhh = rand() < s * 0.8
+      const hasGencIhh = hasIhh && rand() < s * 0.7
+      return { name, hasIhh, hasGencIhh }
+    })
+
+    const ihhDistrictCount = districtDetails.filter(d => d.hasIhh).length
+    const gencIhhDistrictCount = districtDetails.filter(d => d.hasGencIhh).length
+
     await prisma.provinceReport.upsert({
       where: { provinceId_year: { provinceId: province.id, year } },
       update: {
         orgStatus,
+        orgNames,
         totalDistrictCount: totalDistricts,
-        ihhDistrictCount: Math.round(totalDistricts * s * 0.8),
-        gencIhhDistrictCount: Math.round(totalDistricts * s * 0.5),
+        ihhDistrictCount,
+        gencIhhDistrictCount,
+        districtDetails,
       },
       create: {
         provinceId: province.id, year, createdBy: admin.id,
@@ -182,9 +237,11 @@ async function main() {
         kykCount: between(2, 15),
         dormCount: between(3, 25),
         orgStatus,
+        orgNames,
         totalDistrictCount: totalDistricts,
-        ihhDistrictCount: Math.round(totalDistricts * s * 0.8),
-        gencIhhDistrictCount: Math.round(totalDistricts * s * 0.5),
+        ihhDistrictCount,
+        gencIhhDistrictCount,
+        districtDetails,
         targets: {
           teskilatHedefi: between(10, 40), ilceHedefi: Math.round(totalDistricts * 0.7),
           fakulteBaskanHedefi: officialUnis.length * 3, liseTemsilciHedefi: between(5, 20),
@@ -301,6 +358,89 @@ async function main() {
   }
 
   console.log(`\n🎉 Toplam ${totalActivities} faaliyet üretildi (${PROFILES.length} il × ${periods.length} hafta × 2 kol)`)
+
+  // ── Örnek Raporlar (Arşiv ve Karne Raporları) ──
+  const reportsToCreate = []
+  const insightsToCreate = []
+
+  for (const profile of PROFILES) {
+    const province = provinceByName.get(profile.name)
+    if (!province) continue
+
+    const s = profile.strength
+    
+    // Örnek Karne snapshot'ı
+    reportsToCreate.push({
+      type: 'KARNE',
+      scopeType: 'PROVINCE',
+      scopeId: province.id,
+      scopeName: province.name,
+      year: year,
+      title: `${province.name} İl Karnesi (${year})`,
+      summaryJson: {
+        total: Math.round(40 + s * 55),
+        rank: PROFILES.findIndex(p => p.name === profile.name) + 1,
+        nationalCount: PROFILES.length,
+        grade: s > 0.8 ? 'A' : s > 0.6 ? 'B' : s > 0.4 ? 'C' : 'D',
+        totalParticipants: Math.round(1000 + s * 8000),
+        totalActivities: Math.round(50 + s * 200),
+        institutionCount: Math.round(5 + s * 15),
+        activeWeeks: Math.round(8 + s * 5)
+      },
+      snapshotJson: {
+        provinceName: province.name,
+        totalScore: Math.round(40 + s * 55),
+        details: "Bu karne sistem tarafından otomatik olarak arşivlenmiş karne snapshot verisidir."
+      },
+      generatedBy: admin.id,
+      generatedAt: new Date(Date.now() - between(1, 10) * 24 * 60 * 60 * 1000)
+    })
+
+    // Örnek AI Insight analizi
+    insightsToCreate.push({
+      type: 'KARNE',
+      scopeType: 'PROVINCE',
+      scopeId: province.id,
+      scopeName: province.name,
+      year: year,
+      title: `${province.name} AI Karne Değerlendirmesi`,
+      prompt: `Karne verilerine göre ${province.name} ilinin performansını analiz et.`,
+      response: `${province.name} Genç İHH teşkilatı bu dönemde toplamda ${Math.round(1000 + s * 8000)} kişiye ulaşarak önemli bir başarı elde etmiştir. Teşkilat şeması %${Math.round(s * 100)} oranında tamamlanmıştır. Üniversitelerdeki ders katılımı güçlüdür ancak lise çalışmalarında süreklilik artırılmalıdır.`,
+      generatedBy: admin.id,
+      generatedAt: new Date(Date.now() - between(1, 10) * 24 * 60 * 60 * 1000)
+    })
+  }
+
+  // Birkaç genel/bölgesel rapor ekle
+  reportsToCreate.push({
+    type: 'HAFTALIK',
+    scopeType: 'COUNTRY',
+    scopeId: null,
+    scopeName: 'Türkiye',
+    year: year,
+    title: `Türkiye Geneli Haftalık Rapor (Hafta 13)`,
+    summaryJson: { totalActivities: 450, totalParticipants: 12000, activeProvinces: 12 },
+    snapshotJson: { totalActivities: 450, totalParticipants: 12000, activeProvinces: 12 },
+    generatedBy: admin.id,
+    generatedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)
+  })
+
+  insightsToCreate.push({
+    type: 'TREND',
+    scopeType: 'COUNTRY',
+    scopeId: null,
+    scopeName: 'Türkiye',
+    year: year,
+    title: `Türkiye Geneli Haftalık Trend Değerlendirmesi`,
+    prompt: `13. hafta itibariyle Türkiye geneli trendleri analiz et.`,
+    response: `Türkiye genelinde 13. hafta itibarıyla Genç İHH birimleri katılım düzeylerinde istikrarlı bir grafik çizmiştir. Marmara bölgesi liderliğini korurken, İç Anadolu bölgesinde haftalık ders faaliyetleri öne çıkmıştır. Gelecek haftalarda kermes ve sosyal faaliyetlerin yoğunlaşması beklenmektedir.`,
+    generatedBy: admin.id,
+    generatedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)
+  })
+
+  await prisma.report.createMany({ data: reportsToCreate })
+  await prisma.aiInsight.createMany({ data: insightsToCreate })
+  console.log(`✅ ${reportsToCreate.length} örnek arşiv raporu ve ${insightsToCreate.length} örnek AI analizi oluşturuldu`)
 }
 
 main()

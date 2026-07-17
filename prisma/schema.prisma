@@ -299,10 +299,18 @@ model ProvinceReport {
   //  projeFonBsk: bool, sosyalFaal: bool, atomBsk: bool, aktifGenclik: bool}
   orgStatus            Json?
 
+  // ── Teşkilat Kişi Adları (JSON) ──
+  // {ilBaskani: string?, teskilatBsk: string?, ...}
+  orgNames             Json?
+
   // ── İlçe Çalışmaları ──
   totalDistrictCount   Int?      // İlde kaç ilçe var
   ihhDistrictCount     Int?      // İHH kaç ilçede var
   gencIhhDistrictCount Int?      // Genç İHH Hanımlar kaç ilçede
+
+  // ── İlçe Detayları (JSON) ──
+  // [{name: string, hasIhh: bool, hasGencIhh: bool}]
+  districtDetails      Json?
 
   // ── Dönem Hedefleri (JSON) ──
   // {teskilatHedefi: number, ilceHedefi: number, fakulteBaskanHedefi: number,

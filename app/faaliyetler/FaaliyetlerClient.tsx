@@ -229,6 +229,8 @@ function FaaliyetlerInner({
                   <th>Detay</th>
                   <th>Faaliyet</th>
                   <th>Kol</th>
+                  <th>Konum</th>
+                  <th>Not</th>
                   <th className="text-right">Katılımcı</th>
                   <th>Giren</th>
                 </tr>
@@ -250,7 +252,7 @@ function FaaliyetlerInner({
                         {a.unitName}
                       </span>
                     </td>
-                    <td className="text-sm text-slate-700 max-w-[220px] truncate" title={a.institutionName}>
+                    <td className="text-sm text-slate-700 max-w-[180px] truncate" title={a.institutionName}>
                       {a.institutionName}
                     </td>
                     <td className="text-xs text-slate-500">
@@ -263,6 +265,8 @@ function FaaliyetlerInner({
                       </span>
                     </td>
                     <td className="text-xs text-slate-500">{a.gender === 'K' ? 'Kadın' : 'Erkek'}</td>
+                    <td className="text-xs text-slate-600 max-w-[120px] truncate" title={a.location ?? '—'}>{a.location ?? '—'}</td>
+                    <td className="text-xs text-slate-500 max-w-[150px] truncate" title={a.note ?? '—'}>{a.note ?? '—'}</td>
                     <td className="text-right font-bold tabular-nums" style={{ color: '#1B4E6B' }}>
                       {formatNumber(a.participantCount)}
                     </td>
