@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
 
   const activities = await prisma.activity.findMany({
     where,
-    select: { periodId: true, participantCount: true, activityTypeId: true, genderBranch: true },
+    select: { periodId: true, participantCount: true, activityTypeId: true, genderBranch: true, activityType: { select: { name: true } } },
   })
 
   // Hafta bazlı aggregation
@@ -63,6 +63,7 @@ export async function GET(request: NextRequest) {
     participants: number
     kadın: number
     erkek: number
+    activityDetails: Record<string, { count: number, participants: number }>
   }> = {}
 
   for (const p of periods) {
@@ -75,6 +76,7 @@ export async function GET(request: NextRequest) {
       participants: 0,
       kadın: 0,
       erkek: 0,
+      activityDetails: {}
     }
   }
 
@@ -84,6 +86,13 @@ export async function GET(request: NextRequest) {
       trendMap[a.periodId].participants += a.participantCount
       if (a.genderBranch === 'K') trendMap[a.periodId].kadın += a.participantCount
       else trendMap[a.periodId].erkek += a.participantCount
+      
+      const typeName = a.activityType.name
+      if (!trendMap[a.periodId].activityDetails[typeName]) {
+        trendMap[a.periodId].activityDetails[typeName] = { count: 0, participants: 0 }
+      }
+      trendMap[a.periodId].activityDetails[typeName].count++
+      trendMap[a.periodId].activityDetails[typeName].participants += a.participantCount
     }
   }
 

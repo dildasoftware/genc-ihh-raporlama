@@ -74,6 +74,7 @@ export default function TrendClient({ user, year, units, activityTypes }: Props)
     faaliyet: t.count,
     kadın: t.kadın,
     erkek: t.erkek,
+    activityDetails: t.activityDetails,
   })) ?? []
 
   const totalP = chartData.reduce((s: number, d: any) => s + d.katılımcı, 0)
@@ -383,7 +384,14 @@ export default function TrendClient({ user, year, units, activityTypes }: Props)
                     return (
                       <tr key={d.hafta}>
                         <td className="font-medium text-slate-800">{d.hafta}</td>
-                        <td className="text-right text-slate-600">{formatNumber(d.faaliyet)}</td>
+                        <td className="text-right text-slate-600">
+                          <div className="flex flex-col items-end">
+                            <span className="font-semibold text-slate-800">{formatNumber(d.faaliyet)}</span>
+                            {d.activityDetails && Object.entries(d.activityDetails).map(([name, val]: any) => (
+                              <span key={name} className="text-[10px] text-slate-400">{name}: {val.count}</span>
+                            ))}
+                          </div>
+                        </td>
                         <td className="text-right font-semibold" style={{ color: '#1B4E6B' }}>{formatNumber(d.katılımcı)}</td>
                         {gender === 'ALL' && <>
                           <td className="text-right text-pink-700">{formatNumber(d.kadın)}</td>

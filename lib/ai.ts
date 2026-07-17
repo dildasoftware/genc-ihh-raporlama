@@ -1,13 +1,20 @@
 import OpenAI from 'openai'
 
-const client = new OpenAI({
-  baseURL: 'https://openrouter.ai/api/v1',
-  apiKey: process.env.OPENROUTER_API_KEY,
-  defaultHeaders: {
-    'HTTP-Referer': process.env.NEXTAUTH_URL || 'http://localhost:3000',
-    'X-Title': 'GENÇ İHH Raporlama Sistemi',
-  },
-})
+let client: OpenAI | null = null
+
+function getClient() {
+  if (!client) {
+    client = new OpenAI({
+      baseURL: 'https://openrouter.ai/api/v1',
+      apiKey: process.env.OPENROUTER_API_KEY || 'dummy_key',
+      defaultHeaders: {
+        'HTTP-Referer': process.env.NEXTAUTH_URL || 'http://localhost:3000',
+        'X-Title': 'GENÇ İHH Raporlama Sistemi',
+      },
+    })
+  }
+  return client
+}
 
 const AI_MODEL = process.env.AI_MODEL || 'anthropic/claude-sonnet-4'
 
@@ -23,7 +30,7 @@ export async function callAI(
   }
 
   try {
-    const completion = await client.chat.completions.create({
+    const completion = await getClient().chat.completions.create({
       model: AI_MODEL,
       max_tokens: maxTokens,
       messages: [

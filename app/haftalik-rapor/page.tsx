@@ -1,9 +1,9 @@
 import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
 import type { SessionUser } from '@/lib/authz'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { FileText } from 'lucide-react'
+import HaftalikRaporClient from './HaftalikRaporClient'
 
 export const dynamic = 'force-dynamic'
 
@@ -23,24 +23,19 @@ export default async function HaftalikRaporPage() {
 
   if (user.role === 'IL_KOORDINATOR') redirect('/panel')
 
-  return (
-    <div className="p-6 max-w-5xl mx-auto">
-      <h1 className="text-2xl font-bold flex items-center gap-2 mb-6">
-        <FileText className="h-6 w-6 text-primary" />
-        Haftalık Rapor
-      </h1>
-      <Card className="border-border/60">
-        <CardHeader><CardTitle className="text-base">Otomatik Haftalık Rapor Üretici</CardTitle></CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground mb-4">
-            Bu ekran AI destekli haftalık rapor üretimine yönlendirilecek. Şu anda &quot;AI Analiz&quot; ekranından
-            &quot;Haftalık Rapor&quot; seçeneğini kullanabilirsiniz.
-          </p>
-          <a href="/ai-analiz" className="text-sm text-primary underline underline-offset-2">
-            AI Analiz ekranına git →
-          </a>
-        </CardContent>
-      </Card>
-    </div>
-  )
+  const year = new Date().getFullYear()
+
+  // Son 12 dönemi (haftayı) çek
+  const periods = await prisma.period.findMany({
+    where: { year },
+    orderBy: { weekNo: 'desc' },
+    take: 12,
+  })
+
+  const units = await prisma.unit.findMany({
+    orderBy: { order: 'asc' },
+    select: { id: true, name: true }
+  })
+
+  return <HaftalikRaporClient user={user} periods={periods} units={units} />
 }

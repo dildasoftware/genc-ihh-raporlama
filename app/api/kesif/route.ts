@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
       activityType: true,
       faculty: true,
     },
-    take: 500,
+    take: 2000,
   })
 
   // Group & aggregate
@@ -82,8 +82,27 @@ export async function GET(request: NextRequest) {
     .map(([key, v]) => ({ key, ...v }))
     .sort((a, b) => b.participants - a.participants)
 
+  // Extra insight for rich dashboard
+  const activityTypeMap = new Map<string, number>()
+  const instMap = new Map<number, { name: string, prov: string, participants: number }>()
+
+  for (const a of activities) {
+    const typeName = a.activityType.name
+    activityTypeMap.set(typeName, (activityTypeMap.get(typeName) ?? 0) + a.participantCount)
+    
+    if (!instMap.has(a.institutionId)) {
+      instMap.set(a.institutionId, { name: a.institution.name, prov: a.institution.province?.name ?? '', participants: 0 })
+    }
+    instMap.get(a.institutionId)!.participants += a.participantCount
+  }
+
+  const byActivityType = Array.from(activityTypeMap.entries()).map(([name, count]) => ({ name, count })).sort((a,b) => b.count - a.count)
+  const topInstitutions = Array.from(instMap.values()).sort((a, b) => b.participants - a.participants).slice(0, 5)
+
   return NextResponse.json({
     total: { count: activities.length, participants: activities.reduce((s, a) => s + a.participantCount, 0) },
     grouped: result,
+    byActivityType,
+    topInstitutions
   })
 }

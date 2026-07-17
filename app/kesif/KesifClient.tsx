@@ -4,7 +4,7 @@ import { useState, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { Search, Download, BarChart3, Table2, Grid3x3, RefreshCw, TrendingUp, Users, Activity, ChevronUp, ChevronDown } from 'lucide-react'
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell, ResponsiveContainer } from 'recharts'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell, ResponsiveContainer, PieChart, Pie } from 'recharts'
 import { formatNumber } from '@/lib/utils'
 import { getRoleLabel, getGenderLabel } from '@/lib/authz'
 import type { SessionUser } from '@/lib/authz'
@@ -16,7 +16,7 @@ interface Props {
   activityTypes: any[]
   provinces: any[]
   currentPeriodId: number | null
-  initialData: { total: { count: number; participants: number }; grouped: any[] }
+  initialData: { total: { count: number; participants: number }; grouped: any[]; byActivityType?: any[]; topInstitutions?: any[] }
 }
 
 const GENDER_OPTIONS = [
@@ -61,6 +61,7 @@ export default function KesifClient({ user, periods, units, activityTypes, provi
       if (f.gender !== 'ALL') params.set('gender', f.gender)
       if (f.unitId) params.set('unitId', f.unitId)
       if (f.activityTypeId) params.set('activityTypeId', f.activityTypeId)
+      if ((f as any).provinceId) params.set('provinceId', (f as any).provinceId)
       params.set('groupBy', f.groupBy)
       const res = await fetch(`/api/kesif?${params}`)
       if (!res.ok) throw new Error('Veri alınamadı')
@@ -163,6 +164,16 @@ export default function KesifClient({ user, periods, units, activityTypes, provi
               {activityTypes.map(at => <option key={at.id} value={at.id}>{at.name}</option>)}
             </select>
           </div>
+          {user.role !== 'IL_KOORDINATOR' && (
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-slate-500">İl</label>
+              <select value={(filters as any).provinceId || ''} onChange={e => setFilters(f => ({ ...f, provinceId: e.target.value }))}
+                className="h-8 px-2 text-xs border border-slate-200 rounded-lg bg-white outline-none focus:ring-1 focus:ring-primary">
+                <option value="">Tüm İller</option>
+                {provinces.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+              </select>
+            </div>
+          )}
           <div className="space-y-1">
             <label className="text-xs font-medium text-slate-500">Gruplama</label>
             <select value={filters.groupBy} onChange={e => setFilters(f => ({ ...f, groupBy: e.target.value }))}
@@ -196,6 +207,39 @@ export default function KesifClient({ user, periods, units, activityTypes, provi
           </div>
         ))}
       </div>
+
+      {/* Top 5 Institutions */}
+      {data.topInstitutions && data.topInstitutions.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="premium-card p-4">
+            <h3 className="text-sm font-semibold text-slate-700 mb-3">En Aktif 5 Kurum</h3>
+            <div className="space-y-2">
+              {data.topInstitutions.map((inst: any, idx: number) => (
+                <div key={idx} className="flex justify-between items-center text-sm border-b pb-2 last:border-0 last:pb-0">
+                  <div>
+                    <span className="font-medium text-slate-800">{inst.name}</span>
+                    <span className="text-xs text-slate-500 ml-2">({inst.prov})</span>
+                  </div>
+                  <span className="font-bold text-teal-600">{formatNumber(inst.participants)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          {data.byActivityType && (
+            <div className="premium-card p-4">
+              <h3 className="text-sm font-semibold text-slate-700 mb-3">Faaliyet Türü Dağılımı</h3>
+              <ResponsiveContainer width="100%" height={180}>
+                <PieChart>
+                  <Pie data={data.byActivityType} dataKey="count" nameKey="name" cx="50%" cy="50%" outerRadius={70} label={({ name, percent }) => (percent || 0) > 0.05 ? `${name}` : ''} labelLine={false}>
+                    {data.byActivityType.map((_: any, i: number) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                  </Pie>
+                  <Tooltip contentStyle={{ fontSize: '12px', borderRadius: '8px', border: '1px solid #E2E8F0' }} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Görünüm Seçici + Arama */}
       <div className="flex items-center justify-between gap-3 flex-wrap">

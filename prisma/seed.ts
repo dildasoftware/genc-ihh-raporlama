@@ -330,24 +330,22 @@ async function main() {
   // (aşağıdaki "RESMÎ ÜNİVERSİTELER" bloğu). Buradaki liste yalnızca
   // lise/ortaokul gibi henüz resmî kaynağa bağlanmamış kurumlar içindir.
   const institutionsData = [
-    {
-      name: 'Ankara Fen Lisesi',
-      provinceId: provinceMap['Ankara'],
-      unitId: unitMap['Lise'],
-      schoolTypeId: schoolTypeMap['Fen Lisesi'],
-    },
-    {
-      name: 'Ankara İHL',
-      provinceId: provinceMap['Ankara'],
-      unitId: unitMap['Lise'],
-      schoolTypeId: schoolTypeMap['İHL'],
-    },
-    {
-      name: 'Kocatepe Ortaokulu',
-      provinceId: provinceMap['Ankara'],
-      unitId: unitMap['Ortaokul'],
-      schoolTypeId: null,
-    },
+    { name: 'Ankara Fen Lisesi', provinceId: provinceMap['Ankara'], unitId: unitMap['Lise'], schoolTypeId: schoolTypeMap['Fen Lisesi'] },
+    { name: 'Ankara İHL', provinceId: provinceMap['Ankara'], unitId: unitMap['Lise'], schoolTypeId: schoolTypeMap['İHL'] },
+    { name: 'Kocatepe Ortaokulu', provinceId: provinceMap['Ankara'], unitId: unitMap['Ortaokul'], schoolTypeId: null },
+    // Yeni eklenen lise/ortaokullar (Ankara)
+    { name: 'Gazi Anadolu Lisesi', provinceId: provinceMap['Ankara'], unitId: unitMap['Lise'], schoolTypeId: schoolTypeMap['Anadolu Lisesi'] },
+    { name: 'Atatürk Mesleki ve Teknik Anadolu Lisesi', provinceId: provinceMap['Ankara'], unitId: unitMap['Lise'], schoolTypeId: schoolTypeMap['Meslek Lisesi'] },
+    { name: 'Sincan İHL', provinceId: provinceMap['Ankara'], unitId: unitMap['Lise'], schoolTypeId: schoolTypeMap['İHL'] },
+    { name: 'Çankaya Ortaokulu', provinceId: provinceMap['Ankara'], unitId: unitMap['Ortaokul'], schoolTypeId: null },
+    { name: 'Mamak İmam Hatip Ortaokulu', provinceId: provinceMap['Ankara'], unitId: unitMap['Ortaokul'], schoolTypeId: null },
+    // Yeni eklenen lise/ortaokullar (İstanbul)
+    { name: 'Kabataş Erkek Lisesi', provinceId: provinceMap['İstanbul'], unitId: unitMap['Lise'], schoolTypeId: schoolTypeMap['Anadolu Lisesi'] },
+    { name: 'Kartal Anadolu İHL', provinceId: provinceMap['İstanbul'], unitId: unitMap['Lise'], schoolTypeId: schoolTypeMap['İHL'] },
+    { name: 'Cağaloğlu Anadolu Lisesi', provinceId: provinceMap['İstanbul'], unitId: unitMap['Lise'], schoolTypeId: schoolTypeMap['Anadolu Lisesi'] },
+    { name: 'Kadıköy Mesleki ve Teknik Anadolu Lisesi', provinceId: provinceMap['İstanbul'], unitId: unitMap['Lise'], schoolTypeId: schoolTypeMap['Meslek Lisesi'] },
+    { name: 'Üsküdar İmam Hatip Ortaokulu', provinceId: provinceMap['İstanbul'], unitId: unitMap['Ortaokul'], schoolTypeId: null },
+    { name: 'Fatih Ortaokulu', provinceId: provinceMap['İstanbul'], unitId: unitMap['Ortaokul'], schoolTypeId: null },
   ]
 
   // Use createMany is not ideal for upsert. Let's do individual creates:
@@ -463,6 +461,105 @@ async function main() {
   } else {
     console.log(`⏭️  Faaliyetler zaten mevcut (${existingActivities} adet), atlanıyor`)
   }
+
+  // ==================== ÖRNEK İL RAPORLARI (İlçe ve Teşkilat Verisi) ====================
+  const reportsData = [
+    {
+      provinceId: provinceMap['Ankara'],
+      year: now.getFullYear(),
+      population: 5747325,
+      districtCount: 25,
+      studentCount: 320000,
+      universityCount: 8,
+      highSchoolCount: 150,
+      middleSchoolCount: 210,
+      kykCount: 15,
+      dormCount: 25,
+      totalDistrictCount: 25,
+      ihhDistrictCount: 20,
+      gencIhhDistrictCount: 15,
+      districtDetails: [
+        { name: 'Çankaya', hasIhh: true, hasGencIhh: true },
+        { name: 'Keçiören', hasIhh: true, hasGencIhh: true },
+        { name: 'Yenimahalle', hasIhh: true, hasGencIhh: false },
+        { name: 'Mamak', hasIhh: true, hasGencIhh: true },
+        { name: 'Etimesgut', hasIhh: false, hasGencIhh: false },
+        { name: 'Sincan', hasIhh: true, hasGencIhh: true },
+        { name: 'Altındağ', hasIhh: true, hasGencIhh: true },
+        { name: 'Pursaklar', hasIhh: true, hasGencIhh: false },
+        { name: 'Gölbaşı', hasIhh: true, hasGencIhh: true },
+        { name: 'Polatlı', hasIhh: false, hasGencIhh: false },
+      ],
+      orgNames: {
+        ilBaskani: 'Ahmet Yılmaz',
+        teskilatBsk: 'Mehmet Demir',
+        egitimBsk: 'Ayşe Kaya',
+        universiteBsk: 'Fatma Çelik',
+        liseBsk: 'Mustafa Şahin',
+        ortaokulBsk: 'Ali Koç',
+      },
+      orgStatus: {
+        ilBaskani: true,
+        teskilatBsk: true,
+        egitimBsk: true,
+        universiteBsk: true,
+        liseBsk: true,
+        ortaokulBsk: true,
+      },
+      createdBy: userMap['admin@test.com'],
+    },
+    {
+      provinceId: provinceMap['İstanbul'],
+      year: now.getFullYear(),
+      population: 15840900,
+      districtCount: 39,
+      studentCount: 1200000,
+      universityCount: 15,
+      highSchoolCount: 450,
+      middleSchoolCount: 600,
+      kykCount: 30,
+      dormCount: 50,
+      totalDistrictCount: 39,
+      ihhDistrictCount: 35,
+      gencIhhDistrictCount: 30,
+      districtDetails: [
+        { name: 'Kadıköy', hasIhh: true, hasGencIhh: true },
+        { name: 'Üsküdar', hasIhh: true, hasGencIhh: true },
+        { name: 'Fatih', hasIhh: true, hasGencIhh: true },
+        { name: 'Eyüpsultan', hasIhh: true, hasGencIhh: true },
+        { name: 'Beşiktaş', hasIhh: false, hasGencIhh: false },
+        { name: 'Şişli', hasIhh: true, hasGencIhh: false },
+        { name: 'Esenyurt', hasIhh: true, hasGencIhh: true },
+        { name: 'Pendik', hasIhh: true, hasGencIhh: true },
+        { name: 'Maltepe', hasIhh: true, hasGencIhh: true },
+        { name: 'Kartal', hasIhh: true, hasGencIhh: true },
+      ],
+      orgNames: {
+        ilBaskani: 'Hasan Yurt',
+        teskilatBsk: 'Ömer Faruk',
+        egitimBsk: 'Zeynep Al',
+        universiteBsk: 'Burak Can',
+      },
+      orgStatus: {
+        ilBaskani: true,
+        teskilatBsk: true,
+        egitimBsk: true,
+        universiteBsk: true,
+        liseBsk: false,
+        ortaokulBsk: false,
+      },
+      createdBy: userMap['admin@test.com'],
+    }
+  ]
+
+  for (const pr of reportsData) {
+    await prisma.provinceReport.upsert({
+      where: { provinceId_year: { provinceId: pr.provinceId, year: pr.year } },
+      update: pr,
+      create: pr,
+    })
+  }
+  console.log(`✅ ${reportsData.length} örnek il raporu (ilçe ve teşkilat verisi) oluşturuldu`)
 
   console.log('\n🎉 Seed tamamlandı!')
   console.log('\n📋 Test Kullanıcıları:')

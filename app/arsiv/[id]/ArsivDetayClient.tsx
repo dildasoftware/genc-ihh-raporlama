@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import ReactMarkdown from 'react-markdown'
 import {
-  ArrowLeft, Printer, Loader2, Archive, ArchiveRestore, Bot, FileText,
+  ArrowLeft, Printer, Loader2, Archive, ArchiveRestore, Bot, FileText, Download,
   Users, Building2, CalendarCheck, BarChart3, Clock, User as UserIcon, ExternalLink,
 } from 'lucide-react'
 import {
@@ -27,6 +27,7 @@ export default function ArsivDetayClient({ id }: { id: string }) {
   const [data, setData] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isBusy, setIsBusy] = useState(false)
+  const printRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     fetch(`/api/reports/${id}`)
@@ -56,6 +57,25 @@ export default function ArsivDetayClient({ id }: { id: string }) {
       toast.error(e.message)
     } finally {
       setIsBusy(false)
+    }
+  }
+
+  const handlePdf = async () => {
+    if (!printRef.current) return
+    toast.loading('PDF hazırlanıyor...')
+    try {
+      const { default: jsPDF } = await import('jspdf')
+      const { default: h2c } = await import('html2canvas')
+      const canvas = await h2c(printRef.current, { scale: 2, backgroundColor: '#ffffff', useCORS: true })
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
+      const w = pdf.internal.pageSize.getWidth()
+      const h = (canvas.height * w) / canvas.width
+      pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, w, h)
+      pdf.save(`GENC-IHH-${data.title.replace(/\s+/g, '-')}.pdf`)
+      toast.dismiss(); toast.success('PDF indirildi!')
+    } catch (e) {
+      console.error(e)
+      toast.dismiss(); toast.error('PDF oluşturulamadı')
     }
   }
 
@@ -107,10 +127,10 @@ export default function ArsivDetayClient({ id }: { id: string }) {
               : data.isArchived ? <ArchiveRestore className="h-3.5 w-3.5" /> : <Archive className="h-3.5 w-3.5" />}
             {data.isArchived ? 'Geri yükle' : 'Arşivle'}
           </button>
-          <button onClick={() => window.print()}
+          <button onClick={handlePdf}
             className="flex items-center gap-1.5 h-9 px-4 rounded-lg text-sm font-medium text-white transition-all active:scale-95"
             style={{ background: '#1B4E6B' }}>
-            <Printer className="h-4 w-4" /> PDF olarak indir
+            <Download className="h-4 w-4" /> PDF olarak indir
           </button>
         </div>
       </div>
@@ -125,6 +145,8 @@ export default function ArsivDetayClient({ id }: { id: string }) {
         </div>
       )}
 
+      {/* Rapor İçeriği */}
+      <div ref={printRef} className="space-y-4 print-full bg-white p-4">
       {/* Yazdırma başlığı */}
       <div className="print-only mb-4 pb-3 border-b-2" style={{ borderColor: '#1B4E6B' }}>
         <div className="flex items-center gap-3">
@@ -353,6 +375,7 @@ export default function ArsivDetayClient({ id }: { id: string }) {
         GENÇ İHH Raporlama Sistemi · {data.title} · Arşiv kaydı ·{' '}
         {new Date(data.generatedAt).toLocaleDateString('tr-TR')}
       </p>
+      </div>
     </div>
   )
 }
