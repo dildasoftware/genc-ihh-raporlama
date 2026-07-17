@@ -111,7 +111,7 @@ export default function AiAnalizClient({ user, regions = [], provinces = [] }: P
 
   // Smart Karne State
   const [smartScope, setSmartScope] = useState(user.role === 'IL_KOORDINATOR' ? 'PROVINCE' : 'COUNTRY')
-  const [smartRegionId, setSmartRegionId] = useState('')
+  const [smartRegionId, setSmartRegionId] = useState(regions.length > 0 ? regions[0].id.toString() : '')
   const [smartProvinceId, setSmartProvinceId] = useState(user.provinceId?.toString() || (provinces.length === 1 ? provinces[0].id.toString() : ''))
   const [smartTimeframe, setSmartTimeframe] = useState('YEARLY')
   const [smartYear, setSmartYear] = useState(new Date().getFullYear().toString())
@@ -171,7 +171,7 @@ export default function AiAnalizClient({ user, regions = [], provinces = [] }: P
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             scopeType: smartScope,
-            scopeId: smartScope === 'PROVINCE' ? smartProvinceId : null,
+            scopeId: smartScope === 'PROVINCE' ? smartProvinceId : (smartScope === 'REGION' ? smartRegionId : null),
             timeframe: smartTimeframe,
             year: smartYear,
           }),
@@ -264,19 +264,36 @@ export default function AiAnalizClient({ user, regions = [], provinces = [] }: P
                       <Select value={smartScope} onValueChange={(val) => val && setSmartScope(val)}>
                         <SelectTrigger className="h-9">
                           <span className="flex-1 text-left line-clamp-1">
-                            {smartScope === 'COUNTRY' ? 'Türkiye Geneli' : 'İl'}
+                            {smartScope === 'COUNTRY' ? 'Türkiye Geneli' : smartScope === 'REGION' ? 'Bölge' : 'İl'}
                           </span>
                         </SelectTrigger>
                         <SelectContent>
                           {user.role !== 'IL_KOORDINATOR' && (
-                            <SelectItem value="COUNTRY">Türkiye Geneli</SelectItem>
+                            <>
+                              <SelectItem value="COUNTRY">Türkiye Geneli</SelectItem>
+                              <SelectItem value="REGION">Bölge</SelectItem>
+                            </>
                           )}
                           <SelectItem value="PROVINCE">İl</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
 
-
+                    {smartScope === 'REGION' && (
+                      <div className="space-y-1.5">
+                        <Label className="text-xs">Bölge</Label>
+                        <Select value={smartRegionId} onValueChange={(val) => val && setSmartRegionId(val)}>
+                          <SelectTrigger className="h-9">
+                            <span className="flex-1 text-left line-clamp-1 text-muted-foreground">
+                              {smartRegionId ? `${regions.find(r => r.id.toString() === smartRegionId)?.name} Bölge` : 'Seçiniz'}
+                            </span>
+                          </SelectTrigger>
+                          <SelectContent>
+                            {regions.map(r => <SelectItem key={r.id} value={r.id.toString()}>{r.name} Bölge</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
 
                     {smartScope === 'PROVINCE' && (
                       <div className="space-y-1.5">
@@ -333,7 +350,7 @@ export default function AiAnalizClient({ user, regions = [], provinces = [] }: P
                   placeholder={selectedType === 'SERBEST'
                     ? (user.role === 'IL_KOORDINATOR' 
                         ? 'Sorunuzu yazın... (örn: Hangi ilçede eksikliğimiz var?)' 
-                        : 'Sorunuzu yazın... (örn: Hangi ilimiz en hızlı büyüyor?)')
+                        : 'Sorunuzu yazın... (örn: Hangi bölge en hızlı büyüyor?)')
                     : 'İsteğe bağlı ek talimat ekleyin veya boş bırakın...'}
                   rows={3}
                   className="text-sm resize-none"
