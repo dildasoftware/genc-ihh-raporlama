@@ -1,0 +1,364 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap');
+
+@import "tailwindcss";
+
+/* ============================================================
+   GENÇ İHH — Premium Design System
+   ============================================================ */
+
+@theme {
+  /* Brand Colors */
+  --color-brand-navy:      #0F1923;
+  --color-brand-navy-mid:  #1A2535;
+  --color-brand-navy-light:#243347;
+  --color-brand-teal:      #1B4E6B;
+  --color-brand-teal-light:#2a6d94;
+  --color-brand-green:     #16A34A;
+  --color-brand-green-light:#22c55e;
+  --color-brand-gold:      #D97706;
+  --color-brand-rose:      #BE185D;
+
+  /* Semantic */
+  --color-background:     #F8FAFC;
+  --color-foreground:     #0F172A;
+  --color-card:           #FFFFFF;
+  --color-card-foreground:#0F172A;
+  --color-primary:        #1B4E6B;
+  --color-primary-foreground: #FFFFFF;
+  --color-secondary:      #F1F5F9;
+  --color-secondary-foreground: #334155;
+  --color-muted:          #F1F5F9;
+  --color-muted-foreground: #64748B;
+  --color-accent:         #16A34A;
+  --color-accent-foreground: #FFFFFF;
+  --color-destructive:    #DC2626;
+  --color-destructive-foreground: #FFFFFF;
+  --color-border:         #E2E8F0;
+  --color-input:          #E2E8F0;
+  --color-ring:           #1B4E6B;
+
+  /* Sidebar */
+  --color-sidebar:            #0F1923;
+  --color-sidebar-foreground: #CBD5E1;
+  --color-sidebar-border:     rgba(255,255,255,0.07);
+  --color-sidebar-primary:    #1B4E6B;
+  --color-sidebar-primary-foreground: #FFFFFF;
+  --color-sidebar-accent:     rgba(255,255,255,0.06);
+  --color-sidebar-muted:      rgba(255,255,255,0.04);
+
+  /* Radius */
+  --radius: 0.75rem;
+  --radius-sm: 0.5rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
+
+  /* Fonts */
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-display: 'Outfit', system-ui, sans-serif;
+}
+
+/* ============================================================
+   BASE STYLES
+   ============================================================ */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================================================
+   CSS CUSTOM PROPERTIES (for shadcn compatibility)
+   ============================================================ */
+
+:root {
+  --background:         248 250 252;
+  --foreground:         15 23 42;
+  --card:               255 255 255;
+  --card-foreground:    15 23 42;
+  --popover:            255 255 255;
+  --popover-foreground: 15 23 42;
+  --primary:            27 78 107;
+  --primary-foreground: 255 255 255;
+  --secondary:          241 245 249;
+  --secondary-foreground: 51 65 85;
+  --muted:              241 245 249;
+  --muted-foreground:   100 116 139;
+  --accent:             22 163 74;
+  --accent-foreground:  255 255 255;
+  --destructive:        220 38 38;
+  --destructive-foreground: 255 255 255;
+  --border:             226 232 240;
+  --input:              226 232 240;
+  --ring:               27 78 107;
+  --radius:             0.75rem;
+
+  /* Sidebar vars */
+  --sidebar-background: 15 25 35;
+  --sidebar-foreground: 203 213 225;
+  --sidebar-primary:    27 78 107;
+  --sidebar-primary-foreground: 255 255 255;
+  --sidebar-accent:     255 255 255;
+  --sidebar-accent-foreground: 203 213 225;
+  --sidebar-border:     255 255 255;
+  --sidebar-ring:       27 78 107;
+}
+
+/* ============================================================
+   PREMIUM COMPONENT STYLES
+   ============================================================ */
+
+/* Glass Card */
+.glass-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 4px 24px rgba(15, 25, 35, 0.06);
+}
+
+/* Gradient Text */
+.gradient-text {
+  background: linear-gradient(135deg, #1B4E6B 0%, #16A34A 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Premium Card */
+.premium-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 0.875rem;
+  box-shadow: 0 1px 3px rgba(15,23,42,0.04), 0 4px 16px rgba(15,23,42,0.04);
+  transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+}
+
+.premium-card:hover {
+  box-shadow: 0 4px 24px rgba(15,23,42,0.08);
+  transform: translateY(-1px);
+  border-color: #CBD5E1;
+}
+
+/* Stat Card Gradient Backgrounds */
+.stat-card-navy {
+  background: linear-gradient(135deg, #1B4E6B 0%, #0F1923 100%);
+  color: #fff;
+}
+.stat-card-green {
+  background: linear-gradient(135deg, #16A34A 0%, #14532D 100%);
+  color: #fff;
+}
+.stat-card-gold {
+  background: linear-gradient(135deg, #D97706 0%, #92400E 100%);
+  color: #fff;
+}
+.stat-card-rose {
+  background: linear-gradient(135deg, #BE185D 0%, #831843 100%);
+  color: #fff;
+}
+
+/* Score Badge */
+.score-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+/* Rank Medal */
+.medal-gold   { background: linear-gradient(135deg, #FBB840, #F59E0B); color: #78350F; }
+.medal-silver { background: linear-gradient(135deg, #CBD5E1, #94A3B8); color: #1E293B; }
+.medal-bronze { background: linear-gradient(135deg, #D97706, #B45309); color: #FFF; }
+
+/* Animated Progress Bar */
+.progress-bar {
+  height: 6px;
+  border-radius: 9999px;
+  background: #E2E8F0;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, #1B4E6B, #16A34A);
+  transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Karne Province Row */
+.province-row {
+  border-radius: 0.625rem;
+  border: 1px solid #F1F5F9;
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+.province-row:hover {
+  border-color: #CBD5E1;
+  background: #F8FAFC;
+  box-shadow: 0 2px 8px rgba(15,23,42,0.05);
+}
+.province-row.expanded {
+  border-color: #1B4E6B;
+  background: #EFF6FF;
+  box-shadow: 0 4px 16px rgba(27,78,107,0.08);
+}
+
+/* Sidebar Nav Item */
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.875rem;
+  border-radius: 0.625rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: rgba(203,213,225,0.7);
+  transition: all 0.15s ease;
+  cursor: pointer;
+  text-decoration: none;
+}
+.nav-item:hover {
+  background: rgba(255,255,255,0.06);
+  color: #E2E8F0;
+}
+.nav-item.active {
+  background: rgba(27,78,107,0.8);
+  color: #FFFFFF;
+  box-shadow: 0 2px 8px rgba(27,78,107,0.4);
+}
+
+/* Filter Bar */
+.filter-bar {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 0.875rem;
+  padding: 1rem 1.25rem;
+  box-shadow: 0 1px 4px rgba(15,23,42,0.04);
+}
+
+/* Table */
+.data-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+.data-table th {
+  background: #F8FAFC;
+  padding: 0.625rem 0.875rem;
+  text-align: left;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748B;
+  border-bottom: 1px solid #E2E8F0;
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.1s;
+}
+.data-table th:hover { color: #1B4E6B; }
+.data-table td {
+  padding: 0.625rem 0.875rem;
+  font-size: 0.8125rem;
+  border-bottom: 1px solid #F1F5F9;
+  color: #334155;
+}
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: #F8FAFC; }
+
+/* Tooltip */
+.recharts-tooltip-wrapper .recharts-default-tooltip {
+  background: rgba(15,25,35,0.92) !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+  border-radius: 0.5rem !important;
+  padding: 0.5rem 0.75rem !important;
+  font-size: 0.75rem !important;
+  color: #E2E8F0 !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3) !important;
+}
+
+/* PDF Print Area */
+@media print {
+  .no-print { display: none !important; }
+  .print-only { display: block !important; }
+  body { background: white; }
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.6; }
+}
+@keyframes countUp {
+  from { opacity: 0; transform: scale(0.8); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.animate-fade-in-up  { animation: fadeInUp 0.4s ease forwards; }
+.animate-slide-in    { animation: slideIn 0.3s ease forwards; }
+.animate-count-up    { animation: countUp 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+
+/* Stagger children */
+.stagger-children > *:nth-child(1) { animation-delay: 0ms; }
+.stagger-children > *:nth-child(2) { animation-delay: 80ms; }
+.stagger-children > *:nth-child(3) { animation-delay: 160ms; }
+.stagger-children > *:nth-child(4) { animation-delay: 240ms; }
+.stagger-children > *:nth-child(5) { animation-delay: 320ms; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+
+/* Gender Color Utilities */
+.gender-k { color: #BE185D; background: #FDF2F8; }
+.gender-e { color: #1D4ED8; background: #EFF6FF; }
+.gender-all { color: #1B4E6B; background: #EFF8FF; }
+
+/* Heatmap cells */
+.heatmap-cell {
+  border-radius: 4px;
+  transition: transform 0.1s;
+}
+.heatmap-cell:hover {
+  transform: scale(1.15);
+  z-index: 10;
+}
+
+/* Print / PDF Styles */
+@media print {
+  .no-print { display: none !important; }
+  .print-only { display: block !important; }
+  body { background: white !important; }
+  .premium-card { box-shadow: none !important; border: 1px solid #E2E8F0 !important; }
+}
+.print-only { display: none; }
+
+/* Karne Animations */
+@keyframes shimmer {
+  0% { background-position: -200px 0; }
+  100% { background-position: calc(200px + 100%) 0; }
+}
+
+.karne-shimmer {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  background-size: 200px 100%;
+  animation: shimmer 2s infinite;
+}
