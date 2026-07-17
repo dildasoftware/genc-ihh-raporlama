@@ -264,6 +264,8 @@ body {
   user-select: none;
   transition: color 0.1s;
 }
+.data-table th.text-center { text-align: center; }
+.data-table th.text-right { text-align: right; }
 .data-table th:hover { color: #1B4E6B; }
 .data-table td {
   padding: 0.625rem 0.875rem;
