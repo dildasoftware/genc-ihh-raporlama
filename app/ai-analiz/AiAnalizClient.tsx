@@ -74,9 +74,9 @@ export default function AiAnalizClient({ user, regions = [], provinces = [] }: P
   const [history, setHistory] = useState<HistoryItem[]>([])
 
   // Smart Karne State
-  const [smartScope, setSmartScope] = useState('COUNTRY') // COUNTRY, REGION, PROVINCE
-  const [smartRegionId, setSmartRegionId] = useState('')
-  const [smartProvinceId, setSmartProvinceId] = useState('')
+  const [smartScope, setSmartScope] = useState(user.role === 'IL_KOORDINATOR' ? 'PROVINCE' : user.role === 'BOLGE_KOORDINATOR' ? 'REGION' : 'COUNTRY')
+  const [smartRegionId, setSmartRegionId] = useState(user.regionId?.toString() || (regions.length === 1 ? regions[0].id.toString() : ''))
+  const [smartProvinceId, setSmartProvinceId] = useState(user.provinceId?.toString() || (provinces.length === 1 ? provinces[0].id.toString() : ''))
   const [smartTimeframe, setSmartTimeframe] = useState('YEARLY')
   const [smartYear, setSmartYear] = useState(new Date().getFullYear().toString())
   
@@ -232,8 +232,12 @@ export default function AiAnalizClient({ user, regions = [], provinces = [] }: P
                           </span>
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="COUNTRY">Türkiye Geneli</SelectItem>
-                          <SelectItem value="REGION">Bölge</SelectItem>
+                          {user.role !== 'IL_KOORDINATOR' && user.role !== 'BOLGE_KOORDINATOR' && (
+                            <SelectItem value="COUNTRY">Türkiye Geneli</SelectItem>
+                          )}
+                          {user.role !== 'IL_KOORDINATOR' && (
+                            <SelectItem value="REGION">Bölge</SelectItem>
+                          )}
                           <SelectItem value="PROVINCE">İl</SelectItem>
                         </SelectContent>
                       </Select>
