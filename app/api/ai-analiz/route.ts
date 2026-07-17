@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json()
-    const { type, scopeType, scopeId, periodId, userPrompt, contextData } = body
+    const { type, scopeType, scopeId, periodId, userPrompt, contextData, scopeName, year, title } = body
 
     if (!type || !systemPrompts[type]) {
       return NextResponse.json({ error: 'Geçersiz analiz türü' }, { status: 400 })
@@ -63,16 +63,30 @@ export async function POST(request: NextRequest) {
 
     const response = await callAI(systemPrompt, fullUserPrompt, 1024)
 
-    // Kaydet
+    // Kalıcı kayıt — AI analizi arşivde aranabilir/yeniden açılabilir olmalı
+    const resolvedYear = year ? parseInt(String(year)) : new Date().getFullYear()
     const insight = await prisma.aiInsight.create({
       data: {
         type,
         scopeType: scopeType ?? 'COUNTRY',
         scopeId: scopeId ? parseInt(scopeId) : null,
+        scopeName: scopeName ?? null,
+        title: title || `${scopeName ?? 'Türkiye'} — ${resolvedYear}`,
+        year: resolvedYear,
         periodId: periodId ? parseInt(periodId) : null,
         prompt: fullUserPrompt.slice(0, 2000),
         response,
         generatedBy: user.id,
+      },
+    })
+
+    await prisma.auditLog.create({
+      data: {
+        userId: user.id,
+        action: 'AI_ANALIZ_URET',
+        entity: 'AiInsight',
+        entityId: insight.id,
+        metaJson: JSON.stringify({ type, scopeType, scopeId, year: resolvedYear }),
       },
     })
 
