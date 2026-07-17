@@ -121,7 +121,7 @@ export function canWrite(user: SessionUser): boolean {
 
 /** Kullanıcı rapor üretebilir mi? */
 export function canGenerateReport(user: SessionUser): boolean {
-  return user.role !== 'IL_KOORDINATOR'
+  return true // Tüm roller (İl Koordinatörü dahil) kendi yetki alanındaki verilerle AI analizi yapabilir
 }
 
 /** Kullanıcı kayıt silebilir mi? */

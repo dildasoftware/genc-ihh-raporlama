@@ -21,7 +21,7 @@ export default async function AiAnalizPage() {
     fullName: session.user.name ?? '',
   }
 
-  if (user.role === 'IL_KOORDINATOR') redirect('/panel')
+  // IL_KOORDINATOR redirect removed: they can access AI Analiz
 
   let regions = await prisma.region.findMany({ orderBy: { id: 'asc' } })
   let provinces = await prisma.province.findMany({ orderBy: { name: 'asc' } })
@@ -29,6 +29,10 @@ export default async function AiAnalizPage() {
   if (user.role === 'BOLGE_KOORDINATOR' && user.regionId) {
     regions = regions.filter(r => r.id === user.regionId)
     provinces = provinces.filter(p => p.regionId === user.regionId)
+  } else if (user.role === 'IL_KOORDINATOR' && user.provinceId) {
+    provinces = provinces.filter(p => p.id === user.provinceId)
+    const province = provinces[0]
+    if (province) regions = regions.filter(r => r.id === province.regionId)
   }
 
   return <AiAnalizClient user={user} regions={regions} provinces={provinces} />

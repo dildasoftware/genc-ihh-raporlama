@@ -20,7 +20,7 @@ const navItems = [
   { href: '/trend',         label: 'Trend',             icon: TrendingUp,      roles: ['BOLGE_KOORDINATOR','MERKEZ_BIRIM_BASKANI','ADMIN'], section: 'analyze' },
   { href: '/karsilastir',   label: 'Karşılaştır',       icon: BarChart2,       roles: ['BOLGE_KOORDINATOR','MERKEZ_BIRIM_BASKANI','ADMIN'], section: 'analyze' },
   { href: '/haftalik-rapor',label: 'Haftalık Rapor',    icon: FileText,        roles: ['BOLGE_KOORDINATOR','MERKEZ_BIRIM_BASKANI','ADMIN'], section: 'reports' },
-  { href: '/ai-analiz',     label: 'AI Analiz',         icon: Bot,             roles: ['BOLGE_KOORDINATOR','MERKEZ_BIRIM_BASKANI','ADMIN'], section: 'reports' },
+  { href: '/ai-analiz',     label: 'AI Analiz',         icon: Bot,             roles: ['IL_KOORDINATOR','BOLGE_KOORDINATOR','MERKEZ_BIRIM_BASKANI','ADMIN'], section: 'reports' },
   { href: '/arsiv',         label: 'Arşiv',             icon: Archive,         roles: ['ALL'], section: 'reports' },
   { href: '/yonetim',       label: 'Yönetim',           icon: Settings,        roles: ['ADMIN'], section: 'admin' },
 ]
