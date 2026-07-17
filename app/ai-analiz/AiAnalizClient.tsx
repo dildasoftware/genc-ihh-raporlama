@@ -212,7 +212,11 @@ export default function AiAnalizClient({ user, regions = [], provinces = [] }: P
                     <div className="space-y-1.5">
                       <Label className="text-xs">Kapsam Türü</Label>
                       <Select value={smartScope} onValueChange={(val) => val && setSmartScope(val)}>
-                        <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                        <SelectTrigger className="h-9">
+                          <span className="flex-1 text-left line-clamp-1">
+                            {smartScope === 'COUNTRY' ? 'Türkiye Geneli' : smartScope === 'REGION' ? 'Bölge' : 'İl'}
+                          </span>
+                        </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="COUNTRY">Türkiye Geneli</SelectItem>
                           <SelectItem value="REGION">Bölge</SelectItem>
@@ -225,7 +229,11 @@ export default function AiAnalizClient({ user, regions = [], provinces = [] }: P
                       <div className="space-y-1.5">
                         <Label className="text-xs">Bölge</Label>
                         <Select value={smartRegionId} onValueChange={(val) => val && setSmartRegionId(val)}>
-                          <SelectTrigger className="h-9"><SelectValue placeholder="Seçiniz" /></SelectTrigger>
+                          <SelectTrigger className="h-9">
+                            <span className="flex-1 text-left line-clamp-1 text-muted-foreground">
+                              {smartRegionId ? `${regions.find(r => r.id.toString() === smartRegionId)?.name} Bölge` : 'Seçiniz'}
+                            </span>
+                          </SelectTrigger>
                           <SelectContent>
                             {regions.map(r => <SelectItem key={r.id} value={r.id.toString()}>{r.name} Bölge</SelectItem>)}
                           </SelectContent>
@@ -237,7 +245,11 @@ export default function AiAnalizClient({ user, regions = [], provinces = [] }: P
                       <div className="space-y-1.5">
                         <Label className="text-xs">İl</Label>
                         <Select value={smartProvinceId} onValueChange={(val) => val && setSmartProvinceId(val)}>
-                          <SelectTrigger className="h-9"><SelectValue placeholder="Seçiniz" /></SelectTrigger>
+                          <SelectTrigger className="h-9">
+                            <span className="flex-1 text-left line-clamp-1 text-muted-foreground">
+                              {smartProvinceId ? provinces.find(p => p.id.toString() === smartProvinceId)?.name : 'Seçiniz'}
+                            </span>
+                          </SelectTrigger>
                           <SelectContent>
                             {provinces.map(p => <SelectItem key={p.id} value={p.id.toString()}>{p.name}</SelectItem>)}
                           </SelectContent>
@@ -250,7 +262,11 @@ export default function AiAnalizClient({ user, regions = [], provinces = [] }: P
                     <div className="space-y-1.5">
                       <Label className="text-xs">Zaman Aralığı</Label>
                       <Select value={smartTimeframe} onValueChange={(val) => val && setSmartTimeframe(val)}>
-                        <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                        <SelectTrigger className="h-9">
+                          <span className="flex-1 text-left line-clamp-1">
+                            {smartTimeframe === 'YEARLY' ? 'Yıllık (Karne)' : smartTimeframe === 'MONTHLY' ? 'Aylık' : 'Haftalık'}
+                          </span>
+                        </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="YEARLY">Yıllık (Karne)</SelectItem>
                           <SelectItem value="MONTHLY">Aylık</SelectItem>
@@ -262,7 +278,9 @@ export default function AiAnalizClient({ user, regions = [], provinces = [] }: P
                     <div className="space-y-1.5">
                       <Label className="text-xs">Yıl</Label>
                       <Select value={smartYear} onValueChange={(val) => val && setSmartYear(val)}>
-                        <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                        <SelectTrigger className="h-9">
+                          <span className="flex-1 text-left line-clamp-1">{smartYear}</span>
+                        </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="2026">2026</SelectItem>
                           <SelectItem value="2025">2025</SelectItem>
