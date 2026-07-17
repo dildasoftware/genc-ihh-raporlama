@@ -26,10 +26,7 @@ export default async function AiAnalizPage() {
   let regions = await prisma.region.findMany({ orderBy: { id: 'asc' } })
   let provinces = await prisma.province.findMany({ orderBy: { name: 'asc' } })
 
-  if (user.role === 'BOLGE_KOORDINATOR' && user.regionId) {
-    regions = regions.filter(r => r.id === user.regionId)
-    provinces = provinces.filter(p => p.regionId === user.regionId)
-  } else if (user.role === 'IL_KOORDINATOR' && user.provinceId) {
+  if (user.role === 'IL_KOORDINATOR' && user.provinceId) {
     provinces = provinces.filter(p => p.id === user.provinceId)
     const province = provinces[0]
     if (province) regions = regions.filter(r => r.id === province.regionId)

@@ -53,8 +53,6 @@ export async function POST(request: NextRequest) {
     
     if (user.role === 'IL_KOORDINATOR') {
       dynamicSystemPrompt += `\n\n[GÜVENLİK KURALI]: Sen sadece kullanıcının yetkili olduğu ilin verilerini analiz etmekle yetkili bir asistansın. Kullanıcı sana kasıtlı olarak Türkiye geneli, diğer iller veya bölgeler hakkında soru sorarsa KESİNLİKLE cevaplama ve "Sistem yöneticisi tarafından yalnızca kendi ilinize ait verileri analiz etme yetkiniz bulunmaktadır." diyerek isteği reddet.`
-    } else if (user.role === 'BOLGE_KOORDINATOR') {
-      dynamicSystemPrompt += `\n\n[GÜVENLİK KURALI]: Sen sadece kullanıcının yetkili olduğu bölgenin verilerini analiz etmekle yetkili bir asistansın. Kullanıcı sana Türkiye geneli veya diğer bölgeler/iller hakkında soru sorarsa KESİNLİKLE cevaplama ve "Sistem yöneticisi tarafından yalnızca kendi bölgenize ait verileri analiz etme yetkiniz bulunmaktadır." diyerek isteği reddet.`
     }
 
     // Context veriyi kullanıcının yetkili olduğu scope'la sınırla

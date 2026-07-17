@@ -63,36 +63,7 @@ const getExamplePrompts = (role: string): Record<string, string[]> => {
     }
   }
 
-  if (role === 'BOLGE_KOORDINATOR') {
-    return {
-      KARNE: [
-        'Bölgemizdeki illerin genel performansını değerlendir.',
-        'Bölgemizde en başarılı il hangisi ve neden?',
-        'Alt sıralardaki illerimiz için öneriler ver.',
-      ],
-      TREND: [
-        'Bölgemizdeki genel düşüş trendinin sebepleri neler?',
-        'Gelecek 4 hafta için bölgemize dair projeksiyon yap.',
-        'Yaz dönemi bölgemizi nasıl etkiledi?',
-      ],
-      HAFTALIK_RAPOR: [
-        'Bölgemizin bu haftaki özet raporunu hazırla.',
-        'Haftalık raporda en çok öne çıkan il hangisi?',
-      ],
-      KARSILASTIRMA: [
-        'Bölgemizdeki illeri birbirleriyle kıyasla.',
-        'Neden bazı iller tutarsız performans gösteriyor?',
-      ],
-      IL_BIRIM: [
-        'Bölgemizde Üniversite birimi genel olarak neden zayıf?',
-        'Lise birimi güçlü olan illerimizin ortak özellikleri neler?',
-      ],
-      SERBEST: [
-        'Bölgemizde en etkili faaliyet türü hangisi?',
-        'Bölgemiz için genel stratejik önerilerin nelerdir?',
-      ],
-    }
-  }
+  // Removed BOLGE_KOORDINATOR specific prompts
 
   return {
     KARNE: [
@@ -139,8 +110,8 @@ export default function AiAnalizClient({ user, regions = [], provinces = [] }: P
   const [history, setHistory] = useState<HistoryItem[]>([])
 
   // Smart Karne State
-  const [smartScope, setSmartScope] = useState(user.role === 'IL_KOORDINATOR' ? 'PROVINCE' : user.role === 'BOLGE_KOORDINATOR' ? 'REGION' : 'COUNTRY')
-  const [smartRegionId, setSmartRegionId] = useState(user.regionId?.toString() || (regions.length === 1 ? regions[0].id.toString() : ''))
+  const [smartScope, setSmartScope] = useState(user.role === 'IL_KOORDINATOR' ? 'PROVINCE' : 'COUNTRY')
+  const [smartRegionId, setSmartRegionId] = useState('')
   const [smartProvinceId, setSmartProvinceId] = useState(user.provinceId?.toString() || (provinces.length === 1 ? provinces[0].id.toString() : ''))
   const [smartTimeframe, setSmartTimeframe] = useState('YEARLY')
   const [smartYear, setSmartYear] = useState(new Date().getFullYear().toString())
@@ -200,7 +171,7 @@ export default function AiAnalizClient({ user, regions = [], provinces = [] }: P
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             scopeType: smartScope,
-            scopeId: smartScope === 'PROVINCE' ? smartProvinceId : (smartScope === 'REGION' ? smartRegionId : null),
+            scopeId: smartScope === 'PROVINCE' ? smartProvinceId : null,
             timeframe: smartTimeframe,
             year: smartYear,
           }),
@@ -293,36 +264,19 @@ export default function AiAnalizClient({ user, regions = [], provinces = [] }: P
                       <Select value={smartScope} onValueChange={(val) => val && setSmartScope(val)}>
                         <SelectTrigger className="h-9">
                           <span className="flex-1 text-left line-clamp-1">
-                            {smartScope === 'COUNTRY' ? 'Türkiye Geneli' : smartScope === 'REGION' ? 'Bölge' : 'İl'}
+                            {smartScope === 'COUNTRY' ? 'Türkiye Geneli' : 'İl'}
                           </span>
                         </SelectTrigger>
                         <SelectContent>
-                          {user.role !== 'IL_KOORDINATOR' && user.role !== 'BOLGE_KOORDINATOR' && (
-                            <SelectItem value="COUNTRY">Türkiye Geneli</SelectItem>
-                          )}
                           {user.role !== 'IL_KOORDINATOR' && (
-                            <SelectItem value="REGION">Bölge</SelectItem>
+                            <SelectItem value="COUNTRY">Türkiye Geneli</SelectItem>
                           )}
                           <SelectItem value="PROVINCE">İl</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
 
-                    {smartScope === 'REGION' && (
-                      <div className="space-y-1.5">
-                        <Label className="text-xs">Bölge</Label>
-                        <Select value={smartRegionId} onValueChange={(val) => val && setSmartRegionId(val)}>
-                          <SelectTrigger className="h-9">
-                            <span className="flex-1 text-left line-clamp-1 text-muted-foreground">
-                              {smartRegionId ? `${regions.find(r => r.id.toString() === smartRegionId)?.name} Bölge` : 'Seçiniz'}
-                            </span>
-                          </SelectTrigger>
-                          <SelectContent>
-                            {regions.map(r => <SelectItem key={r.id} value={r.id.toString()}>{r.name} Bölge</SelectItem>)}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    )}
+
 
                     {smartScope === 'PROVINCE' && (
                       <div className="space-y-1.5">
@@ -379,9 +333,7 @@ export default function AiAnalizClient({ user, regions = [], provinces = [] }: P
                   placeholder={selectedType === 'SERBEST'
                     ? (user.role === 'IL_KOORDINATOR' 
                         ? 'Sorunuzu yazın... (örn: Hangi ilçede eksikliğimiz var?)' 
-                        : user.role === 'BOLGE_KOORDINATOR' 
-                          ? 'Sorunuzu yazın... (örn: Hangi ilimiz en hızlı büyüyor?)' 
-                          : 'Sorunuzu yazın... (örn: Hangi bölge en hızlı büyüyor?)')
+                        : 'Sorunuzu yazın... (örn: Hangi ilimiz en hızlı büyüyor?)')
                     : 'İsteğe bağlı ek talimat ekleyin veya boş bırakın...'}
                   rows={3}
                   className="text-sm resize-none"
