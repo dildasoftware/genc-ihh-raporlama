@@ -184,14 +184,31 @@ model ScoreWeight {
 
 // ==================== RAPOR & AI ====================
 
+// Üretilen her rapor/karne burada kalıcı tutulur.
+//
+// PDF dosyası SAKLANMAZ: PDF tarayıcının native print'i ile üretiliyor
+// (html2canvas Tailwind v4'ün lab() renklerini ayrıştıramıyor). Bunun yerine
+// hesaplanan verinin anlık görüntüsü (snapshotJson) saklanır — rapor sonradan
+// birebir yeniden açılır, grafikleri canlı render edilir ve tekrar PDF'e basılır.
+// Böylece blob depolama gerekmez, veri aranabilir ve kaynağına izlenebilir kalır.
 model Report {
   id          String    @id @default(cuid())
   type        String    // HAFTALIK, KARNE, BOLGE, ULKE, KARSILASTIRMA
   scopeType   String    // PROVINCE, REGION, COUNTRY
   scopeId     Int?
+  /** "Ankara" / "Marmara" / "Türkiye" — arama ve listeleme için denormalize */
+  scopeName   String?
   periodId    Int?
   year        Int?
-  filePath    String
+  /** Liste ekranında görünen başlık */
+  title       String    @default("")
+  /** Kartta gösterilen KPI özeti — tam snapshot açmadan */
+  summaryJson Json?
+  /** Raporun tam verisi — yeniden açmak için */
+  snapshotJson Json?
+  /** Kol (K/E/ALL) — filtreleme için */
+  genderScope String?
+  filePath    String?
   generatedBy String
   generatedAt DateTime  @default(now())
   deletedAt   DateTime?
@@ -200,15 +217,25 @@ model Report {
 
   @@index([type, scopeType])
   @@index([generatedAt])
+  @@index([scopeId, year])
+  @@index([deletedAt])
   @@map("reports")
 }
 
+// AI analizleri kalıcı proje kaydıdır — üretilir, saklanır, yeniden açılır,
+// arşivlenir ve PDF'e basılır. AI her zaman OPSİYONELDİR: rapor ve karne
+// AI olmadan da tam çalışır.
 model AiInsight {
   id          String    @id @default(cuid())
   type        String    // KARNE, HAFTALIK_RAPOR, KARSILASTIRMA, TREND, IL_BIRIM, SERBEST
   scopeType   String    // PROVINCE, REGION, UNIT, COUNTRY
   scopeId     Int?
+  /** "Ankara" / "Marmara" / "Türkiye" — arama için denormalize */
+  scopeName   String?
+  /** Liste ekranında görünen başlık */
+  title       String    @default("")
   periodId    Int?
+  year        Int?
   prompt      String
   response    String
   generatedBy String
@@ -219,6 +246,8 @@ model AiInsight {
 
   @@index([type, scopeType, scopeId])
   @@index([generatedAt])
+  @@index([scopeId, year])
+  @@index([deletedAt])
   @@map("ai_insights")
 }
 
