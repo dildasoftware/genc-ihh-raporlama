@@ -1,0 +1,298 @@
+// GENÇ İHH Raporlama Sistemi — Prisma Schema
+// Neon PostgreSQL (bulut) — SSL zorunlu
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ==================== ENUMS ====================
+
+enum Role {
+  IL_KOORDINATOR
+  BOLGE_KOORDINATOR
+  MERKEZ_BIRIM_BASKANI
+  ADMIN
+}
+
+enum GenderBranch {
+  K
+  E
+}
+
+// ==================== REFERANS TABLOLARI ====================
+
+model Region {
+  id        Int        @id @default(autoincrement())
+  name      String     @unique
+  provinces Province[]
+  users     User[]
+
+  @@map("regions")
+}
+
+model Province {
+  id              Int              @id @default(autoincrement())
+  name            String           @unique
+  regionId        Int
+  region          Region           @relation(fields: [regionId], references: [id])
+  institutions    Institution[]
+  users           User[]
+  provinceReports ProvinceReport[]
+
+  @@map("provinces")
+}
+
+model Unit {
+  id            Int            @id @default(autoincrement())
+  name          String         @unique
+  order         Int
+  institutions  Institution[]
+  activityTypes ActivityType[]
+  scoreWeights  ScoreWeight[]
+  users         User[]
+
+  @@map("units")
+}
+
+model SchoolType {
+  id           Int           @id @default(autoincrement())
+  name         String        @unique
+  institutions Institution[]
+
+  @@map("school_types")
+}
+
+model Institution {
+  id           Int         @id @default(autoincrement())
+  provinceId   Int
+  unitId       Int
+  schoolTypeId Int?
+  name         String
+  province     Province    @relation(fields: [provinceId], references: [id])
+  unit         Unit        @relation(fields: [unitId], references: [id])
+  schoolType   SchoolType? @relation(fields: [schoolTypeId], references: [id])
+  faculties    Faculty[]
+  activities   Activity[]
+
+  @@index([provinceId, unitId])
+  @@map("institutions")
+}
+
+model Faculty {
+  id            Int        @id @default(autoincrement())
+  institutionId Int
+  name          String
+  institution   Institution @relation(fields: [institutionId], references: [id])
+  activities    Activity[]
+
+  @@index([institutionId])
+  @@map("faculties")
+}
+
+model Period {
+  id         Int        @id @default(autoincrement())
+  year       Int
+  weekNo     Int
+  month      Int
+  startDate  DateTime
+  endDate    DateTime
+  activities Activity[]
+
+  @@unique([year, weekNo])
+  @@map("periods")
+}
+
+model ActivityType {
+  id            Int           @id @default(autoincrement())
+  name          String        @unique
+  unitId        Int?
+  defaultWeight Float         @default(1)
+  unit          Unit?         @relation(fields: [unitId], references: [id])
+  scoreWeights  ScoreWeight[]
+  activities    Activity[]
+
+  @@map("activity_types")
+}
+
+// ==================== ANA TABLOLAR ====================
+
+model User {
+  id            String        @id @default(cuid())
+  email         String        @unique
+  passwordHash  String
+  fullName      String
+  role          Role
+  genderBranch  GenderBranch?
+  provinceId    Int?
+  regionId      Int?
+  unitId        Int?
+  isActive      Boolean       @default(true)
+  deactivatedAt DateTime?
+  province      Province?     @relation(fields: [provinceId], references: [id])
+  region        Region?       @relation(fields: [regionId], references: [id])
+  unit          Unit?         @relation(fields: [unitId], references: [id])
+  activities      Activity[]
+  reports         Report[]
+  aiInsights      AiInsight[]
+  auditLogs       AuditLog[]
+  provinceReports ProvinceReport[]
+
+  @@map("users")
+}
+
+model Activity {
+  id               String       @id @default(cuid())
+  periodId         Int
+  institutionId    Int
+  facultyId        Int?
+  activityTypeId   Int
+  participantCount Int
+  genderBranch     GenderBranch
+  location         String?
+  note             String?
+  createdBy        String
+  createdAt        DateTime     @default(now())
+  deletedAt        DateTime?
+
+  period       Period       @relation(fields: [periodId], references: [id])
+  institution  Institution  @relation(fields: [institutionId], references: [id])
+  faculty      Faculty?     @relation(fields: [facultyId], references: [id])
+  activityType ActivityType @relation(fields: [activityTypeId], references: [id])
+  user         User         @relation(fields: [createdBy], references: [id])
+
+  @@index([periodId, institutionId])
+  @@index([genderBranch])
+  @@index([createdBy])
+  @@map("activities")
+}
+
+model ScoreWeight {
+  unitId         Int
+  activityTypeId Int
+  weight         Float
+
+  unit         Unit         @relation(fields: [unitId], references: [id])
+  activityType ActivityType @relation(fields: [activityTypeId], references: [id])
+
+  @@id([unitId, activityTypeId])
+  @@map("score_weights")
+}
+
+// ==================== RAPOR & AI ====================
+
+model Report {
+  id          String    @id @default(cuid())
+  type        String    // HAFTALIK, KARNE, BOLGE, ULKE, KARSILASTIRMA
+  scopeType   String    // PROVINCE, REGION, COUNTRY
+  scopeId     Int?
+  periodId    Int?
+  year        Int?
+  filePath    String
+  generatedBy String
+  generatedAt DateTime  @default(now())
+  deletedAt   DateTime?
+
+  user User @relation(fields: [generatedBy], references: [id])
+
+  @@index([type, scopeType])
+  @@index([generatedAt])
+  @@map("reports")
+}
+
+model AiInsight {
+  id          String    @id @default(cuid())
+  type        String    // KARNE, HAFTALIK_RAPOR, KARSILASTIRMA, TREND, IL_BIRIM, SERBEST
+  scopeType   String    // PROVINCE, REGION, UNIT, COUNTRY
+  scopeId     Int?
+  periodId    Int?
+  prompt      String
+  response    String
+  generatedBy String
+  generatedAt DateTime  @default(now())
+  deletedAt   DateTime?
+
+  user User @relation(fields: [generatedBy], references: [id])
+
+  @@index([type, scopeType, scopeId])
+  @@index([generatedAt])
+  @@map("ai_insights")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String
+  action    String
+  entity    String
+  entityId  String?
+  metaJson  String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("audit_log")
+}
+
+// ==================== İL RAPOR VERİSİ ====================
+
+model ProvinceReport {
+  id                   String   @id @default(cuid())
+  provinceId           Int
+  year                 Int
+
+  // ── İl Genel Verileri ──
+  population           Int?      // Nüfus
+  districtCount        Int?      // İlçe sayısı
+  studentCount         Int?      // Öğrenci sayısı
+
+  // ── Kurum Sayıları ──
+  universityCount      Int?
+  highSchoolCount      Int?
+  middleSchoolCount    Int?
+  kykCount             Int?
+  dormCount            Int?
+
+  // ── Birim Bazlı Detaylı Kurum Verileri (JSON) ──
+  // Format: [{name: string, activities: [{type: string, locationCount: number, participantCount: number}]}]
+  universityData       Json?
+  highSchoolData       Json?
+  middleSchoolData     Json?
+  childData            Json?
+
+  // ── Teşkilat Durumu (JSON) ──
+  // {ilBaskani: bool, teskilatBsk: bool, egitimBsk: bool, universiteBsk: bool,
+  //  liseBsk: bool, ortaokulBsk: bool, ihhCocukBsk: bool, tanitimMedya: bool,
+  //  projeFonBsk: bool, sosyalFaal: bool, atomBsk: bool, aktifGenclik: bool}
+  orgStatus            Json?
+
+  // ── İlçe Çalışmaları ──
+  totalDistrictCount   Int?      // İlde kaç ilçe var
+  ihhDistrictCount     Int?      // İHH kaç ilçede var
+  gencIhhDistrictCount Int?      // Genç İHH Hanımlar kaç ilçede
+
+  // ── Dönem Hedefleri (JSON) ──
+  // {teskilatHedefi: number, ilceHedefi: number, fakulteBaskanHedefi: number,
+  //  liseTemsilciHedefi: number, fonHedefi: number}
+  targets              Json?
+
+  // ── Puanlama ──
+  totalScore           Float?
+  ranking              Int?
+
+  // ── Meta ──
+  createdBy            String
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  province  Province @relation(fields: [provinceId], references: [id])
+  user      User     @relation(fields: [createdBy], references: [id])
+
+  @@unique([provinceId, year])
+  @@index([year])
+  @@map("province_reports")
+}
