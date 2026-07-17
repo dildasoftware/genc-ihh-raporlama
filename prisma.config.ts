@@ -1,7 +1,13 @@
-import "dotenv/config";
+import { config } from "dotenv";
 import { defineConfig } from "prisma/config";
 
-const DATABASE_URL = "postgresql://neondb_owner:npg_67PxFCtyLBVM@ep-crimson-thunder-asjny3vf-pooler.c-4.eu-central-1.aws.neon.tech/neondb?sslmode=require";
+// .env.local dosyasından DATABASE_URL'yi yükle (override ile .env'den önce gelir)
+config({ path: ".env.local", override: true });
+
+const DATABASE_URL = process.env.DATABASE_URL;
+if (!DATABASE_URL) {
+  throw new Error("DATABASE_URL ortam değişkeni tanımlı değil. .env.local dosyasını kontrol edin.");
+}
 
 export default defineConfig({
   schema: "prisma/schema.prisma",

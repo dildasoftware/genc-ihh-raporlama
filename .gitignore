@@ -45,3 +45,9 @@ yarn-error.log*
 next-env.d.ts
 
 /lib/generated/prisma
+
+# AI/IDE agent settings
+.claude/
+
+# session cookies (sensitive)
+cookies.txt

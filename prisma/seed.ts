@@ -2,8 +2,17 @@ import { PrismaClient, Role, GenderBranch } from '@prisma/client'
 import { PrismaPg } from '@prisma/adapter-pg'
 import { Pool } from 'pg'
 import bcrypt from 'bcryptjs'
+import { UNIVERSITIES } from '../lib/universities'
+import { config } from 'dotenv'
 
-const DATABASE_URL = "postgresql://neondb_owner:npg_67PxFCtyLBVM@ep-crimson-thunder-asjny3vf-pooler.c-4.eu-central-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+// .env.local'dan DATABASE_URL'yi yükle
+config({ path: '.env.local', override: true })
+
+const DATABASE_URL = process.env.DATABASE_URL
+if (!DATABASE_URL || !DATABASE_URL.startsWith('postgresql://')) {
+  console.error('❌ Geçerli DATABASE_URL bulunamadı (.env.local beklenir)')
+  process.exit(1)
+}
 
 const pool = new Pool({ connectionString: DATABASE_URL })
 const adapter = new PrismaPg(pool)
@@ -97,6 +106,9 @@ async function main() {
   // ==================== BİRİMLER ====================
   const units = await Promise.all(
     [
+      // Yönetim = ilin kendi komisyon toplantıları (Excel'deki YÖNETİM sütunu).
+      // Kurumu yoktur; "{İl} İl Yönetimi" pseudo-kurumu üzerinden kaydedilir.
+      { name: 'Yönetim', order: 0 },
       { name: 'Üniversite', order: 1 },
       { name: 'Lise', order: 2 },
       { name: 'Ortaokul', order: 3 },
@@ -314,19 +326,10 @@ async function main() {
   users.forEach((u) => (userMap[u.email] = u.id))
 
   // ==================== ÖRNEK KURUMLAR ====================
+  // NOT: Üniversiteler burada TANIMLANMAZ — resmî YÖK listesinden gelirler
+  // (aşağıdaki "RESMÎ ÜNİVERSİTELER" bloğu). Buradaki liste yalnızca
+  // lise/ortaokul gibi henüz resmî kaynağa bağlanmamış kurumlar içindir.
   const institutionsData = [
-    {
-      name: 'Hacı Bayram Veli Üniversitesi',
-      provinceId: provinceMap['Ankara'],
-      unitId: unitMap['Üniversite'],
-      schoolTypeId: null,
-    },
-    {
-      name: 'Yıldırım Beyazıt Üniversitesi',
-      provinceId: provinceMap['Ankara'],
-      unitId: unitMap['Üniversite'],
-      schoolTypeId: null,
-    },
     {
       name: 'Ankara Fen Lisesi',
       provinceId: provinceMap['Ankara'],
@@ -343,18 +346,6 @@ async function main() {
       name: 'Kocatepe Ortaokulu',
       provinceId: provinceMap['Ankara'],
       unitId: unitMap['Ortaokul'],
-      schoolTypeId: null,
-    },
-    {
-      name: 'İstanbul Üniversitesi',
-      provinceId: provinceMap['İstanbul'],
-      unitId: unitMap['Üniversite'],
-      schoolTypeId: null,
-    },
-    {
-      name: 'Boğaziçi Üniversitesi',
-      provinceId: provinceMap['İstanbul'],
-      unitId: unitMap['Üniversite'],
       schoolTypeId: null,
     },
   ]
@@ -377,12 +368,45 @@ async function main() {
   const instMap: Record<string, number> = {}
   institutionResults.forEach((i) => (instMap[i.name] = i.id))
 
+  // ==================== RESMÎ ÜNİVERSİTELER (YÖK) ====================
+  // Üniversite adı formda serbest metin olarak girilemez; yalnızca bu
+  // listeden seçilir. Liste lib/universities.ts içinde tutulur ve yılda bir
+  // gözden geçirilir. Bu blok idempotenttir — tekrar çalıştırmak güvenlidir.
+  let uniCreated = 0
+  let uniSkipped = 0
+  for (const uni of UNIVERSITIES) {
+    const provinceId = provinceMap[uni.province]
+    if (!provinceId) {
+      console.warn(`⚠️  İl bulunamadı, atlandı: ${uni.province} (${uni.name})`)
+      continue
+    }
+    const existing = await prisma.institution.findFirst({
+      where: { name: uni.name, provinceId, unitId: unitMap['Üniversite'] },
+    })
+    if (existing) {
+      instMap[uni.name] = existing.id
+      uniSkipped++
+      continue
+    }
+    const created = await prisma.institution.create({
+      data: {
+        name: uni.name,
+        provinceId,
+        unitId: unitMap['Üniversite'],
+        schoolTypeId: null,
+      },
+    })
+    instMap[uni.name] = created.id
+    uniCreated++
+  }
+  console.log(`✅ Resmî üniversiteler: ${uniCreated} eklendi, ${uniSkipped} zaten vardı (toplam ${UNIVERSITIES.length})`)
+
   // ==================== FAKÜLTELER ====================
   const facultiesData = [
-    { name: 'Hukuk Fakültesi', institutionId: instMap['Hacı Bayram Veli Üniversitesi'] },
-    { name: 'İktisadi ve İdari Bilimler', institutionId: instMap['Hacı Bayram Veli Üniversitesi'] },
-    { name: 'Mühendislik Fakültesi', institutionId: instMap['Yıldırım Beyazıt Üniversitesi'] },
-    { name: 'Tıp Fakültesi', institutionId: instMap['Yıldırım Beyazıt Üniversitesi'] },
+    { name: 'Hukuk Fakültesi', institutionId: instMap['Ankara Hacı Bayram Veli Üniversitesi'] },
+    { name: 'İktisadi ve İdari Bilimler', institutionId: instMap['Ankara Hacı Bayram Veli Üniversitesi'] },
+    { name: 'Mühendislik Fakültesi', institutionId: instMap['Ankara Yıldırım Beyazıt Üniversitesi'] },
+    { name: 'Tıp Fakültesi', institutionId: instMap['Ankara Yıldırım Beyazıt Üniversitesi'] },
   ]
 
   const faculties = []
@@ -403,25 +427,25 @@ async function main() {
   if (existingActivities === 0) {
     const sampleActivities = [
       // Ankara Kadın Kolu — bu hafta
-      { periodId: currentPeriod.id, institutionId: instMap['Hacı Bayram Veli Üniversitesi'], facultyId: faculties[0].id, activityTypeId: activityTypes[0].id, participantCount: 15, genderBranch: GenderBranch.K, location: 'Kampüs', note: 'Haftalık toplantı', createdBy: userMap['ankara-k@test.com'] },
-      { periodId: currentPeriod.id, institutionId: instMap['Hacı Bayram Veli Üniversitesi'], facultyId: faculties[1].id, activityTypeId: activityTypes[1].id, participantCount: 25, genderBranch: GenderBranch.K, location: 'Dershane', note: 'Siyer dersi', createdBy: userMap['ankara-k@test.com'] },
+      { periodId: currentPeriod.id, institutionId: instMap['Ankara Hacı Bayram Veli Üniversitesi'], facultyId: faculties[0].id, activityTypeId: activityTypes[0].id, participantCount: 15, genderBranch: GenderBranch.K, location: 'Kampüs', note: 'Haftalık toplantı', createdBy: userMap['ankara-k@test.com'] },
+      { periodId: currentPeriod.id, institutionId: instMap['Ankara Hacı Bayram Veli Üniversitesi'], facultyId: faculties[1].id, activityTypeId: activityTypes[1].id, participantCount: 25, genderBranch: GenderBranch.K, location: 'Dershane', note: 'Siyer dersi', createdBy: userMap['ankara-k@test.com'] },
       { periodId: currentPeriod.id, institutionId: instMap['Ankara Fen Lisesi'], activityTypeId: activityTypes[2].id, participantCount: 40, genderBranch: GenderBranch.K, location: 'Okul bahçesi', note: 'Kermes düzenlendi', createdBy: userMap['ankara-k@test.com'] },
       { periodId: currentPeriod.id, institutionId: instMap['Ankara İHL'], activityTypeId: activityTypes[1].id, participantCount: 30, genderBranch: GenderBranch.K, location: 'Sınıf', note: 'Ahlak dersi', createdBy: userMap['ankara-k@test.com'] },
       { periodId: currentPeriod.id, institutionId: instMap['Kocatepe Ortaokulu'], activityTypeId: activityTypes[6].id, participantCount: 10, genderBranch: GenderBranch.K, location: 'Okul', note: 'Saha ziyareti', createdBy: userMap['ankara-k@test.com'] },
 
       // Ankara Erkek Kolu — bu hafta
-      { periodId: currentPeriod.id, institutionId: instMap['Yıldırım Beyazıt Üniversitesi'], facultyId: faculties[2].id, activityTypeId: activityTypes[0].id, participantCount: 20, genderBranch: GenderBranch.E, location: 'Kampüs', note: 'Haftalık toplantı', createdBy: userMap['ankara-e@test.com'] },
-      { periodId: currentPeriod.id, institutionId: instMap['Yıldırım Beyazıt Üniversitesi'], facultyId: faculties[3].id, activityTypeId: activityTypes[3].id, participantCount: 8, genderBranch: GenderBranch.E, location: 'Online', note: 'Proje sunumu', createdBy: userMap['ankara-e@test.com'] },
+      { periodId: currentPeriod.id, institutionId: instMap['Ankara Yıldırım Beyazıt Üniversitesi'], facultyId: faculties[2].id, activityTypeId: activityTypes[0].id, participantCount: 20, genderBranch: GenderBranch.E, location: 'Kampüs', note: 'Haftalık toplantı', createdBy: userMap['ankara-e@test.com'] },
+      { periodId: currentPeriod.id, institutionId: instMap['Ankara Yıldırım Beyazıt Üniversitesi'], facultyId: faculties[3].id, activityTypeId: activityTypes[3].id, participantCount: 8, genderBranch: GenderBranch.E, location: 'Online', note: 'Proje sunumu', createdBy: userMap['ankara-e@test.com'] },
       { periodId: currentPeriod.id, institutionId: instMap['Ankara Fen Lisesi'], activityTypeId: activityTypes[1].id, participantCount: 35, genderBranch: GenderBranch.E, location: 'Sınıf', note: 'Tarih dersi', createdBy: userMap['ankara-e@test.com'] },
       { periodId: currentPeriod.id, institutionId: instMap['Ankara İHL'], activityTypeId: activityTypes[4].id, participantCount: 22, genderBranch: GenderBranch.E, location: 'Konferans salonu', note: 'Eğitim semineri', createdBy: userMap['ankara-e@test.com'] },
-      { periodId: currentPeriod.id, institutionId: instMap['Hacı Bayram Veli Üniversitesi'], facultyId: faculties[0].id, activityTypeId: activityTypes[5].id, participantCount: 50, genderBranch: GenderBranch.E, location: 'Stant', note: 'Tanıtım standı', createdBy: userMap['ankara-e@test.com'] },
+      { periodId: currentPeriod.id, institutionId: instMap['Ankara Hacı Bayram Veli Üniversitesi'], facultyId: faculties[0].id, activityTypeId: activityTypes[5].id, participantCount: 50, genderBranch: GenderBranch.E, location: 'Stant', note: 'Tanıtım standı', createdBy: userMap['ankara-e@test.com'] },
 
       // Geçen hafta — Ankara K
-      { periodId: lastPeriod.id, institutionId: instMap['Hacı Bayram Veli Üniversitesi'], facultyId: faculties[0].id, activityTypeId: activityTypes[0].id, participantCount: 12, genderBranch: GenderBranch.K, location: 'Kampüs', note: 'Haftalık toplantı', createdBy: userMap['ankara-k@test.com'] },
+      { periodId: lastPeriod.id, institutionId: instMap['Ankara Hacı Bayram Veli Üniversitesi'], facultyId: faculties[0].id, activityTypeId: activityTypes[0].id, participantCount: 12, genderBranch: GenderBranch.K, location: 'Kampüs', note: 'Haftalık toplantı', createdBy: userMap['ankara-k@test.com'] },
       { periodId: lastPeriod.id, institutionId: instMap['Ankara Fen Lisesi'], activityTypeId: activityTypes[2].id, participantCount: 30, genderBranch: GenderBranch.K, location: 'Okul', note: 'Sosyal faaliyet', createdBy: userMap['ankara-k@test.com'] },
 
       // Geçen hafta — Ankara E
-      { periodId: lastPeriod.id, institutionId: instMap['Yıldırım Beyazıt Üniversitesi'], facultyId: faculties[2].id, activityTypeId: activityTypes[1].id, participantCount: 28, genderBranch: GenderBranch.E, location: 'Kampüs', note: 'Ders', createdBy: userMap['ankara-e@test.com'] },
+      { periodId: lastPeriod.id, institutionId: instMap['Ankara Yıldırım Beyazıt Üniversitesi'], facultyId: faculties[2].id, activityTypeId: activityTypes[1].id, participantCount: 28, genderBranch: GenderBranch.E, location: 'Kampüs', note: 'Ders', createdBy: userMap['ankara-e@test.com'] },
       { periodId: lastPeriod.id, institutionId: instMap['Ankara İHL'], activityTypeId: activityTypes[0].id, participantCount: 18, genderBranch: GenderBranch.E, location: 'Okul', note: 'Toplantı', createdBy: userMap['ankara-e@test.com'] },
 
       // İstanbul — Admin girişi (Marmara bölgesi verileri)
