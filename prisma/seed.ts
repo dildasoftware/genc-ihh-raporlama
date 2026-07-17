@@ -289,15 +289,7 @@ async function main() {
       unitId: null,
     },
 
-    {
-      email: 'univ-baskan@test.com',
-      fullName: 'Üniversite Birim Başkanı',
-      role: Role.MERKEZ_BIRIM_BASKANI,
-      genderBranch: null,
-      provinceId: null,
-      regionId: null,
-      unitId: unitMap['Üniversite'],
-    },
+
   ]
 
   const users = await Promise.all(
@@ -559,7 +551,7 @@ async function main() {
   console.log('  ankara-k@test.com       / Test1234!  → İL_KOORDINATOR (Ankara, Kadın)')
   console.log('  ankara-e@test.com       / Test1234!  → İL_KOORDINATOR (Ankara, Erkek)')
 
-  console.log('  univ-baskan@test.com    / Test1234!  → MERKEZ_BIRIM_BASKANI (Üniversite)')
+
 }
 
 main()
