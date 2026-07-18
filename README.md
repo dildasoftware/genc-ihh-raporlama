@@ -4,6 +4,7 @@
 
 ## 📖 Proje Özeti
 
+
 Sivil toplum kuruluşlarının (Örn: Genç İHH) saha operasyonlarında karşılaştığı en büyük problemlerden biri, verilerin manuel ve dağınık (Excel, WhatsApp vb.) toplanmasıdır. Bu durum veri karmaşasına, raporların gecikmesine ve sahanın gerçek performansının merkez tarafından net okunamamasına neden olur. 
 
 Geliştirdiğimiz bu proje; Türkiye genelindeki saha operasyonlarını (Kadın Kolu, Erkek Kolu, Lise, Üniversite vb.) hiyerarşik olarak takip eden, analiz eden ve raporlayan **yapay zeka (LLM) destekli modern bir web uygulamasıdır**. 
@@ -91,3 +92,9 @@ Uygulama başarıyla başlatıldıktan sonra tarayıcınızdan `http://localhost
 * **Immutable Arşiv (Snapshot):** İl koordinatörleri tarafından gönderilen haftalık raporlar veritabanında "JSON Snapshot" olarak dondurulur. Geçmiş raporların sonradan değiştirilmesi (veri manipülasyonu) mimari olarak engellenmiştir.
 * **Rol Bazlı Yetkilendirme (RBAC):** İl Koordinatörü sadece kendi iline veri girebilirken, Genel Merkez tüm illerin istatistiklerini harita üzerinden karşılaştırmalı olarak görebilir.
 * **Serverless Mimari:** Uygulama ve veritabanı kullanılmadığı anlarda uyku moduna geçer (Scale-to-zero), trafik anında ise anlık olarak yük dengeler. Bu sayede işletme maliyeti sıfıra yakındır.
+
+## 📄 Lisans ve Telif Hakkı
+
+**Copyright (c) 2026 Dilara Bilişik, Sudenur Öztürk. Tüm Hakları Saklıdır.**
+
+Bu proje, kaynak kodları ve arayüz tasarımı tamamen geliştiricilerine (Dilara Bilişik ve Sudenur Öztürk) ait olup **Özel Mülkiyet (Proprietary)** altındadır. Hiçbir kişi, kurum veya kuruluş tarafından izinsiz olarak kopyalanamaz, çoğaltılamaz, dağıtılamaz veya başka bir amaçla kullanılamaz. Proje sadece ATOM Hackathon teknik incelemesi için genel erişime açılmıştır. Detaylar için `LICENSE` dosyasına bakabilirsiniz.
