@@ -99,7 +99,7 @@ export async function GET(request: NextRequest) {
   ])
 
   return NextResponse.json({
-    items: activities.map(a => ({
+    items: activities.map((a: any) => ({
       id: a.id,
       week: a.period.weekNo,
       year: a.period.year,
