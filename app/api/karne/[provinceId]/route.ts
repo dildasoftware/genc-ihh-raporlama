@@ -82,8 +82,8 @@ export async function GET(
       ...commonFilters,
       ...filters,
     })
-    const karne = ranked.find(r => r.provinceId === provinceId) ?? null
-    const regionRanked = ranked.filter(r => r.regionName === province.region?.name)
+    const karne = ranked.find((r: any) => r.provinceId === provinceId) ?? null
+    const regionRanked = ranked.filter((r: any) => r.regionName === province.region?.name)
     const regionRank = regionRanked.findIndex(r => r.provinceId === provinceId) + 1
 
     return {

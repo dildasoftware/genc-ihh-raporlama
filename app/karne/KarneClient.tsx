@@ -77,7 +77,7 @@ export default function KarneClient({ user, year: initialYear, units, activityTy
 
   // İlk 15 il — boyut kırılımı yerine toplam puanla, harf notu renkli
   const barData = useMemo(
-    () => ranked.slice(0, 15).map(r => ({
+    () => ranked.slice(0, 15).map((r: any) => ({
       name: r.provinceName.length > 10 ? r.provinceName.slice(0, 10) + '…' : r.provinceName,
       fullName: r.provinceName,
       puan: r.total,
@@ -131,7 +131,7 @@ export default function KarneClient({ user, year: initialYear, units, activityTy
           <label className="text-xs font-medium text-slate-500">Yıl</label>
           <select value={year} onChange={e => setYear(parseInt(e.target.value))}
             className="h-8 px-2 text-xs border border-slate-200 rounded-lg bg-white outline-none focus:ring-2 focus:ring-primary/25">
-            {[2024, 2025, 2026, 2027].map(y => <option key={y} value={y}>{y}</option>)}
+            {[2024, 2025, 2026, 2027].map((y: any) => <option key={y} value={y}>{y}</option>)}
           </select>
         </div>
         {canFilterGender && (
@@ -150,7 +150,7 @@ export default function KarneClient({ user, year: initialYear, units, activityTy
           <select value={regionId} onChange={e => setRegionId(e.target.value)}
             className="h-8 px-2 text-xs border border-slate-200 rounded-lg bg-white outline-none focus:ring-2 focus:ring-primary/25">
             <option value="">Tüm bölgeler</option>
-            {regions.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
+            {regions.map((r: any) => <option key={r.id} value={r.id}>{r.name}</option>)}
           </select>
         </div>
         <div className="space-y-1">
@@ -158,7 +158,7 @@ export default function KarneClient({ user, year: initialYear, units, activityTy
           <select value={unitId} onChange={e => setUnitId(e.target.value)}
             className="h-8 px-2 text-xs border border-slate-200 rounded-lg bg-white outline-none focus:ring-2 focus:ring-primary/25">
             <option value="">Tüm birimler</option>
-            {units.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+            {units.map((u: any) => <option key={u.id} value={u.id}>{u.name}</option>)}
           </select>
         </div>
         <div className="space-y-1">
@@ -166,7 +166,7 @@ export default function KarneClient({ user, year: initialYear, units, activityTy
           <select value={activityTypeId} onChange={e => setActivityTypeId(e.target.value)}
             className="h-8 px-2 text-xs border border-slate-200 rounded-lg bg-white outline-none focus:ring-2 focus:ring-primary/25">
             <option value="">Tüm faaliyetler</option>
-            {activityTypes.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+            {activityTypes.map((a: any) => <option key={a.id} value={a.id}>{a.name}</option>)}
           </select>
         </div>
         <div className="flex-1" />
@@ -185,7 +185,7 @@ export default function KarneClient({ user, year: initialYear, units, activityTy
             { icon: Users, label: 'Toplam katılımcı', value: formatNumber(summary.totalParticipants), color: '#16A34A' },
             { icon: Building2, label: 'Farklı kurum', value: formatNumber(summary.institutionCount), color: '#2563EB' },
             { icon: BarChart3, label: 'Ortalama puan', value: summary.avgScore, color: '#D97706' },
-          ].map(s => (
+          ].map((s: any) => (
             <div key={s.label} className="premium-card p-4 flex items-center gap-3">
               <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ background: s.color + '15' }}>
                 <s.icon className="h-4 w-4" style={{ color: s.color }} />
@@ -347,7 +347,7 @@ export default function KarneClient({ user, year: initialYear, units, activityTy
                               <div className="p-4 bg-slate-50/70 border-t border-slate-100">
                                 {/* Boyut mini-çubukları */}
                                 <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mb-3">
-                                  {DIMENSIONS.map(d => (
+                                  {DIMENSIONS.map((d: any) => (
                                     <div key={d.key} className="bg-white rounded-lg p-2.5 border border-slate-100">
                                       <div className="flex items-center justify-between mb-1.5">
                                         <span className="text-xs font-medium text-slate-600">{d.label}</span>

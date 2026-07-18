@@ -79,7 +79,7 @@ export default function YonetimClient() {
 
     setIsSaving(true)
     try {
-      const lines = bulkData.split('\n').map(l => l.trim()).filter(l => l)
+      const lines = bulkData.split('\n').map((l: any) => l.trim()).filter((l: any) => l)
       const parsedData = lines.map(line => {
         const parts = line.split('\t').length > 1 ? line.split('\t') : line.split(',')
         if (parts.length < 3) return null
@@ -88,8 +88,8 @@ export default function YonetimClient() {
         const provinceName = parts[1].trim()
         const unitName = parts[2].trim()
 
-        const province = refs.provinces.find(p => (p.name || '').toLowerCase() === provinceName.toLowerCase())
-        const unit = refs.units.find(u => (u.name || '').toLowerCase() === unitName.toLowerCase())
+        const province = refs.provinces.find((p: any) => (p.name || '').toLowerCase() === provinceName.toLowerCase())
+        const unit = refs.units.find((u: any) => (u.name || '').toLowerCase() === unitName.toLowerCase())
 
         if (!province || !unit) return null
 
@@ -430,7 +430,7 @@ export default function YonetimClient() {
                 <label className="block text-xs font-medium text-slate-700 mb-1">İl</label>
                 <select value={editingUser.provinceId || ''} onChange={e => setEditingUser({...editingUser, provinceId: e.target.value, role: 'IL_KOORDINATOR'})} className="w-full h-9 px-3 border rounded-lg text-sm bg-white">
                   <option value="">İl Seçiniz</option>
-                  {refs.provinces.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                  {refs.provinces.map((p: any) => <option key={p.id} value={p.id}>{p.name}</option>)}
                 </select>
               </div>
 

@@ -245,7 +245,7 @@ export default async function PanelPage() {
               Bu Hafta Veri Girmeyen İller ({emptyProvinces.length})
             </p>
             <div className="flex flex-wrap gap-1.5 mt-2">
-              {emptyProvinces.map(p => (
+              {emptyProvinces.map((p: any) => (
                 <span key={p.name} className="text-xs px-2 py-0.5 rounded-full"
                   style={{ background: '#FEE2E2', color: '#B91C1C', border: '1px solid #FECACA' }}>
                   <MapPin className="h-2.5 w-2.5 inline mr-0.5" />{p.name}

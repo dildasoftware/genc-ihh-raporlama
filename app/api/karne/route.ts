@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
 
   // Görünürlük: sıralama ulusal kalır, listelenen iller role göre kısıtlanır
   const visible = await buildProvinceScope(user, prisma)
-  const visibleRanked = visible === null ? ranked : ranked.filter(r => visible.includes(r.provinceId))
+  const visibleRanked = visible === null ? ranked : ranked.filter((r: any) => visible.includes(r.provinceId))
 
   return NextResponse.json({
     year,

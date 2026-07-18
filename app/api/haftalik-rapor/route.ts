@@ -113,15 +113,15 @@ export async function GET(request: NextRequest) {
     .sort((a, b) => b.count - a.count)
 
   const instList = Array.from(institutionMap.values())
-    .map(i => {
-      const instActivities = activities.filter(a => a.institutionId === i.id)
+    .map((i: any) => {
+      const instActivities = activities.filter((a: any) => a.institutionId === i.id)
       return {
         id: i.id,
         name: i.name,
         unitName: i.unit.name,
         provinceName: i.province.name,
         totalParticipants: instActivities.reduce((s: any, a: any) => s + a.participantCount, 0),
-        activities: instActivities.map(a => ({
+        activities: instActivities.map((a: any) => ({
           id: a.id,
           type: a.activityType.name,
           participants: a.participantCount,
@@ -174,7 +174,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { period, data } = body
 
-    const reportTypeDef = REPORT_TYPES.find(r => r.key === 'HAFTALIK')
+    const reportTypeDef = REPORT_TYPES.find((r: any) => r.key === 'HAFTALIK')
 
     const snapshot = {
       ...data,

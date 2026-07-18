@@ -136,9 +136,9 @@ export async function POST(request: NextRequest) {
       prisma.activityType.findMany(),
       prisma.schoolType.findMany(),
     ])
-    const unitByName = new Map(units.map(u => [u.name, u]))
-    const atByName = new Map(activityTypes.map(a => [a.name, a]))
-    const stByName = new Map(schoolTypes.map(s => [s.name, s]))
+    const unitByName = new Map(units.map((u: any) => [u.name, u]))
+    const atByName = new Map(activityTypes.map((a: any) => [a.name, a]))
+    const stByName = new Map(schoolTypes.map((s: any) => [s.name, s]))
 
     // ── Satırları Activity kayıtlarına dönüştür ──
     type PendingActivity = {
@@ -241,7 +241,7 @@ export async function POST(request: NextRequest) {
       where: { provinceId: scope.provinceId },
       select: { id: true },
     })
-    const institutionIds = provinceInstitutions.map(i => i.id)
+    const institutionIds = provinceInstitutions.map((i: any) => i.id)
 
     const result = await prisma.$transaction(async tx => {
       const deleted = await tx.activity.deleteMany({
@@ -255,7 +255,7 @@ export async function POST(request: NextRequest) {
       let created = 0
       if (pending.length > 0) {
         const res = await tx.activity.createMany({
-          data: pending.map(p => ({
+          data: pending.map((p: any) => ({
             periodId,
             institutionId: p.institutionId,
             facultyId: p.facultyId,

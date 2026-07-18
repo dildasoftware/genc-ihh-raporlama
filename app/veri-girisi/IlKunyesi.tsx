@@ -130,8 +130,8 @@ export default function IlKunyesi({
       list[index].hasIhh = true
     }
 
-    const ihhCount = list.filter(d => d.hasIhh).length
-    const gencIhhCount = list.filter(d => d.hasGencIhh).length
+    const ihhCount = list.filter((d: any) => d.hasIhh).length
+    const gencIhhCount = list.filter((d: any) => d.hasGencIhh).length
 
     setForm(p => ({
       ...p,
@@ -145,7 +145,7 @@ export default function IlKunyesi({
 
   const handleAddDistrict = () => {
     if (!newDistrictName.trim()) return
-    if (form.districtDetails.some(d => d.name.toLowerCase() === newDistrictName.trim().toLowerCase())) {
+    if (form.districtDetails.some((d: any) => d.name.toLowerCase() === newDistrictName.trim().toLowerCase())) {
       toast.error('Bu ilçe zaten ekli')
       return
     }
@@ -168,7 +168,7 @@ export default function IlKunyesi({
     fetch(`/api/province-report?provinceId=${provinceId}&year=${selectedYear}`)
       .then(r => (r.ok ? r.json() : null))
       .then(d => {
-        const provinceName = provinces.find(p => p.id === provinceId)?.name ?? ''
+        const provinceName = provinces.find((p: any) => p.id === provinceId)?.name ?? ''
         const defaultDistricts = (DISTRICTS_MAP[provinceName] ?? []).map(name => ({
           name, hasIhh: false, hasGencIhh: false
         }))
@@ -216,7 +216,7 @@ export default function IlKunyesi({
     }
   }
 
-  const provinceName = provinces.find(p => p.id === provinceId)?.name ?? 'İl seçiniz'
+  const provinceName = provinces.find((p: any) => p.id === provinceId)?.name ?? 'İl seçiniz'
   const activeOrgCount = Object.values(form.orgStatus).filter(Boolean).length
 
   if (isLoading) {
@@ -241,7 +241,7 @@ export default function IlKunyesi({
             className="h-9 px-2.5 text-sm border border-slate-200 rounded-lg bg-white
                        focus:ring-2 focus:ring-primary/25 outline-none disabled:bg-slate-50"
           >
-            {provinces.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+            {provinces.map((p: any) => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
         </div>
         <div className="space-y-1">
@@ -252,7 +252,7 @@ export default function IlKunyesi({
             className="h-9 px-2.5 text-sm border border-slate-200 rounded-lg bg-white
                        focus:ring-2 focus:ring-primary/25 outline-none"
           >
-            {[2024, 2025, 2026, 2027, 2028].map(y => <option key={y} value={y}>{y}-{y + 1}</option>)}
+            {[2024, 2025, 2026, 2027, 2028].map((y: any) => <option key={y} value={y}>{y}-{y + 1}</option>)}
           </select>
         </div>
         <p className="text-xs text-slate-400 flex-1 min-w-[220px]">

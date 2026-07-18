@@ -31,10 +31,10 @@ const TABS = [
 
 export default function VeriGirisClient(props: Props) {
   const isHQ = props.user.role !== 'IL_KOORDINATOR'
-  const availableTabs = isHQ ? TABS.filter(t => t.key === 'kunye') : TABS
+  const availableTabs = isHQ ? TABS.filter((t: any) => t.key === 'kunye') : TABS
   
   const [tab, setTab] = useState<'haftalik' | 'kunye'>(isHQ ? 'kunye' : 'haftalik')
-  const active = availableTabs.find(t => t.key === tab) || availableTabs[0]
+  const active = availableTabs.find((t: any) => t.key === tab) || availableTabs[0]
 
   return (
     <div className="p-5 max-w-6xl mx-auto min-w-0 w-full">
@@ -48,7 +48,7 @@ export default function VeriGirisClient(props: Props) {
 
         {availableTabs.length > 1 && (
           <div className="flex rounded-xl overflow-hidden border-2 border-slate-200 bg-slate-50 p-1 w-fit">
-            {availableTabs.map(t => {
+            {availableTabs.map((t: any) => {
               const Icon = t.icon
               return (
                 <button

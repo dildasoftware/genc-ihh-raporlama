@@ -78,7 +78,7 @@ export async function GET(request: NextRequest) {
       where: { regionId: regionIdInt },
       select: { id: true }
     })
-    const provIds = regionProvinces.map(p => p.id)
+    const provIds = regionProvinces.map((p: any) => p.id)
     regionWhere.OR = [
       { scopeType: 'REGION', scopeId: regionIdInt },
       { scopeType: 'PROVINCE', scopeId: { in: provIds } }

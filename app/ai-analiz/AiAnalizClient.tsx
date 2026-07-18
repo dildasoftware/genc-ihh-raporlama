@@ -202,7 +202,7 @@ export default function AiAnalizClient({ user, regions = [], provinces = [] }: P
     finally { setIsLoading(false) }
   }
 
-  const currentType = ANALYSIS_TYPES.find(t => t.value === selectedType)
+  const currentType = ANALYSIS_TYPES.find((t: any) => t.value === selectedType)
   const examples = getExamplePrompts(user.role)[selectedType] ?? []
 
   return (
@@ -285,11 +285,11 @@ export default function AiAnalizClient({ user, regions = [], provinces = [] }: P
                         <Select value={smartRegionId} onValueChange={(val) => val && setSmartRegionId(val)}>
                           <SelectTrigger className="h-9">
                             <span className="flex-1 text-left line-clamp-1 text-muted-foreground">
-                              {smartRegionId ? `${regions.find(r => r.id.toString() === smartRegionId)?.name} Bölge` : 'Seçiniz'}
+                              {smartRegionId ? `${regions.find((r: any) => r.id.toString() === smartRegionId)?.name} Bölge` : 'Seçiniz'}
                             </span>
                           </SelectTrigger>
                           <SelectContent>
-                            {regions.map(r => <SelectItem key={r.id} value={r.id.toString()}>{r.name} Bölge</SelectItem>)}
+                            {regions.map((r: any) => <SelectItem key={r.id} value={r.id.toString()}>{r.name} Bölge</SelectItem>)}
                           </SelectContent>
                         </Select>
                       </div>
@@ -301,11 +301,11 @@ export default function AiAnalizClient({ user, regions = [], provinces = [] }: P
                         <Select value={smartProvinceId} onValueChange={(val) => val && setSmartProvinceId(val)}>
                           <SelectTrigger className="h-9">
                             <span className="flex-1 text-left line-clamp-1 text-muted-foreground">
-                              {smartProvinceId ? provinces.find(p => p.id.toString() === smartProvinceId)?.name : 'Seçiniz'}
+                              {smartProvinceId ? provinces.find((p: any) => p.id.toString() === smartProvinceId)?.name : 'Seçiniz'}
                             </span>
                           </SelectTrigger>
                           <SelectContent>
-                            {provinces.map(p => <SelectItem key={p.id} value={p.id.toString()}>{p.name}</SelectItem>)}
+                            {provinces.map((p: any) => <SelectItem key={p.id} value={p.id.toString()}>{p.name}</SelectItem>)}
                           </SelectContent>
                         </Select>
                       </div>
@@ -403,7 +403,7 @@ export default function AiAnalizClient({ user, regions = [], provinces = [] }: P
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Badge variant="secondary" className="text-xs">
-                          {ANALYSIS_TYPES.find(t => t.value === item.type)?.label ?? item.type}
+                          {ANALYSIS_TYPES.find((t: any) => t.value === item.type)?.label ?? item.type}
                         </Badge>
                         {item.userPrompt && (
                           <span className="text-xs text-muted-foreground italic">"{item.userPrompt.slice(0, 50)}{item.userPrompt.length > 50 ? '…' : ''}"</span>

@@ -36,7 +36,7 @@ export default async function KarsilastirPage() {
 
   return (
     <KarsilastirClient
-      provinces={provinces.map(p => ({ id: p.id, name: p.name, regionName: p.region.name }))}
+      provinces={provinces.map((p: any) => ({ id: p.id, name: p.name, regionName: p.region.name }))}
       units={units}
       activityTypes={activityTypes}
       canFilterGender={true}

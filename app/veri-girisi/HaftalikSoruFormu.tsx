@@ -83,7 +83,7 @@ function KurumAutocomplete({
   }
 
   const exactMatch = (q: string) =>
-    results.some(r => r.name.toLocaleLowerCase('tr') === q.toLocaleLowerCase('tr'))
+    results.some((r: any) => r.name.toLocaleLowerCase('tr') === q.toLocaleLowerCase('tr'))
 
   // Serbest metin kapalıysa "yeni ekle" seçeneği hiç gösterilmez
   const showCreate = allowFreeText &&
@@ -223,7 +223,7 @@ function KurumSatiri({
                      focus:ring-2 focus:ring-primary/25 outline-none w-32 shrink-0"
         >
           <option value="">Okul türü…</option>
-          {SCHOOL_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+          {SCHOOL_TYPES.map((t: any) => <option key={t} value={t}>{t}</option>)}
         </select>
       )}
 
@@ -293,9 +293,9 @@ function SoruKarti({
   }
 
   const patchRow = (id: string, patch: Partial<AnswerRow>) =>
-    onChange(rows.map(r => (r.id === id ? { ...r, ...patch } : r)))
+    onChange(rows.map((r: any) => (r.id === id ? { ...r, ...patch } : r)))
 
-  const removeRow = (id: string) => onChange(rows.filter(r => r.id !== id))
+  const removeRow = (id: string) => onChange(rows.filter((r: any) => r.id !== id))
 
   // Yönetim toplantısı: kurum yok, tek katılımcı sayısı
   if (question.isManagement) {
@@ -441,7 +441,7 @@ export default function HaftalikSoruFormu({ user, provinces, periods, currentPer
   const [isDirty, setIsDirty] = useState(false)
 
   const isAdmin = user.role === 'ADMIN'
-  const period = periods.find(p => p.id === periodId)
+  const period = periods.find((p: any) => p.id === periodId)
 
   // Seçilen hafta/il/kol için mevcut cevapları yükle
   useEffect(() => {
@@ -477,10 +477,10 @@ export default function HaftalikSoruFormu({ user, provinces, periods, currentPer
     }
     // Adı boş bırakılmış satırlar sessizce atılmasın — kullanıcı uyarılsın
     const emptyNamed = Object.entries(answers).flatMap(([qid, rows]) =>
-      (rows ?? []).filter(r => !r.institutionName.trim() && r.participantCount > 0).map(() => qid)
+      (rows ?? []).filter((r: any) => !r.institutionName.trim() && r.participantCount > 0).map(() => qid)
     )
     if (emptyNamed.length > 0) {
-      const q = UNITS.flatMap(u => QUESTIONS_BY_UNIT[u.key]).find(x => x.id === emptyNamed[0])
+      const q = UNITS.flatMap(u => QUESTIONS_BY_UNIT[u.key]).find((x: any) => x.id === emptyNamed[0])
       if (q && !q.isManagement) {
         toast.error('Kurum adı boş satır var', {
           description: `"${q.label}" sorusunda kurum adı girilmemiş bir satır var.`,
@@ -509,8 +509,8 @@ export default function HaftalikSoruFormu({ user, provinces, periods, currentPer
     }
   }
 
-  const provinceName = provinces.find(p => p.id === provinceId)?.name ?? 'İl seçiniz'
-  const unitDef = UNITS.find(u => u.key === activeUnit)!
+  const provinceName = provinces.find((p: any) => p.id === provinceId)?.name ?? 'İl seçiniz'
+  const unitDef = UNITS.find((u: any) => u.key === activeUnit)!
   const unitQuestions = QUESTIONS_BY_UNIT[activeUnit]
 
   return (
@@ -526,7 +526,7 @@ export default function HaftalikSoruFormu({ user, provinces, periods, currentPer
             className="h-9 px-2.5 text-sm border border-slate-200 rounded-lg bg-white
                        focus:ring-2 focus:ring-primary/25 outline-none min-w-[190px]"
           >
-            {periods.map(p => (
+            {periods.map((p: any) => (
               <option key={p.id} value={p.id}>
                 {p.year} · {p.weekNo}. hafta ({formatWeekRange(p.startDate, p.endDate)})
               </option>
@@ -543,7 +543,7 @@ export default function HaftalikSoruFormu({ user, provinces, periods, currentPer
             className="h-9 px-2.5 text-sm border border-slate-200 rounded-lg bg-white
                        focus:ring-2 focus:ring-primary/25 outline-none disabled:bg-slate-50 disabled:text-slate-500"
           >
-            {provinces.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+            {provinces.map((p: any) => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
         </div>
 
@@ -575,7 +575,7 @@ export default function HaftalikSoruFormu({ user, provinces, periods, currentPer
 
       {/* ── Birim sekmeleri (kategori ayrımı) ── */}
       <div className="flex flex-wrap gap-2">
-        {UNITS.map(u => {
+        {UNITS.map((u: any) => {
           const t = deriveUnitTotals(u.key, answers)
           const active = activeUnit === u.key
           return (
@@ -617,7 +617,7 @@ export default function HaftalikSoruFormu({ user, provinces, periods, currentPer
               { v: t.locations, l: 'Lokasyon' },
               { v: formatNumber(t.participants), l: 'Toplam katılımcı' },
               { v: `${t.doneCount}/${t.totalQuestions}`, l: 'Cevaplanan soru' },
-            ].map(x => (
+            ].map((x: any) => (
               <div key={x.l}>
                 <p className="text-xl font-bold" style={{ color: unitDef.color, fontFamily: 'Outfit, sans-serif' }}>{x.v}</p>
                 <p className="text-xs text-slate-500 mt-0.5">{x.l}</p>

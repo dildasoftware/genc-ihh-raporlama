@@ -97,10 +97,10 @@ export default function ArsivClient({ provinces, regions, years }: Props) {
   }
 
   const typeOptions = useMemo(() => {
-    if (kind === 'REPORT') return REPORT_TYPES.map(r => ({ value: r.key, label: r.label }))
+    if (kind === 'REPORT') return REPORT_TYPES.map((r: any) => ({ value: r.key, label: r.label }))
     if (kind === 'AI') return Object.entries(AI_TYPES).map(([k, v]) => ({ value: k, label: v.label }))
     return [
-      ...REPORT_TYPES.map(r => ({ value: r.key, label: `Rapor · ${r.label}` })),
+      ...REPORT_TYPES.map((r: any) => ({ value: r.key, label: `Rapor · ${r.label}` })),
       ...Object.entries(AI_TYPES).map(([k, v]) => ({ value: k, label: `AI · ${v.label}` })),
     ]
   }, [kind])
@@ -130,7 +130,7 @@ export default function ArsivClient({ provinces, regions, years }: Props) {
 
       {/* Tür sekmeleri */}
       <div className="flex flex-wrap gap-2">
-        {KINDS.map(k => (
+        {KINDS.map((k: any) => (
           <button
             key={k.key}
             onClick={() => { setKind(k.key); setType('') }}
@@ -182,7 +182,7 @@ export default function ArsivClient({ provinces, regions, years }: Props) {
           <select value={regionId} onChange={e => setRegionId(e.target.value)}
             className="h-8 px-2 text-xs border border-slate-200 rounded-lg bg-white outline-none focus:ring-2 focus:ring-primary/25">
             <option value="">Tüm bölgeler</option>
-            {regions.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
+            {regions.map((r: any) => <option key={r.id} value={r.id}>{r.name}</option>)}
           </select>
         </div>
 
@@ -191,7 +191,7 @@ export default function ArsivClient({ provinces, regions, years }: Props) {
           <select value={scopeId} onChange={e => setScopeId(e.target.value)}
             className="h-8 px-2 text-xs border border-slate-200 rounded-lg bg-white outline-none focus:ring-2 focus:ring-primary/25">
             <option value="">Tüm iller</option>
-            {provinces.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+            {provinces.map((p: any) => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
         </div>
 
@@ -200,7 +200,7 @@ export default function ArsivClient({ provinces, regions, years }: Props) {
           <select value={year} onChange={e => setYear(e.target.value)}
             className="h-8 px-2 text-xs border border-slate-200 rounded-lg bg-white outline-none focus:ring-2 focus:ring-primary/25">
             <option value="">Tüm yıllar</option>
-            {years.map(y => <option key={y} value={y}>{y}</option>)}
+            {years.map((y: any) => <option key={y} value={y}>{y}</option>)}
           </select>
         </div>
 
@@ -220,7 +220,7 @@ export default function ArsivClient({ provinces, regions, years }: Props) {
         <div className="space-y-1">
           <label className="text-xs font-medium text-slate-500">Durum</label>
           <div className="flex rounded-lg overflow-hidden border border-slate-200">
-            {STATUSES.map(s => (
+            {STATUSES.map((s: any) => (
               <button key={s.key} onClick={() => setStatus(s.key)}
                 className="px-2.5 h-8 text-xs font-medium transition-all"
                 style={{

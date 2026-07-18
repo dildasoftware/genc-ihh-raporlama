@@ -135,7 +135,7 @@ export default function HaftalikRaporClient({ user, periods, units, regions, pro
         <div className="flex flex-wrap items-center gap-3">
           <select value={periodId} onChange={e => setPeriodId(e.target.value)}
             className="h-9 px-3 text-sm border border-slate-200 rounded-lg bg-white outline-none">
-            {periods.map(p => (
+            {periods.map((p: any) => (
               <option key={p.id} value={p.id}>{p.year} - {p.weekNo}. Hafta</option>
             ))}
           </select>
@@ -144,7 +144,7 @@ export default function HaftalikRaporClient({ user, periods, units, regions, pro
             <select value={regionId} onChange={e => { setRegionId(e.target.value); setProvinceId('') }}
               className="h-9 px-3 text-sm border border-slate-200 rounded-lg bg-white outline-none">
               <option value="">Tüm Bölgeler</option>
-              {regions.map(r => <option key={r.id} value={r.id}>{r.name} Bölge</option>)}
+              {regions.map((r: any) => <option key={r.id} value={r.id}>{r.name} Bölge</option>)}
             </select>
           )}
 
@@ -153,15 +153,15 @@ export default function HaftalikRaporClient({ user, periods, units, regions, pro
               className="h-9 px-3 text-sm border border-slate-200 rounded-lg bg-white outline-none">
               <option value="">Tüm İller</option>
               {provinces
-                .filter(p => !regionId || p.regionId.toString() === regionId)
-                .map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                .filter((p: any) => !regionId || p.regionId.toString() === regionId)
+                .map((p: any) => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
           )}
 
           <select value={unitId} onChange={e => setUnitId(e.target.value)}
             className="h-9 px-3 text-sm border border-slate-200 rounded-lg bg-white outline-none">
             <option value="">Tüm Birimler</option>
-            {units.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+            {units.map((u: any) => <option key={u.id} value={u.id}>{u.name}</option>)}
           </select>
 
           <button onClick={() => loadData()} disabled={isLoading}
@@ -207,7 +207,7 @@ export default function HaftalikRaporClient({ user, periods, units, regions, pro
               { label: 'Faaliyet Sayısı', value: data.totalActivities, prev: data.prevTotalActivities, icon: Activity, color: '#16A34A' },
               { label: 'Farklı Kurum', value: data.institutionCount, icon: Building2, color: '#D97706' },
               { label: 'Kadın/Erkek', value: `${data.femaleParticipants} / ${data.maleParticipants}`, icon: Users, color: '#BE185D' },
-            ].map(s => {
+            ].map((s: any) => {
               const change = s.prev ? ((s.value - s.prev) / (s.prev || 1) * 100) : null
               return (
                 <div key={s.label} className="premium-card p-4">

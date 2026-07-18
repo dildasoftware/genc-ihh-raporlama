@@ -119,7 +119,7 @@ export default function KarsilastirClient({ provinces, units, activityTypes, can
     if (mode === 'il' || mode === 'bolge') {
       const ranked: any[] = data?.ranked ?? []
       if (mode === 'il') {
-        return ranked.map(r => ({
+        return ranked.map((r: any) => ({
           key: r.provinceName, name: r.provinceName, provinceId: r.provinceId, regionName: r.regionName,
           total: r.total, grade: r.grade, rank: r.rank, totalParticipants: r.totalParticipants,
           totalActivities: r.totalActivities, institutionCount: r.institutionCount, activeWeeks: r.activeWeeks,
@@ -132,7 +132,7 @@ export default function KarsilastirClient({ provinces, units, activityTypes, can
           byRegion.set(r.regionName, {
             key: r.regionName, name: r.regionName, total: 0, grade: null, totalParticipants: 0, totalActivities: 0,
             institutionCount: 0, activeWeeks: 0, totalWeeks: r.totalWeeks,
-            scores: Object.fromEntries(DIMENSIONS.map(d => [d.key, 0])),
+            scores: Object.fromEntries(DIMENSIONS.map((d: any) => [d.key, 0])),
             byWeek: {}, _provinceCount: 0,
           })
         }
@@ -150,15 +150,15 @@ export default function KarsilastirClient({ provinces, units, activityTypes, can
           e.byWeek[w].activities += v.activities
         }
       }
-      return [...byRegion.values()].map(e => ({
+      return [...byRegion.values()].map((e: any) => ({
         ...e, total: Math.round((e.total / e._provinceCount) * 10) / 10,
-        scores: Object.fromEntries(DIMENSIONS.map(d => [d.key, e.scores[d.key] / e._provinceCount])),
+        scores: Object.fromEntries(DIMENSIONS.map((d: any) => [d.key, e.scores[d.key] / e._provinceCount])),
       })).sort((a, b) => b.total - a.total)
     } 
     
     // birim or faaliyetTuru (from kesif API)
     const grouped: any[] = data?.grouped ?? []
-    return grouped.map(g => ({
+    return grouped.map((g: any) => ({
         key: g.key, name: g.label, total: 0, grade: null, totalParticipants: g.participants,
         totalActivities: g.count, institutionCount: 0, activeWeeks: Object.keys(g.byWeek || {}).length,
         totalWeeks: 52, scores: {}, byWeek: g.byWeek || {}
@@ -166,8 +166,8 @@ export default function KarsilastirClient({ provinces, units, activityTypes, can
 
   }, [data, mode])
 
-  const entityByKey = useMemo(() => new Map(entities.map(e => [e.key, e])), [entities])
-  const selectedEntities = selected.map(k => entityByKey.get(k)).filter(Boolean) as Entity[]
+  const entityByKey = useMemo(() => new Map(entities.map((e: any) => [e.key, e])), [entities])
+  const selectedEntities = selected.map((k: any) => entityByKey.get(k)).filter(Boolean) as Entity[]
   const colorOf = (key: string) => CATEGORICAL[colorMap[key] ?? 0]
 
   const addEntity = (key: string) => {
@@ -176,7 +176,7 @@ export default function KarsilastirClient({ provinces, units, activityTypes, can
       toast.error(`En fazla ${CATEGORICAL.length} seçim`, { description: 'Renk paleti sınırı.' })
       return
     }
-    const used = new Set(selected.map(s => colorMap[s]))
+    const used = new Set(selected.map((s: any) => colorMap[s]))
     let slot = 0
     while (used.has(slot)) slot++
     setColorMap(m => ({ ...m, [key]: slot }))
@@ -184,13 +184,13 @@ export default function KarsilastirClient({ provinces, units, activityTypes, can
     setPicker('')
   }
 
-  const removeEntity = (key: string) => setSelected(s => s.filter(x => x !== key))
+  const removeEntity = (key: string) => setSelected(s => s.filter((x: any) => x !== key))
 
   useEffect(() => { setSelected([]); setColorMap({}) }, [mode])
 
   useEffect(() => {
     if (entities.length > 0 && selected.length === 0) {
-      const initial = entities.slice(0, 3).map(e => e.key)
+      const initial = entities.slice(0, 3).map((e: any) => e.key)
       setColorMap(Object.fromEntries(initial.map((k, i) => [k, i])))
       setSelected(initial)
     }
@@ -208,7 +208,7 @@ export default function KarsilastirClient({ provinces, units, activityTypes, can
   }, [selectedEntities])
 
   const weekLineData = useMemo(() => {
-    return weekKeys.map(w => {
+    return weekKeys.map((w: any) => {
       const row: any = { hafta: w }
       for (const e of selectedEntities) {
         const v = e.byWeek[String(w)]
@@ -219,7 +219,7 @@ export default function KarsilastirClient({ provinces, units, activityTypes, can
   }, [weekKeys, selectedEntities, metric])
 
   const radarData = useMemo(() => {
-    return DIMENSIONS.map(d => {
+    return DIMENSIONS.map((d: any) => {
       const row: any = { boyut: d.label.split(' ')[0] }
       for (const e of selectedEntities) row[e.name] = e.scores[d.key] || 0
       return row
@@ -247,7 +247,7 @@ export default function KarsilastirClient({ provinces, units, activityTypes, can
         
         {/* MOD SECICI */}
         <div className="flex bg-slate-100/80 p-1 rounded-xl">
-          {[{k:'il', l:'İl'}, {k:'bolge', l:'Bölge'}, {k:'birim', l:'Birim'}, {k:'faaliyetTuru', l:'Faaliyet'}].map(m => (
+          {[{k:'il', l:'İl'}, {k:'bolge', l:'Bölge'}, {k:'birim', l:'Birim'}, {k:'faaliyetTuru', l:'Faaliyet'}].map((m: any) => (
             <button key={m.k} onClick={() => setMode(m.k as Mode)}
               className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
                 mode === m.k ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'
@@ -263,7 +263,7 @@ export default function KarsilastirClient({ provinces, units, activityTypes, can
           <div className="space-y-1">
             <label className="text-xs font-medium text-slate-500">Yıl</label>
             <select value={year} onChange={e => setYear(parseInt(e.target.value))} className="h-9 px-3 text-sm border border-slate-200 rounded-lg outline-none bg-white">
-              {[2024, 2025, 2026].map(y => <option key={y} value={y}>{y}</option>)}
+              {[2024, 2025, 2026].map((y: any) => <option key={y} value={y}>{y}</option>)}
             </select>
           </div>
           <div className="space-y-1">
@@ -291,7 +291,7 @@ export default function KarsilastirClient({ provinces, units, activityTypes, can
               <label className="text-xs font-medium text-slate-500">İl Seçimi</label>
               <select value={provinceId} onChange={e => setProvinceId(e.target.value)} className="h-9 px-3 text-sm border border-slate-200 rounded-lg outline-none bg-white">
                 <option value="">Tüm İller</option>
-                {provinces.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                {provinces.map((p: any) => <option key={p.id} value={p.id}>{p.name}</option>)}
               </select>
             </div>
           )}
@@ -300,7 +300,7 @@ export default function KarsilastirClient({ provinces, units, activityTypes, can
               <label className="text-xs font-medium text-slate-500">Birim</label>
               <select value={unitId} onChange={e => setUnitId(e.target.value)} className="h-9 px-3 text-sm border border-slate-200 rounded-lg outline-none bg-white">
                 <option value="">Tümü</option>
-                {units.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+                {units.map((u: any) => <option key={u.id} value={u.id}>{u.name}</option>)}
               </select>
             </div>
           )}
@@ -331,7 +331,7 @@ export default function KarsilastirClient({ provinces, units, activityTypes, can
                     Karşılaştırılacak {mode === 'il' ? 'İller' : mode === 'bolge' ? 'Bölgeler' : mode === 'birim' ? 'Birimler' : 'Faaliyet Türleri'}
                   </h3>
                   <div className="flex items-center gap-1.5">
-                    {METRICS.filter(m => isKarneMode || (m.key !== 'total' && m.key !== 'institutionCount')).map(m => (
+                    {METRICS.filter((m: any) => isKarneMode || (m.key !== 'total' && m.key !== 'institutionCount')).map((m: any) => (
                       <button key={m.key} onClick={() => setMetric(m.key)}
                         className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors ${
                           metric === m.key ? 'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200/50' : 'text-slate-500 hover:bg-slate-50'
@@ -343,7 +343,7 @@ export default function KarsilastirClient({ provinces, units, activityTypes, can
                 </div>
                 
                 <div className="flex flex-wrap gap-2 items-center">
-                  {selectedEntities.map(e => (
+                  {selectedEntities.map((e: any) => (
                     <div key={e.key} className="flex items-center gap-1.5 pl-2 pr-1 py-1 rounded-full text-sm font-medium border"
                       style={{ background: `${colorOf(e.key)}10`, borderColor: `${colorOf(e.key)}20`, color: colorOf(e.key) }}>
                       <span>{e.name}</span>
@@ -356,7 +356,7 @@ export default function KarsilastirClient({ provinces, units, activityTypes, can
                       <select value={picker} onChange={e => addEntity(e.target.value)}
                         className="appearance-none pl-8 pr-4 py-1.5 text-sm font-medium border-2 border-dashed border-slate-200 rounded-full text-slate-500 hover:border-slate-300 hover:text-slate-700 bg-transparent outline-none cursor-pointer">
                         <option value="" disabled>Ekle...</option>
-                        {entities.filter(e => !selected.includes(e.key)).map(e => (
+                        {entities.filter((e: any) => !selected.includes(e.key)).map((e: any) => (
                           <option key={e.key} value={e.key}>{e.name}</option>
                         ))}
                       </select>
@@ -374,7 +374,7 @@ export default function KarsilastirClient({ provinces, units, activityTypes, can
                 <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#94A3B8' }}
                   tickFormatter={v => formatNumber(v)} />
                 <Tooltip cursor={{ fill: '#F8FAFC' }} contentStyle={CHART_CHROME.tooltip}
-                  formatter={(v: any) => [METRICS.find(m => m.key === metric)?.fmt(v as number) ?? v, METRICS.find(m => m.key === metric)?.label]} />
+                  formatter={(v: any) => [METRICS.find((m: any) => m.key === metric)?.fmt(v as number) ?? v, METRICS.find((m: any) => m.key === metric)?.label]} />
                 <Bar dataKey={metric} radius={[4, 4, 0, 0]} maxBarSize={60}>
                   {selectedEntities.map((entry) => <Cell key={entry.key} fill={colorOf(entry.key)} />)}
                 </Bar>
@@ -398,7 +398,7 @@ export default function KarsilastirClient({ provinces, units, activityTypes, can
                     <YAxis tick={CHART_CHROME.tick} axisLine={false} tickLine={false} tickFormatter={v => formatNumber(v)} />
                     <Tooltip contentStyle={CHART_CHROME.tooltip} labelFormatter={l => `${l}. hafta`} />
                     <Legend wrapperStyle={{ fontSize: 11 }} />
-                    {selectedEntities.map(e => (
+                    {selectedEntities.map((e: any) => (
                       <Line key={e.key} type="monotone" dataKey={e.name} stroke={colorOf(e.key)} strokeWidth={2}
                         dot={{ r: 2.5, fill: colorOf(e.key), strokeWidth: 1.5, stroke: '#fff' }} />
                     ))}
@@ -420,7 +420,7 @@ export default function KarsilastirClient({ provinces, units, activityTypes, can
                       <PolarRadiusAxis domain={[0, 100]} tick={{ fontSize: 9, fill: '#94A3B8' }} />
                       <Tooltip contentStyle={CHART_CHROME.tooltip} formatter={(v: any, n: any) => [`${v}/100`, n]} />
                       <Legend wrapperStyle={{ fontSize: 11 }} />
-                      {selectedEntities.map(e => (
+                      {selectedEntities.map((e: any) => (
                         <Radar key={e.key} name={e.name} dataKey={e.name}
                           stroke={colorOf(e.key)} fill={colorOf(e.key)} fillOpacity={0.12} strokeWidth={2} />
                       ))}
@@ -463,12 +463,12 @@ export default function KarsilastirClient({ provinces, units, activityTypes, can
                     <th className="text-right">Faaliyet</th>
                     {isKarneMode && <th className="text-right">Kurum</th>}
                     {isKarneMode && <th className="text-right">Aktif Hafta</th>}
-                    {isKarneMode && DIMENSIONS.map(d => <th key={d.key} className="text-right">{d.label.split(' ')[0]}</th>)}
+                    {isKarneMode && DIMENSIONS.map((d: any) => <th key={d.key} className="text-right">{d.label.split(' ')[0]}</th>)}
                     <th style={{ textAlign: 'right' }}>Aksiyonlar</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {selectedEntities.map(e => (
+                  {selectedEntities.map((e: any) => (
                     <tr key={e.key}>
                       <td style={{ textAlign: 'left' }}>
                         <span className="inline-flex items-center gap-2 font-semibold text-slate-800">
@@ -491,7 +491,7 @@ export default function KarsilastirClient({ provinces, units, activityTypes, can
                       <td className="text-right tabular-nums">{formatNumber(e.totalActivities)}</td>
                       {isKarneMode && <td className="text-right tabular-nums">{e.institutionCount}</td>}
                       {isKarneMode && <td className="text-right tabular-nums">{e.activeWeeks}/{e.totalWeeks}</td>}
-                      {isKarneMode && DIMENSIONS.map(d => (
+                      {isKarneMode && DIMENSIONS.map((d: any) => (
                         <td key={d.key} className="text-right tabular-nums text-slate-600">
                           {Math.round(e.scores[d.key])}
                         </td>

@@ -108,7 +108,7 @@ function FaaliyetlerInner({
         <div className="space-y-1">
           <label className="text-xs font-medium text-slate-500">Yıl</label>
           <select value={year} onChange={e => setYear(parseInt(e.target.value))} className={selStyle}>
-            {[2024, 2025, 2026, 2027].map(y => <option key={y} value={y}>{y}</option>)}
+            {[2024, 2025, 2026, 2027].map((y: any) => <option key={y} value={y}>{y}</option>)}
           </select>
         </div>
         <div className="space-y-1">
@@ -116,12 +116,12 @@ function FaaliyetlerInner({
           <div className="flex items-center gap-1">
             <select value={weekFrom} onChange={e => setWeekFrom(e.target.value)} className={selStyle}>
               <option value="">Baştan</option>
-              {weeks.map(w => <option key={w} value={w}>{w}. hf</option>)}
+              {weeks.map((w: any) => <option key={w} value={w}>{w}. hf</option>)}
             </select>
             <span className="text-xs text-slate-400">–</span>
             <select value={weekTo} onChange={e => setWeekTo(e.target.value)} className={selStyle}>
               <option value="">Sona</option>
-              {weeks.map(w => <option key={w} value={w}>{w}. hf</option>)}
+              {weeks.map((w: any) => <option key={w} value={w}>{w}. hf</option>)}
             </select>
           </div>
         </div>
@@ -130,7 +130,7 @@ function FaaliyetlerInner({
             <label className="text-xs font-medium text-slate-500">Bölge</label>
             <select value={regionId} onChange={e => setRegionId(e.target.value)} className={selStyle}>
               <option value="">Tüm bölgeler</option>
-              {regions.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
+              {regions.map((r: any) => <option key={r.id} value={r.id}>{r.name}</option>)}
             </select>
           </div>
         )}
@@ -138,21 +138,21 @@ function FaaliyetlerInner({
           <label className="text-xs font-medium text-slate-500">İl</label>
           <select value={provinceId} onChange={e => setProvinceId(e.target.value)} className={selStyle}>
             <option value="">Tüm iller</option>
-            {provinces.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+            {provinces.map((p: any) => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
         </div>
         <div className="space-y-1">
           <label className="text-xs font-medium text-slate-500">Birim</label>
           <select value={unitId} onChange={e => setUnitId(e.target.value)} className={selStyle}>
             <option value="">Tüm birimler</option>
-            {units.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+            {units.map((u: any) => <option key={u.id} value={u.id}>{u.name}</option>)}
           </select>
         </div>
         <div className="space-y-1">
           <label className="text-xs font-medium text-slate-500">Faaliyet türü</label>
           <select value={activityTypeId} onChange={e => setActivityTypeId(e.target.value)} className={selStyle}>
             <option value="">Tüm türler</option>
-            {activityTypes.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+            {activityTypes.map((a: any) => <option key={a.id} value={a.id}>{a.name}</option>)}
           </select>
         </div>
         {canFilterGender && (

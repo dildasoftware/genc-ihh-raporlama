@@ -208,7 +208,7 @@ export default function ArsivDetayClient({ id }: { id: string }) {
       {isKarne && (() => {
         const k = snap.karne
         const grade = k.grade
-        const radarData = DIMENSIONS.map(d => ({ boyut: d.label, puan: Math.round(k.scores[d.key]) }))
+        const radarData = DIMENSIONS.map((d: any) => ({ boyut: d.label, puan: Math.round(k.scores[d.key]) }))
         const unitBars = Object.entries(k.byUnit as Record<string, any>)
           .map(([name, v]) => ({ name, katılımcı: v.participants, kurum: v.institutionCount }))
           .sort((a, b) => b.katılımcı - a.katılımcı)
@@ -251,7 +251,7 @@ export default function ArsivDetayClient({ id }: { id: string }) {
                 { icon: Building2, label: 'Farklı kurum', value: k.institutionCount, color: '#2563EB' },
                 { icon: BarChart3, label: 'Faaliyet kaydı', value: formatNumber(k.totalActivities), color: '#D97706' },
                 { icon: CalendarCheck, label: 'Aktif hafta', value: `${k.activeWeeks}/${k.totalWeeks}`, color: '#BE185D' },
-              ].map(s => (
+              ].map((s: any) => (
                 <div key={s.label} className="premium-card p-4 flex items-center gap-3">
                   <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ background: s.color + '15' }}>
                     <s.icon className="h-4 w-4" style={{ color: s.color }} />
@@ -297,7 +297,7 @@ export default function ArsivDetayClient({ id }: { id: string }) {
               <div className="premium-card p-5 print-avoid-break">
                 <h3 className="text-sm font-semibold text-slate-800 mb-3">Boyut Puanları</h3>
                 <div className="space-y-3">
-                  {DIMENSIONS.map(d => (
+                  {DIMENSIONS.map((d: any) => (
                     <div key={d.key}>
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-xs font-medium text-slate-700">
@@ -328,7 +328,7 @@ export default function ArsivDetayClient({ id }: { id: string }) {
                     <Tooltip cursor={{ fill: '#F8FAFC' }} contentStyle={CHART_CHROME.tooltip}
                       formatter={(v: any, _n: any, p: any) => [`${formatNumber(v)} kişi · ${p.payload.kurum} kurum`, p.payload.name]} />
                     <Bar dataKey="katılımcı" radius={CHART_CHROME.barRadius} barSize={18}>
-                      {unitBars.map(u => <Cell key={u.name} fill={unitColor(u.name)} />)}
+                      {unitBars.map((u: any) => <Cell key={u.name} fill={unitColor(u.name)} />)}
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
@@ -386,7 +386,7 @@ export default function ArsivDetayClient({ id }: { id: string }) {
                 { label: 'Faaliyet Sayısı', value: snap.totalActivities, prev: snap.prevTotalActivities, icon: BarChart3, color: '#16A34A' },
                 { label: 'Farklı Kurum', value: snap.institutionCount, icon: Building2, color: '#D97706' },
                 { label: 'Kadın/Erkek', value: `${snap.femaleParticipants} / ${snap.maleParticipants}`, icon: Users, color: '#BE185D' },
-              ].map(s => {
+              ].map((s: any) => {
                 const perc = s.prev ? ((s.value as number - s.prev) / (s.prev || 1) * 100) : null
                 return (
                   <div key={s.label} className="premium-card p-4 flex flex-col justify-between">

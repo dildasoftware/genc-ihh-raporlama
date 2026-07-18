@@ -153,7 +153,7 @@ export default function TrendClient({ user, year, units, activityTypes }: Props)
           <label className="text-xs font-medium text-slate-500">Cinsiyet Kolu</label>
           <select value={gender} onChange={e => setGender(e.target.value)}
             className="h-8 px-2 text-xs border border-slate-200 rounded-lg bg-white outline-none">
-            {GENDER_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+            {GENDER_OPTIONS.map((o: any) => <option key={o.value} value={o.value}>{o.label}</option>)}
           </select>
         </div>
         <div className="space-y-1">
@@ -161,7 +161,7 @@ export default function TrendClient({ user, year, units, activityTypes }: Props)
           <select value={unitId} onChange={e => setUnitId(e.target.value)}
             className="h-8 px-2 text-xs border border-slate-200 rounded-lg bg-white outline-none">
             <option value="">Tüm birimler</option>
-            {units.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+            {units.map((u: any) => <option key={u.id} value={u.id}>{u.name}</option>)}
           </select>
         </div>
         <div className="space-y-1">
@@ -169,20 +169,20 @@ export default function TrendClient({ user, year, units, activityTypes }: Props)
           <select value={activityTypeId} onChange={e => setActivityTypeId(e.target.value)}
             className="h-8 px-2 text-xs border border-slate-200 rounded-lg bg-white outline-none">
             <option value="">Tüm türler</option>
-            {activityTypes.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+            {activityTypes.map((a: any) => <option key={a.id} value={a.id}>{a.name}</option>)}
           </select>
         </div>
         <div className="space-y-1">
           <label className="text-xs font-medium text-slate-500">Son Hafta Sayısı</label>
           <select value={weeks} onChange={e => setWeeks(e.target.value)}
             className="h-8 px-2 text-xs border border-slate-200 rounded-lg bg-white outline-none">
-            {['4','8','12','24','52'].map(w => <option key={w} value={w}>{w} hafta</option>)}
+            {['4','8','12','24','52'].map((w: any) => <option key={w} value={w}>{w} hafta</option>)}
           </select>
         </div>
         <div className="space-y-1">
           <label className="text-xs font-medium text-slate-500">Grafik Türü</label>
           <div className="flex rounded-lg overflow-hidden border border-slate-200">
-            {(['area','bar','line'] as const).map(t => (
+            {(['area','bar','line'] as const).map((t: any) => (
               <button key={t} onClick={() => setChartType(t)}
                 className="px-3 h-8 text-xs font-medium transition-all"
                 style={{ background: chartType === t ? '#1B4E6B' : '#fff', color: chartType === t ? '#fff' : '#64748B' }}>

@@ -129,7 +129,7 @@ export default function KarneDetayClient({
     })
 
     return {
-      yearOptions: Array.from(years).map(y => ({ value: y, label: `${y} Yılı` })),
+      yearOptions: Array.from(years).map((y: any) => ({ value: y, label: `${y} Yılı` })),
       monthOptions: Array.from(months.entries()).map(([k, v]) => ({ value: k, label: v })),
       weekOptions: Array.from(weeks.entries()).map(([k, v]) => ({ value: k, label: v }))
     }
@@ -139,8 +139,8 @@ export default function KarneDetayClient({
 
   useEffect(() => {
     if (options.length > 0) {
-      if (!options.find(o => o.value === p1)) setP1(options[0].value)
-      if (isCompare && !options.find(o => o.value === p2)) setP2(options[1]?.value || options[0].value)
+      if (!options.find((o: any) => o.value === p1)) setP1(options[0].value)
+      if (isCompare && !options.find((o: any) => o.value === p2)) setP2(options[1]?.value || options[0].value)
     }
   }, [type, options, isCompare, p1, p2])
 
@@ -226,7 +226,7 @@ export default function KarneDetayClient({
 
   // ── Grafik verileri ──
   const radarData = useMemo(
-    () => (karne ? DIMENSIONS.map(d => ({
+    () => (karne ? DIMENSIONS.map((d: any) => ({
       boyut: d.label,
       puan: Math.round(karne.scores[d.key]),
     })) : []),
@@ -234,7 +234,7 @@ export default function KarneDetayClient({
   )
 
   const dimensionBars = useMemo(
-    () => (karne ? DIMENSIONS.map(d => ({
+    () => (karne ? DIMENSIONS.map((d: any) => ({
       name: d.label,
       puan: Math.round(karne.scores[d.key]),
       color: d.color,
@@ -276,10 +276,10 @@ export default function KarneDetayClient({
     const u1List = Object.entries(d1.karne.byUnit as Record<string, any>).map(([name, v]) => ({ name, ...v }))
     const u2List = Object.entries(d2.karne.byUnit as Record<string, any>).map(([name, v]) => ({ name, ...v }))
 
-    const allUnits = new Set([...u1List.map(u => u.name), ...u2List.map(u => u.name)])
+    const allUnits = new Set([...u1List.map((u: any) => u.name), ...u2List.map((u: any) => u.name)])
     return Array.from(allUnits).map(name => {
-      const u1 = u1List.find(u => u.name === name) || { participants: 0, count: 0 }
-      const u2 = u2List.find(u => u.name === name) || { participants: 0, count: 0 }
+      const u1 = u1List.find((u: any) => u.name === name) || { participants: 0, count: 0 }
+      const u2 = u2List.find((u: any) => u.name === name) || { participants: 0, count: 0 }
       return { name, [p1]: u1.participants, [p2]: u2.participants }
     })
   }, [d1, d2, p1, p2])
@@ -373,7 +373,7 @@ export default function KarneDetayClient({
           <label className="text-xs font-medium text-slate-500">Dönem 1</label>
           <select value={p1} onChange={e => setP1(e.target.value)}
             className="h-8 px-2 text-xs border border-slate-200 rounded-lg bg-white outline-none focus:ring-2 focus:ring-primary/25">
-            {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+            {options.map((o: any) => <option key={o.value} value={o.value}>{o.label}</option>)}
           </select>
         </div>
 
@@ -389,7 +389,7 @@ export default function KarneDetayClient({
             <label className="text-xs font-medium text-slate-500">Dönem 2</label>
             <select value={p2} onChange={e => setP2(e.target.value)}
               className="h-8 px-2 text-xs border border-slate-200 rounded-lg bg-white outline-none focus:ring-2 focus:ring-primary/25">
-              {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+              {options.map((o: any) => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
           </div>
         )}
@@ -412,7 +412,7 @@ export default function KarneDetayClient({
           <select value={unitId} onChange={e => setUnitId(e.target.value)}
             className="h-8 px-2 text-xs border border-slate-200 rounded-lg bg-white outline-none focus:ring-2 focus:ring-primary/25">
             <option value="">Tüm birimler</option>
-            {units.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+            {units.map((u: any) => <option key={u.id} value={u.id}>{u.name}</option>)}
           </select>
         </div>
         <div className="space-y-1">
@@ -420,7 +420,7 @@ export default function KarneDetayClient({
           <select value={activityTypeId} onChange={e => setActivityTypeId(e.target.value)}
             className="h-8 px-2 text-xs border border-slate-200 rounded-lg bg-white outline-none focus:ring-2 focus:ring-primary/25">
             <option value="">Tüm faaliyetler</option>
-            {activityTypes.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+            {activityTypes.map((a: any) => <option key={a.id} value={a.id}>{a.name}</option>)}
           </select>
         </div>
         
@@ -519,7 +519,7 @@ export default function KarneDetayClient({
           { icon: Building2, label: 'Farklı kurum', key: 'institutionCount', color: '#2563EB' },
           { icon: BarChart3, label: 'Faaliyet kaydı', key: 'totalActivities', color: '#D97706' },
           { icon: CalendarCheck, label: 'Aktif hafta', key: 'activeWeeks', color: '#BE185D', stringVal: `${karne.activeWeeks}/${karne.totalWeeks}` },
-        ].map(s => (
+        ].map((s: any) => (
           <div key={s.label} className="premium-card p-4 flex items-center gap-3">
             <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ background: s.color + '15' }}>
               <s.icon className="h-4 w-4" style={{ color: s.color }} />
@@ -581,7 +581,7 @@ export default function KarneDetayClient({
           <Section title="Boyut Puanları" icon={BarChart3} color="#2563EB"
             subtitle="Her boyutun toplam puandaki ağırlığı parantezde">
             <div className="space-y-3">
-              {dimensionBars.map(d => (
+              {dimensionBars.map((d: any) => (
                 <div key={d.name}>
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-xs font-medium text-slate-700">
@@ -623,7 +623,7 @@ export default function KarneDetayClient({
                 <tr><th>Birim</th><th className="text-right">Kurum</th><th className="text-right">Faaliyet</th><th className="text-right">Katılımcı</th></tr>
               </thead>
               <tbody>
-                {unitBars.map(u => (
+                {unitBars.map((u: any) => (
                   <tr key={u.name}>
                     <td className="flex items-center gap-2">
                       <span className="w-2.5 h-2.5 rounded-full" style={{ background: unitColor(u.name) }} />
@@ -653,7 +653,7 @@ export default function KarneDetayClient({
                 contentStyle={CHART_CHROME.tooltip}
               />
               <Bar dataKey="katılımcı" radius={CHART_CHROME.barRadius} barSize={18}>
-                {unitBars.map(u => <Cell key={u.name} fill={unitColor(u.name)} />)}
+                {unitBars.map((u: any) => <Cell key={u.name} fill={unitColor(u.name)} />)}
                 <LabelList dataKey="katılımcı" position="right"
                   formatter={(v: any) => formatNumber(v)}
                   style={{ fontSize: 11, fill: '#475569', fontWeight: 600 }} />
@@ -673,7 +673,7 @@ export default function KarneDetayClient({
                 <tr><th>Faaliyet türü</th><th className="text-right">Kayıt</th><th className="text-right">Katılımcı</th></tr>
               </thead>
               <tbody>
-                {activityBars.map(a => (
+                {activityBars.map((a: any) => (
                   <tr key={a.name}>
                     <td className="flex items-center gap-2">
                       <span className="w-2.5 h-2.5 rounded-full" style={{ background: activityColor(a.name) }} />
@@ -699,7 +699,7 @@ export default function KarneDetayClient({
                 contentStyle={CHART_CHROME.tooltip}
               />
               <Bar dataKey="katılımcı" radius={CHART_CHROME.barRadius} barSize={16}>
-                {activityBars.map(a => <Cell key={a.name} fill={activityColor(a.name)} />)}
+                {activityBars.map((a: any) => <Cell key={a.name} fill={activityColor(a.name)} />)}
                 <LabelList dataKey="katılımcı" position="right"
                   formatter={(v: any) => formatNumber(v)}
                   style={{ fontSize: 11, fill: '#475569', fontWeight: 600 }} />
@@ -813,7 +813,7 @@ export default function KarneDetayClient({
           <Section title="Teşkilat Durumu" icon={Shield} color="#7C3AED"
             subtitle={`${karne.orgFilled}/${karne.orgTotal} kadro dolu`}>
             <div className="flex flex-col gap-2">
-              {ORG_LABELS.map(p => {
+              {ORG_LABELS.map((p: any) => {
                 const active = orgStatus[p.key]
                 const personName = orgNames[p.key]
                 return (
@@ -845,7 +845,7 @@ export default function KarneDetayClient({
                     { label: 'İldeki toplam ilçe', value: report.totalDistrictCount, color: '#94A3B8' },
                     { label: 'İHH bulunan ilçe', value: report.ihhDistrictCount, color: '#2563EB' },
                     { label: 'Genç İHH bulunan ilçe', value: report.gencIhhDistrictCount, color: '#16A34A' },
-                  ].map(r => {
+                  ].map((r: any) => {
                     const pct = report.totalDistrictCount
                       ? Math.round(((r.value ?? 0) / report.totalDistrictCount) * 100) : 0
                     return (
@@ -890,7 +890,7 @@ export default function KarneDetayClient({
             subtitle="İl künyesinden">
             {report ? (
               <div className="space-y-1">
-                {TARGET_LABELS.map(t => (
+                {TARGET_LABELS.map((t: any) => (
                   <div key={t.key} className="flex justify-between items-center py-1.5 border-b border-slate-100 last:border-0">
                     <span className="text-xs text-slate-600">{t.label}</span>
                     <span className="text-sm font-bold tabular-nums" style={{ color: '#BE185D' }}>

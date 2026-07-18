@@ -40,8 +40,8 @@ export default async function HaftalikRaporPage() {
   let provinces = await prisma.province.findMany({ orderBy: { name: 'asc' } })
 
   if (user.role === 'BOLGE_KOORDINATOR' && user.regionId) {
-    regions = regions.filter(r => r.id === user.regionId)
-    provinces = provinces.filter(p => p.regionId === user.regionId)
+    regions = regions.filter((r: any) => r.id === user.regionId)
+    provinces = provinces.filter((p: any) => p.regionId === user.regionId)
   }
 
   return <HaftalikRaporClient user={user} periods={periods} units={units} regions={regions} provinces={provinces} />
