@@ -29,9 +29,10 @@ export function buildActivityFilter(
       where.genderBranch = user.genderBranch // kilitli
       break
 
-    // Bölge koordinatörü YALNIZ kendi bölgesinin illerini görür.
-    // Bu case silinirse switch hiçbir filtre uygulamaz ve bölge kullanıcısı
-    // tüm ülkenin ham verisini görür — yetki sızıntısı. Kaldırmayın.
+    // BOLGE_KOORDINATOR hesabı üründe KULLANILMIYOR (yalnız İl Başkanı ve
+    // Genel Merkez hesapları var). Case yine de korunur: rol enum'da durduğu
+    // sürece böyle bir hesap açılırsa filtre uygulanmadan tüm ülke verisini
+    // görürdü. Savunma amaçlı — kaldırmayın.
     case 'BOLGE_KOORDINATOR':
       where.institution = { province: { regionId: user.regionId } }
       if (requestedGenderFilter && requestedGenderFilter !== 'ALL') {
