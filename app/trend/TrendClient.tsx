@@ -52,21 +52,8 @@ export default function TrendClient({ user, year, units, activityTypes }: Props)
 
   useEffect(() => { loadData() }, [loadData])
 
-  const handlePdf = useCallback(async () => {
-    if (!printRef.current) return
-    const { default: jsPDF } = await import('jspdf')
-    const { default: h2c } = await import('html2canvas')
-    toast.loading('PDF hazırlanıyor...')
-    try {
-      const canvas = await h2c(printRef.current, { scale: 2, backgroundColor: '#ffffff', useCORS: true })
-      const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' })
-      const w = pdf.internal.pageSize.getWidth()
-      const h = (canvas.height * w) / canvas.width
-      pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, w, h)
-      pdf.save(`GENC-IHH-Trend-${year}-${gender}.pdf`)
-      toast.dismiss(); toast.success('PDF indirildi!')
-    } catch { toast.dismiss(); toast.error('PDF hatası') }
-  }, [year, gender])
+  // PDF = native print (html2canvas Tailwind v4 lab() renklerinde patlıyor)
+  const handlePdf = useCallback(() => window.print(), [])
 
   const chartData = data?.trend?.map((t: any) => ({
     hafta: `H${t.weekNo}`,

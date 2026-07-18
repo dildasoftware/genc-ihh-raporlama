@@ -29,6 +29,16 @@ export function buildActivityFilter(
       where.genderBranch = user.genderBranch // kilitli
       break
 
+    // Bölge koordinatörü YALNIZ kendi bölgesinin illerini görür.
+    // Bu case silinirse switch hiçbir filtre uygulamaz ve bölge kullanıcısı
+    // tüm ülkenin ham verisini görür — yetki sızıntısı. Kaldırmayın.
+    case 'BOLGE_KOORDINATOR':
+      where.institution = { province: { regionId: user.regionId } }
+      if (requestedGenderFilter && requestedGenderFilter !== 'ALL') {
+        where.genderBranch = requestedGenderFilter
+      }
+      break
+
     case 'MERKEZ_BIRIM_BASKANI':
       where.institution = { unitId: user.unitId }
       if (requestedGenderFilter && requestedGenderFilter !== 'ALL') {
@@ -57,6 +67,9 @@ export function buildInstitutionFilter(user: SessionUser) {
     case 'IL_KOORDINATOR':
       where.provinceId = user.provinceId
       break
+    case 'BOLGE_KOORDINATOR':
+      where.province = { regionId: user.regionId }
+      break
     case 'MERKEZ_BIRIM_BASKANI':
       where.unitId = user.unitId
       break
@@ -81,10 +94,19 @@ export async function buildProvinceScope(
     case 'IL_KOORDINATOR':
       return user.provinceId ? [user.provinceId] : []
 
+    case 'BOLGE_KOORDINATOR': {
+      if (!user.regionId) return []
+      const provinces = await prisma.province.findMany({
+        where: { regionId: user.regionId },
+        select: { id: true },
+      })
+      return provinces.map((p: { id: number }) => p.id)
+    }
+
     case 'MERKEZ_BIRIM_BASKANI':
     case 'ADMIN':
       return null // tüm iller
-      
+
     default:
       return []
   }
@@ -118,7 +140,7 @@ export function canDelete(user: SessionUser): boolean {
 export function getRoleLabel(role: string): string {
   const labels: Record<string, string> = {
     IL_KOORDINATOR: 'İl Koordinatörü',
-    BOLGE_KOORDINATOR: 'Bölge Koordinatörü (Eski)',
+    BOLGE_KOORDINATOR: 'Bölge Koordinatörü',
     MERKEZ_BIRIM_BASKANI: 'Genel Merkez Birim Başkanı',
     ADMIN: 'Sistem Yöneticisi',
   }

@@ -60,24 +60,11 @@ export default function ArsivDetayClient({ id }: { id: string }) {
     }
   }
 
-  const handlePdf = async () => {
-    if (!printRef.current) return
-    toast.loading('PDF hazırlanıyor...')
-    try {
-      const { default: jsPDF } = await import('jspdf')
-      const { default: h2c } = await import('html2canvas')
-      const canvas = await h2c(printRef.current, { scale: 2, backgroundColor: '#ffffff', useCORS: true })
-      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
-      const w = pdf.internal.pageSize.getWidth()
-      const h = (canvas.height * w) / canvas.width
-      pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, w, h)
-      pdf.save(`GENC-IHH-${data.title.replace(/\s+/g, '-')}.pdf`)
-      toast.dismiss(); toast.success('PDF indirildi!')
-    } catch (e) {
-      console.error(e)
-      toast.dismiss(); toast.error('PDF oluşturulamadı')
-    }
-  }
+  // PDF = tarayıcının native print'i. html2canvas KULLANILMAZ:
+  // 1.4.1 yalnız rgb/rgba/hsl/hsla ayrıştırır, Tailwind v4 slate paletini
+  // lab() olarak yayar → "unsupported color function lab" ile patlar.
+  // Print CSS altyapısı globals.css'te hazır (print-full/print-only/no-print).
+  const handlePdf = () => window.print()
 
   if (isLoading) {
     return (

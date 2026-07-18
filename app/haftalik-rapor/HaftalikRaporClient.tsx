@@ -96,24 +96,8 @@ export default function HaftalikRaporClient({ user, periods, units, regions, pro
     }
   }
 
-  const handlePdf = async () => {
-    if (!printRef.current) return
-    toast.loading('PDF hazırlanıyor...')
-    try {
-      const { default: jsPDF } = await import('jspdf')
-      const { default: h2c } = await import('html2canvas')
-      const canvas = await h2c(printRef.current, { scale: 2, backgroundColor: '#ffffff', useCORS: true })
-      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
-      const w = pdf.internal.pageSize.getWidth()
-      const h = (canvas.height * w) / canvas.width
-      pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, w, h)
-      pdf.save(`GENC-IHH-Haftalik-Rapor-${data?.period?.weekNo}.pdf`)
-      toast.dismiss(); toast.success('PDF indirildi!')
-    } catch (e) {
-      console.error(e)
-      toast.dismiss(); toast.error('PDF oluşturulamadı')
-    }
-  }
+  // PDF = native print (html2canvas Tailwind v4 lab() renklerinde patlıyor)
+  const handlePdf = () => window.print()
 
   if (!periods.length) {
     return <div className="p-8 text-center text-slate-500">Dönem bulunamadı.</div>

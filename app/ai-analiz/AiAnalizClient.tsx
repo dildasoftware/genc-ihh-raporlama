@@ -118,42 +118,18 @@ export default function AiAnalizClient({ user, regions = [], provinces = [] }: P
   
   const reportRefs = useRef<{ [key: number]: HTMLDivElement | null }>({})
 
-  async function handlePdf(index: number, type: string) {
+  // PDF = native print. html2canvas KULLANILMAZ: Tailwind v4 slate paletini
+  // lab() olarak yayar, html2canvas 1.4.1 bunu ayrıştıramaz ve patlar.
+  // Yalnız seçilen kart basılsın diye diğerleri geçici olarak işaretlenir
+  // (globals.css: @media print [data-print-hide] { display:none }).
+  function handlePdf(index: number, _type: string) {
     const element = reportRefs.current[index]
     if (!element) return
-
-    toast.loading('PDF hazırlanıyor...')
-    try {
-      const { default: jsPDF } = await import('jspdf')
-      const { default: h2c } = await import('html2canvas')
-      const canvas = await h2c(element, { scale: 2, backgroundColor: '#ffffff', useCORS: true })
-      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
-      const pdfWidth = pdf.internal.pageSize.getWidth()
-      const pdfHeight = pdf.internal.pageSize.getHeight() // 297mm
-      
-      const ratio = pdfWidth / canvas.width
-      const imgScaledHeight = canvas.height * ratio
-      
-      let heightLeft = imgScaledHeight
-      let position = 0
-      
-      pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, position, pdfWidth, imgScaledHeight)
-      heightLeft -= pdfHeight
-      
-      while (heightLeft > 0) {
-        position -= pdfHeight
-        pdf.addPage()
-        pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, position, pdfWidth, imgScaledHeight)
-        heightLeft -= pdfHeight
-      }
-      
-      pdf.save(`GENC-IHH-Akilli-Karne-${new Date().getTime()}.pdf`)
-      
-      toast.dismiss(); toast.success('PDF indirildi!')
-    } catch (e) {
-      console.error(e)
-      toast.dismiss(); toast.error('PDF oluşturulamadı')
+    for (const [key, el] of Object.entries(reportRefs.current)) {
+      if (el && Number(key) !== index) el.setAttribute('data-print-hide', '1')
     }
+    window.print()
+    for (const el of Object.values(reportRefs.current)) el?.removeAttribute('data-print-hide')
   }
 
   async function runAnalysis() {

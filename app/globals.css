@@ -412,6 +412,9 @@ body {
   table { break-inside: auto; }
   tr    { break-inside: avoid; page-break-inside: avoid; }
   thead { display: table-header-group; }
+
+  /* Tek kart yazdırma: handlePdf yazdırmadan önce diğer kartları işaretler */
+  [data-print-hide] { display: none !important; }
 }
 
 /* Karne Animations */
