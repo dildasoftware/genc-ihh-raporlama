@@ -222,7 +222,7 @@ export default function IlKunyesi({
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center py-20">
-        <Loader2 className="h-7 w-7 animate-spin mb-3" style={{ color: '#1B4E6B' }} />
+        <Loader2 className="h-7 w-7 animate-spin mb-3" style={{ color: '#0E7A3C' }} />
         <p className="text-sm text-slate-500">İl künyesi yükleniyor…</p>
       </div>
     )
@@ -265,7 +265,7 @@ export default function IlKunyesi({
       <Card className="premium-card">
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
-            <MapPin className="h-4 w-4" style={{ color: '#1B4E6B' }} />
+            <MapPin className="h-4 w-4" style={{ color: '#0E7A3C' }} />
             İl Genel Verileri — {provinceName}
           </CardTitle>
         </CardHeader>
@@ -472,7 +472,7 @@ export default function IlKunyesi({
           disabled={isSaving || !provinceId}
           className="w-full h-12 rounded-xl text-base font-semibold text-white shadow-lg
                      transition-all active:scale-[0.99] disabled:opacity-50 flex items-center justify-center gap-2"
-          style={{ background: 'linear-gradient(135deg, #1B4E6B, #7C3AED)' }}
+          style={{ background: 'linear-gradient(135deg, #0E7A3C, #7C3AED)' }}
         >
           {isSaving
             ? <><Loader2 className="h-5 w-5 animate-spin" /> Kaydediliyor…</>

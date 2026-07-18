@@ -103,7 +103,7 @@ export default function HaftalikRaporClient({ user, periods, units, regions, pro
     return <div className="p-8 text-center text-slate-500">Dönem bulunamadı.</div>
   }
 
-  const COLORS = ['#1B4E6B', '#16A34A', '#D97706', '#BE185D', '#2563EB', '#7C3AED']
+  const COLORS = ['#2563EB', '#16A34A', '#D97706', '#BE185D', '#0891B2', '#7C3AED']
 
   return (
     <div className="p-5 max-w-5xl mx-auto space-y-5">
@@ -157,7 +157,7 @@ export default function HaftalikRaporClient({ user, periods, units, regions, pro
             <Save className="h-4 w-4" /> {isSaving ? 'Kaydediliyor...' : 'Arşive Kaydet'}
           </button>
           <button onClick={handlePdf} disabled={!data}
-            className="flex items-center gap-1.5 h-9 px-3 rounded-lg text-sm font-medium text-white" style={{ background: '#1B4E6B' }}>
+            className="flex items-center gap-1.5 h-9 px-3 rounded-lg text-sm font-medium text-white" style={{ background: '#0E7A3C' }}>
             <Download className="h-4 w-4" /> PDF
           </button>
         </div>
@@ -173,7 +173,7 @@ export default function HaftalikRaporClient({ user, periods, units, regions, pro
           <div className="border-b-2 pb-4 mb-4" style={{ borderColor: '#16A34A' }}>
             <div className="flex justify-between items-end">
               <div>
-                <h2 className="text-xl font-bold" style={{ color: '#0F1923' }}>GENÇ İHH — {data.scopeName}</h2>
+                <h2 className="text-xl font-bold" style={{ color: '#0A1F14' }}>GENÇ İHH — {data.scopeName}</h2>
                 <p className="text-sm text-slate-600 mt-1">
                   {data.period.year} Yılı {data.period.weekNo}. Hafta Faaliyet Raporu
                 </p>
@@ -187,7 +187,7 @@ export default function HaftalikRaporClient({ user, periods, units, regions, pro
           {/* KPI'lar */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 print-avoid-break">
             {[
-              { label: 'Toplam Katılımcı', value: data.totalParticipants, prev: data.prevTotalParticipants, icon: Users, color: '#1B4E6B' },
+              { label: 'Toplam Katılımcı', value: data.totalParticipants, prev: data.prevTotalParticipants, icon: Users, color: '#0E7A3C' },
               { label: 'Faaliyet Sayısı', value: data.totalActivities, prev: data.prevTotalActivities, icon: Activity, color: '#16A34A' },
               { label: 'Farklı Kurum', value: data.institutionCount, icon: Building2, color: '#D97706' },
               { label: 'Kadın/Erkek', value: `${data.femaleParticipants} / ${data.maleParticipants}`, icon: Users, color: '#BE185D' },
@@ -286,7 +286,7 @@ export default function HaftalikRaporClient({ user, periods, units, regions, pro
                           ))}
                         </div>
                       </td>
-                      <td className="text-right font-bold" style={{ color: '#1B4E6B' }}>
+                      <td className="text-right font-bold" style={{ color: '#0E7A3C' }}>
                         {formatNumber(inst.totalParticipants)}
                       </td>
                     </tr>

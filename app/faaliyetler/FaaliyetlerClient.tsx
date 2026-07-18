@@ -95,7 +95,7 @@ function FaaliyetlerInner({
       <div>
         <h1 className="text-2xl font-bold flex items-center gap-2.5 gradient-text"
           style={{ fontFamily: 'Outfit, sans-serif' }}>
-          <ClipboardList className="h-6 w-6" style={{ color: '#1B4E6B' }} />
+          <ClipboardList className="h-6 w-6" style={{ color: '#0E7A3C' }} />
           Faaliyet Kayıtları
         </h1>
         <p className="text-sm text-slate-500 mt-0.5">
@@ -191,7 +191,7 @@ function FaaliyetlerInner({
       {data && (
         <div className="flex flex-wrap items-center gap-3">
           <div className="premium-card px-4 py-2.5 flex items-center gap-2">
-            <ClipboardList className="h-4 w-4" style={{ color: '#1B4E6B' }} />
+            <ClipboardList className="h-4 w-4" style={{ color: '#0E7A3C' }} />
             <span className="text-sm"><strong className="tabular-nums">{formatNumber(data.total)}</strong> kayıt</span>
           </div>
           <div className="premium-card px-4 py-2.5 flex items-center gap-2">
@@ -207,7 +207,7 @@ function FaaliyetlerInner({
       {/* Kayıt tablosu */}
       {isLoading && !data ? (
         <div className="flex flex-col items-center justify-center py-20">
-          <Loader2 className="h-7 w-7 animate-spin mb-3" style={{ color: '#1B4E6B' }} />
+          <Loader2 className="h-7 w-7 animate-spin mb-3" style={{ color: '#0E7A3C' }} />
           <p className="text-sm text-slate-500">Kayıtlar yükleniyor…</p>
         </div>
       ) : items.length === 0 ? (
@@ -267,7 +267,7 @@ function FaaliyetlerInner({
                     <td className="text-xs text-slate-500">{a.gender === 'K' ? 'Kadın' : 'Erkek'}</td>
                     <td className="text-xs text-slate-600 max-w-[120px] truncate" title={a.location ?? '—'}>{a.location ?? '—'}</td>
                     <td className="text-xs text-slate-500 max-w-[150px] truncate" title={a.note ?? '—'}>{a.note ?? '—'}</td>
-                    <td className="text-right font-bold tabular-nums" style={{ color: '#1B4E6B' }}>
+                    <td className="text-right font-bold tabular-nums" style={{ color: '#0E7A3C' }}>
                       {formatNumber(a.participantCount)}
                     </td>
                     <td className="text-xs text-slate-400 whitespace-nowrap">{a.createdByName}</td>
@@ -304,7 +304,7 @@ export default function FaaliyetlerClient(props: Props) {
   return (
     <Suspense fallback={
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-7 w-7 animate-spin" style={{ color: '#1B4E6B' }} />
+        <Loader2 className="h-7 w-7 animate-spin" style={{ color: '#0E7A3C' }} />
       </div>
     }>
       <FaaliyetlerInner {...props} />

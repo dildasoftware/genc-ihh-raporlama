@@ -55,12 +55,12 @@ export default function Sidebar() {
   const genderLabel = genderBranch === 'K' ? 'Kadın Kolu' : genderBranch === 'E' ? 'Erkek Kolu' : ''
 
   return (
-    <div className="flex flex-col h-full" style={{ background: '#0F1923' }}>
+    <div className="flex flex-col h-full" style={{ background: '#0A1F14' }}>
       {/* Logo */}
       <div className="px-4 py-5 border-b" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-lg"
-            style={{ background: 'linear-gradient(135deg, #1B4E6B, #16A34A)' }}>
+            style={{ background: 'linear-gradient(135deg, #0E7A3C, #16A34A)' }}>
             <span className="text-white font-bold text-sm tracking-tight" style={{ fontFamily: 'Outfit, sans-serif' }}>Gİ</span>
           </div>
           <div>

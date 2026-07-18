@@ -62,9 +62,12 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         {/* Logo / Başlık */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary shadow-lg mb-4">
-            <span className="text-white font-bold text-xl">Gİ</span>
-          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/ihh-logo.webp"
+            alt="GENÇ İHH — İHH İnsani Yardım Vakfı"
+            className="mx-auto h-28 w-28 mb-3 object-contain"
+          />
           <h1 className="text-2xl font-bold text-foreground">GENÇ İHH</h1>
           <p className="text-muted-foreground text-sm mt-1">Dinamik Raporlama ve AI Analiz Sistemi</p>
         </div>

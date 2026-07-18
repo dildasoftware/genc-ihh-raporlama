@@ -69,7 +69,7 @@ export default function ArsivDetayClient({ id }: { id: string }) {
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center py-24">
-        <Loader2 className="h-8 w-8 animate-spin mb-3" style={{ color: '#1B4E6B' }} />
+        <Loader2 className="h-8 w-8 animate-spin mb-3" style={{ color: '#0E7A3C' }} />
         <p className="text-sm text-slate-500">Kayıt açılıyor…</p>
       </div>
     )
@@ -117,7 +117,7 @@ export default function ArsivDetayClient({ id }: { id: string }) {
           </button>
           <button onClick={handlePdf}
             className="flex items-center gap-1.5 h-9 px-4 rounded-lg text-sm font-medium text-white transition-all active:scale-95"
-            style={{ background: '#1B4E6B' }}>
+            style={{ background: '#0E7A3C' }}>
             <Download className="h-4 w-4" /> PDF olarak indir
           </button>
         </div>
@@ -136,14 +136,14 @@ export default function ArsivDetayClient({ id }: { id: string }) {
       {/* Rapor İçeriği */}
       <div ref={printRef} className="space-y-4 print-full bg-white p-4">
       {/* Yazdırma başlığı */}
-      <div className="print-only mb-4 pb-3 border-b-2" style={{ borderColor: '#1B4E6B' }}>
+      <div className="print-only mb-4 pb-3 border-b-2" style={{ borderColor: '#0E7A3C' }}>
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl flex items-center justify-center"
-            style={{ background: 'linear-gradient(135deg, #1B4E6B, #16A34A)' }}>
+            style={{ background: 'linear-gradient(135deg, #0E7A3C, #16A34A)' }}>
             <span className="text-white font-bold">Gİ</span>
           </div>
           <div>
-            <h1 className="text-lg font-bold" style={{ color: '#0F1923' }}>GENÇ İHH — {data.typeLabel}</h1>
+            <h1 className="text-lg font-bold" style={{ color: '#0A1F14' }}>GENÇ İHH — {data.typeLabel}</h1>
             <p className="text-xs text-slate-500">{data.title}</p>
           </div>
         </div>
@@ -211,14 +211,14 @@ export default function ArsivDetayClient({ id }: { id: string }) {
                 <p className="text-xs text-slate-500 mt-1">{k.total} / 100 puan</p>
               </div>
               <div className="premium-card p-5 text-center flex flex-col justify-center"
-                style={{ background: 'linear-gradient(135deg, #1B4E6B, #2a6d94)' }}>
+                style={{ background: 'linear-gradient(135deg, #0E7A3C, #16A34A)' }}>
                 <p className="text-2xl font-bold text-white leading-tight">
                   {(snap.province?.name ?? data.scopeName ?? '').toLocaleUpperCase('tr')}
                 </p>
                 <p className="text-xs text-white/70 mt-1">{snap.province?.regionName}</p>
               </div>
               <div className="premium-card p-5 text-center">
-                <p className="text-4xl font-bold leading-none" style={{ color: '#1B4E6B' }}>
+                <p className="text-4xl font-bold leading-none" style={{ color: '#0E7A3C' }}>
                   {k.rank}<span className="text-lg text-slate-300">/{snap.nationalCount}</span>
                 </p>
                 <p className="text-xs text-slate-500 mt-2">Türkiye sıralaması</p>
@@ -345,7 +345,7 @@ export default function ArsivDetayClient({ id }: { id: string }) {
                           <td className="text-xs text-slate-600">
                             {inst.activities.map((a: any) => `${a.type}: ${formatNumber(a.participants)}`).join(' · ')}
                           </td>
-                          <td className="text-right font-bold tabular-nums" style={{ color: '#1B4E6B' }}>
+                          <td className="text-right font-bold tabular-nums" style={{ color: '#0E7A3C' }}>
                             {formatNumber(inst.totalParticipants)}
                           </td>
                         </tr>
@@ -362,14 +362,14 @@ export default function ArsivDetayClient({ id }: { id: string }) {
       {/* ── Haftalık Rapor snapshot'ı ── */}
       {isHaftalik && (() => {
         const change = snap.prevTotalParticipants ? ((snap.totalParticipants - snap.prevTotalParticipants) / snap.prevTotalParticipants * 100) : null
-        const COLORS = ['#1B4E6B', '#16A34A', '#D97706', '#BE185D', '#2563EB', '#7C3AED']
+        const COLORS = ['#2563EB', '#16A34A', '#D97706', '#BE185D', '#0891B2', '#7C3AED']
 
         return (
           <>
             {/* KPI'lar */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 print-avoid-break">
               {[
-                { label: 'Toplam Katılımcı', value: snap.totalParticipants, prev: snap.prevTotalParticipants, icon: Users, color: '#1B4E6B' },
+                { label: 'Toplam Katılımcı', value: snap.totalParticipants, prev: snap.prevTotalParticipants, icon: Users, color: '#0E7A3C' },
                 { label: 'Faaliyet Sayısı', value: snap.totalActivities, prev: snap.prevTotalActivities, icon: BarChart3, color: '#16A34A' },
                 { label: 'Farklı Kurum', value: snap.institutionCount, icon: Building2, color: '#D97706' },
                 { label: 'Kadın/Erkek', value: `${snap.femaleParticipants} / ${snap.maleParticipants}`, icon: Users, color: '#BE185D' },
@@ -463,7 +463,7 @@ export default function ArsivDetayClient({ id }: { id: string }) {
                             ))}
                           </div>
                         </td>
-                        <td className="text-right font-bold" style={{ color: '#1B4E6B' }}>
+                        <td className="text-right font-bold" style={{ color: '#0E7A3C' }}>
                           {formatNumber(inst.totalParticipants)}
                         </td>
                       </tr>

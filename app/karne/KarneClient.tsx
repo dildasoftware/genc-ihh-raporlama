@@ -92,7 +92,7 @@ export default function KarneClient({ user, year: initialYear, units, activityTy
       onClick={() => setSortBy(col)}
       className="px-2.5 h-8 text-xs font-medium rounded-lg transition-all"
       style={{
-        background: sortBy === col ? '#1B4E6B' : '#fff',
+        background: sortBy === col ? '#0E7A3C' : '#fff',
         color: sortBy === col ? '#fff' : '#64748b',
         border: '1px solid #E2E8F0',
       }}
@@ -108,7 +108,7 @@ export default function KarneClient({ user, year: initialYear, units, activityTy
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2.5" style={{ fontFamily: 'Outfit, sans-serif' }}>
-            <Award className="h-6 w-6" style={{ color: '#1B4E6B' }} />
+            <Award className="h-6 w-6" style={{ color: '#0E7A3C' }} />
             <span className="gradient-text">İl Karneleri — {year}</span>
           </h1>
           <p className="text-sm text-slate-500 mt-0.5">
@@ -119,7 +119,7 @@ export default function KarneClient({ user, year: initialYear, units, activityTy
         <button
           onClick={() => window.print()}
           className="no-print flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-white transition-all active:scale-95"
-          style={{ background: '#1B4E6B' }}
+          style={{ background: '#0E7A3C' }}
         >
           <Printer className="h-4 w-4" /> PDF
         </button>
@@ -172,7 +172,7 @@ export default function KarneClient({ user, year: initialYear, units, activityTy
         <div className="flex-1" />
         <button onClick={load} disabled={isLoading}
           className="h-8 px-3 rounded-lg text-xs font-medium text-white flex items-center gap-1.5"
-          style={{ background: '#1B4E6B' }}>
+          style={{ background: '#0E7A3C' }}>
           <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin' : ''}`} /> Yenile
         </button>
       </div>
@@ -181,7 +181,7 @@ export default function KarneClient({ user, year: initialYear, units, activityTy
       {summary && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
-            { icon: MapPin, label: 'İl', value: summary.provinceCount, color: '#1B4E6B' },
+            { icon: MapPin, label: 'İl', value: summary.provinceCount, color: '#0E7A3C' },
             { icon: Users, label: 'Toplam katılımcı', value: formatNumber(summary.totalParticipants), color: '#16A34A' },
             { icon: Building2, label: 'Farklı kurum', value: formatNumber(summary.institutionCount), color: '#2563EB' },
             { icon: BarChart3, label: 'Ortalama puan', value: summary.avgScore, color: '#D97706' },
@@ -201,7 +201,7 @@ export default function KarneClient({ user, year: initialYear, units, activityTy
 
       {isLoading && !data ? (
         <div className="flex flex-col items-center justify-center py-20">
-          <RefreshCw className="h-8 w-8 animate-spin mb-3" style={{ color: '#1B4E6B' }} />
+          <RefreshCw className="h-8 w-8 animate-spin mb-3" style={{ color: '#0E7A3C' }} />
           <p className="text-sm text-slate-500">Karneler hesaplanıyor…</p>
         </div>
       ) : ranked.length === 0 ? (
@@ -251,7 +251,7 @@ export default function KarneClient({ user, year: initialYear, units, activityTy
           <div className="premium-card p-5">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                <Trophy className="h-4 w-4" style={{ color: '#1B4E6B' }} /> En yüksek puanlı 15 il
+                <Trophy className="h-4 w-4" style={{ color: '#0E7A3C' }} /> En yüksek puanlı 15 il
               </h3>
               <span className="text-xs text-slate-400">Renk = harf notu</span>
             </div>
@@ -325,7 +325,7 @@ export default function KarneClient({ user, year: initialYear, units, activityTy
                               {item.grade.letter}
                             </span>
                           </td>
-                          <td className="text-right font-bold tabular-nums" style={{ color: '#1B4E6B', textAlign: 'right' }}>{item.total}</td>
+                          <td className="text-right font-bold tabular-nums" style={{ color: '#0E7A3C', textAlign: 'right' }}>{item.total}</td>
                           <td className="text-right tabular-nums text-slate-600" style={{ textAlign: 'right' }}>{formatNumber(item.totalParticipants)}</td>
                           <td className="text-right tabular-nums text-slate-600" style={{ textAlign: 'right' }}>{item.institutionCount}</td>
                           <td className="text-right tabular-nums text-slate-500" style={{ textAlign: 'right' }}>{item.activeWeeks}/{item.totalWeeks}</td>
@@ -379,7 +379,7 @@ export default function KarneClient({ user, year: initialYear, units, activityTy
                                   <Link href={`/karne/${item.provinceId}?year=${year}`}
                                     onClick={e => e.stopPropagation()}
                                     className="px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 shrink-0 text-white shadow-md transition-all active:scale-95"
-                                    style={{ background: 'linear-gradient(135deg, #1B4E6B 0%, #16A34A 100%)' }}>
+                                    style={{ background: 'linear-gradient(135deg, #0E7A3C 0%, #16A34A 100%)' }}>
                                     <ExternalLink className="h-3.5 w-3.5" /> Detaylı Karne Sayfası
                                   </Link>
                                 </div>

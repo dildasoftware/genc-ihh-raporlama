@@ -287,7 +287,7 @@ export default function KarneDetayClient({
   if (isLoading && !data) {
     return (
       <div className="flex flex-col items-center justify-center py-24">
-        <Loader2 className="h-8 w-8 animate-spin mb-3" style={{ color: '#1B4E6B' }} />
+        <Loader2 className="h-8 w-8 animate-spin mb-3" style={{ color: '#0E7A3C' }} />
         <p className="text-sm text-slate-500">Karne hesaplanıyor…</p>
       </div>
     )
@@ -350,7 +350,7 @@ export default function KarneDetayClient({
           <button
             onClick={() => window.print()}
             className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-white transition-all active:scale-95"
-            style={{ background: '#1B4E6B' }}
+            style={{ background: '#0E7A3C' }}
           >
             <Printer className="h-4 w-4" /> PDF olarak indir
           </button>
@@ -436,7 +436,7 @@ export default function KarneDetayClient({
             onClick={() => load()}
             disabled={isLoading}
             className="h-8 px-4 rounded-lg text-xs font-medium border border-transparent bg-primary text-white hover:bg-primary/90 flex items-center gap-1.5"
-            style={{ background: '#1B4E6B' }}
+            style={{ background: '#0E7A3C' }}
           >
             {isLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
             Uygula
@@ -445,15 +445,15 @@ export default function KarneDetayClient({
       </div>
 
       {/* ── Yazdırma başlığı ── */}
-      <div className="print-only mb-4 pb-3 border-b-2" style={{ borderColor: '#1B4E6B' }}>
+      <div className="print-only mb-4 pb-3 border-b-2" style={{ borderColor: '#0E7A3C' }}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center"
-              style={{ background: 'linear-gradient(135deg, #1B4E6B, #16A34A)' }}>
+              style={{ background: 'linear-gradient(135deg, #0E7A3C, #16A34A)' }}>
               <span className="text-white font-bold">Gİ</span>
             </div>
             <div>
-              <h1 className="text-lg font-bold" style={{ color: '#0F1923' }}>
+              <h1 className="text-lg font-bold" style={{ color: '#0A1F14' }}>
                 GENÇ İHH — {provinceId === 0 ? 'Türkiye Karnesi' : 'İl Karnesi'}
               </h1>
               <p className="text-xs text-slate-500">
@@ -479,14 +479,14 @@ export default function KarneDetayClient({
 
           {/* İl */}
           <div className="premium-card p-5 text-center flex flex-col justify-center"
-            style={{ background: 'linear-gradient(135deg, #1B4E6B, #2a6d94)' }}>
+            style={{ background: 'linear-gradient(135deg, #0E7A3C, #16A34A)' }}>
             <p className="text-2xl font-bold text-white leading-tight">{province.name.toLocaleUpperCase('tr')}</p>
             <p className="text-xs text-white/70 mt-1">{province.regionName}</p>
           </div>
 
           {/* Ulusal sıra */}
           <div className="premium-card p-5 text-center">
-            <p className="text-4xl font-bold leading-none" style={{ color: '#1B4E6B' }}>
+            <p className="text-4xl font-bold leading-none" style={{ color: '#0E7A3C' }}>
               {karne.rank}
               <span className="text-lg text-slate-300">/{d1?.nationalCount}</span>
             </p>
@@ -506,7 +506,7 @@ export default function KarneDetayClient({
 
       {hideScoreAndRank && (
         <div className="premium-card p-5 text-center flex flex-col justify-center print-avoid-break mb-4"
-          style={{ background: 'linear-gradient(135deg, #1B4E6B, #2a6d94)' }}>
+          style={{ background: 'linear-gradient(135deg, #0E7A3C, #16A34A)' }}>
           <p className="text-2xl font-bold text-white leading-tight">{province.name.toLocaleUpperCase('tr')}</p>
           <p className="text-xs text-white/70 mt-1">{province.regionName}</p>
         </div>
@@ -539,7 +539,7 @@ export default function KarneDetayClient({
 
       {/* ── Tespitler (analiz) ── */}
       {!hideScoreAndRank && (
-        <Section title="Karne Değerlendirmesi" icon={Award} color="#1B4E6B"
+        <Section title="Karne Değerlendirmesi" icon={Award} color="#0E7A3C"
           subtitle="Puanlardan otomatik çıkarılan tespitler">
           <div className="space-y-2">
             {(karne.insights ?? []).map((ins: any, i: number) => {
@@ -612,7 +612,7 @@ export default function KarneDetayClient({
               <YAxis type="category" dataKey="name" tick={CHART_CHROME.tick} width={84} axisLine={false} tickLine={false} />
               <Tooltip cursor={{ fill: '#F8FAFC' }} contentStyle={CHART_CHROME.tooltip} />
               <Legend iconType="circle" wrapperStyle={{ fontSize: '12px' }} />
-              <Bar dataKey={p1} name="Dönem 1" fill="#1B4E6B" radius={[0, 4, 4, 0]} barSize={12} />
+              <Bar dataKey={p1} name="Dönem 1" fill="#2563EB" radius={[0, 4, 4, 0]} barSize={12} />
               <Bar dataKey={p2} name="Dönem 2" fill="#94A3B8" radius={[0, 4, 4, 0]} barSize={12} />
             </BarChart>
           </ResponsiveContainer>
@@ -733,7 +733,7 @@ export default function KarneDetayClient({
       </Section>
 
       {/* ── Kurum kırılımı — raporun asıl amacı ── */}
-      <Section title="Kurum Kırılımı" icon={Building2} color="#1B4E6B" breakBefore
+      <Section title="Kurum Kırılımı" icon={Building2} color="#0E7A3C" breakBefore
         subtitle="Hangi kurumda, hangi çalışma, kaç kişi — detay kaybolmaz">
         {(() => {
           const mergedInst = isCompare && d2 ? (() => {
@@ -790,7 +790,7 @@ export default function KarneDetayClient({
                           </div>
                         </td>
                       )}
-                      <td className="text-right font-bold tabular-nums" style={{ color: '#1B4E6B' }}>
+                      <td className="text-right font-bold tabular-nums" style={{ color: '#0E7A3C' }}>
                         {formatNumber(inst.t1)}
                       </td>
                       {isCompare && d2 && (

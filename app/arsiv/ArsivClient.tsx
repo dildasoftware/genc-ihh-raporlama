@@ -120,7 +120,7 @@ export default function ArsivClient({ provinces, regions, years }: Props) {
       <div>
         <h1 className="text-2xl font-bold flex items-center gap-2.5 gradient-text"
           style={{ fontFamily: 'Outfit, sans-serif' }}>
-          <Archive className="h-6 w-6" style={{ color: '#1B4E6B' }} />
+          <Archive className="h-6 w-6" style={{ color: '#0E7A3C' }} />
           Arşiv
         </h1>
         <p className="text-sm text-slate-500 mt-0.5">
@@ -139,7 +139,7 @@ export default function ArsivClient({ provinces, regions, years }: Props) {
                 ? 'text-white border-transparent'
                 : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'
             }`}
-            style={kind === k.key ? { background: '#1B4E6B' } : undefined}
+            style={kind === k.key ? { background: '#0E7A3C' } : undefined}
           >
             {k.label}
           </button>
@@ -224,7 +224,7 @@ export default function ArsivClient({ provinces, regions, years }: Props) {
               <button key={s.key} onClick={() => setStatus(s.key)}
                 className="px-2.5 h-8 text-xs font-medium transition-all"
                 style={{
-                  background: status === s.key ? '#1B4E6B' : '#fff',
+                  background: status === s.key ? '#0E7A3C' : '#fff',
                   color: status === s.key ? '#fff' : '#64748b',
                 }}>
                 {s.label}
@@ -253,7 +253,7 @@ export default function ArsivClient({ provinces, regions, years }: Props) {
       {/* Liste */}
       {isLoading && !data ? (
         <div className="flex flex-col items-center justify-center py-20">
-          <Loader2 className="h-7 w-7 animate-spin mb-3" style={{ color: '#1B4E6B' }} />
+          <Loader2 className="h-7 w-7 animate-spin mb-3" style={{ color: '#0E7A3C' }} />
           <p className="text-sm text-slate-500">Arşiv yükleniyor…</p>
         </div>
       ) : items.length === 0 ? (
@@ -269,13 +269,13 @@ export default function ArsivClient({ provinces, regions, years }: Props) {
           </p>
           {hasFilters ? (
             <button onClick={clearFilters}
-              className="mt-4 h-9 px-4 rounded-lg text-xs font-medium text-white" style={{ background: '#1B4E6B' }}>
+              className="mt-4 h-9 px-4 rounded-lg text-xs font-medium text-white" style={{ background: '#0E7A3C' }}>
               Filtreleri temizle
             </button>
           ) : (
             <Link href="/karne"
               className="inline-flex items-center gap-1.5 mt-4 h-9 px-4 rounded-lg text-xs font-medium text-white"
-              style={{ background: '#1B4E6B' }}>
+              style={{ background: '#0E7A3C' }}>
               Karne sayfasına git <ExternalLink className="h-3 w-3" />
             </Link>
           )}

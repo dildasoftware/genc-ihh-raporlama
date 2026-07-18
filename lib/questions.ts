@@ -72,9 +72,9 @@ export const UNITS: UnitDef[] = [
     noun: 'üniversite',
     entityLabel: 'Üniversite',
     searchPlaceholder: 'Üniversite ara… (örn. Hacı Bayram)',
-    color: '#1B4E6B',
+    color: '#2563EB',
     bg: '#EFF6FF',
-    border: '#1B4E6B',
+    border: '#2563EB',
     hasSchoolType: false,
     hasFaculty: true,
     // Resmî YÖK listesi seed'li — serbest yazım kapalı

@@ -108,7 +108,7 @@ export default async function PanelPage() {
   const unitData = Object.values(byUnit).sort((a, b) => b.count - a.count)
   const maxUnitCount = unitData[0]?.count || 1
 
-  const unitColors = ['#1B4E6B', '#16A34A', '#D97706', '#BE185D', '#7C3AED']
+  const unitColors = ['#2563EB', '#16A34A', '#D97706', '#BE185D', '#7C3AED']
 
 
   return (
@@ -131,7 +131,7 @@ export default async function PanelPage() {
         </div>
         <div className="flex items-center gap-2">
           <span className="text-xs px-2.5 py-1 rounded-full font-medium"
-            style={{ background: '#EFF8FF', color: '#1B4E6B', border: '1px solid #BFDBFE' }}>
+            style={{ background: '#EFF8FF', color: '#0E7A3C', border: '1px solid #BFDBFE' }}>
             {getRoleLabel(user.role)}
           </span>
           {user.genderBranch && (
@@ -158,7 +158,7 @@ export default async function PanelPage() {
         >
           <div className="flex items-center justify-between mb-3">
             <p className="text-xs font-medium text-slate-500">Bu Hafta Faaliyet</p>
-            <Activity className="h-4 w-4" style={{ color: '#1B4E6B' }} />
+            <Activity className="h-4 w-4" style={{ color: '#0E7A3C' }} />
           </div>
           <p className="text-3xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#0F172A' }}>
             {formatNumber(currentCount)}
@@ -173,7 +173,7 @@ export default async function PanelPage() {
             )}
             <span className="text-xs text-slate-400 ml-1">geçen haftaya göre</span>
           </div>
-          <p className="text-xs mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: '#1B4E6B' }}>
+          <p className="text-xs mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: '#0E7A3C' }}>
             Kayıtları gör →
           </p>
         </Link>
@@ -260,7 +260,7 @@ export default async function PanelPage() {
       {weeklyData.length > 0 && (
         <div className="premium-card p-5">
           <h3 className="text-sm font-semibold text-slate-700 mb-4 flex items-center gap-2">
-            <TrendingUp className="h-4 w-4" style={{ color: '#1B4E6B' }} />
+            <TrendingUp className="h-4 w-4" style={{ color: '#0E7A3C' }} />
             Son {weeklyData.length} Hafta Trendi
           </h3>
           <WeeklyTrendChart data={weeklyData} />
@@ -278,7 +278,7 @@ export default async function PanelPage() {
                   <Award className="h-4 w-4" style={{ color: '#D97706' }} />
                   Bu Hafta Top {top5.length} İl
                 </span>
-                <Link href="/karne" className="text-xs font-normal" style={{ color: '#1B4E6B' }}>Tümü →</Link>
+                <Link href="/karne" className="text-xs font-normal" style={{ color: '#0E7A3C' }}>Tümü →</Link>
               </h3>
               <div className="space-y-2.5">
                 {top5.map((p, i) => (

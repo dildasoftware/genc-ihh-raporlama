@@ -117,13 +117,13 @@ export default function TrendClient({ user, year, units, activityTypes }: Props)
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2.5" style={{ fontFamily: 'Outfit, sans-serif' }}>
-            <TrendingUp className="h-6 w-6" style={{ color: '#1B4E6B' }} />
+            <TrendingUp className="h-6 w-6" style={{ color: '#0E7A3C' }} />
             <span className="gradient-text">Trend Analizi — {year}</span>
           </h1>
           <p className="text-sm text-slate-500 mt-0.5">{getRoleLabel(user.role)}</p>
         </div>
         <div className="flex gap-2">
-          <button onClick={handlePdf} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-white" style={{ background: '#1B4E6B' }}>
+          <button onClick={handlePdf} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-white" style={{ background: '#0E7A3C' }}>
             <Download className="h-4 w-4" />PDF
           </button>
           <button onClick={runAiAnalysis} disabled={isAnalyzing || !data}
@@ -172,14 +172,14 @@ export default function TrendClient({ user, year, units, activityTypes }: Props)
             {(['area','bar','line'] as const).map((t: any) => (
               <button key={t} onClick={() => setChartType(t)}
                 className="px-3 h-8 text-xs font-medium transition-all"
-                style={{ background: chartType === t ? '#1B4E6B' : '#fff', color: chartType === t ? '#fff' : '#64748B' }}>
+                style={{ background: chartType === t ? '#0E7A3C' : '#fff', color: chartType === t ? '#fff' : '#64748B' }}>
                 {t === 'area' ? 'Alan' : t === 'bar' ? 'Sütun' : 'Çizgi'}
               </button>
             ))}
           </div>
         </div>
         <button onClick={() => loadData(gender, weeks, unitId, activityTypeId)} disabled={isLoading}
-          className="flex items-center gap-1 h-8 px-4 rounded-lg text-xs font-medium text-white" style={{ background: '#1B4E6B' }}>
+          className="flex items-center gap-1 h-8 px-4 rounded-lg text-xs font-medium text-white" style={{ background: '#0E7A3C' }}>
           <RefreshCw className={`h-3 w-3 ${isLoading ? 'animate-spin' : ''}`} />
           {isLoading ? 'Yükleniyor' : 'Uygula'}
         </button>
@@ -188,7 +188,7 @@ export default function TrendClient({ user, year, units, activityTypes }: Props)
       {/* KPI */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: 'Toplam Katılımcı', value: formatNumber(totalP), icon: Users, color: '#1B4E6B' },
+          { label: 'Toplam Katılımcı', value: formatNumber(totalP), icon: Users, color: '#0E7A3C' },
           { label: 'Toplam Faaliyet', value: formatNumber(totalA), icon: Activity, color: '#16A34A' },
           { label: 'Haftalık Ortalama', value: formatNumber(avgPerWeek), icon: TrendingUp, color: '#D97706' },
           { label: 'Son Hafta', value: formatNumber(last?.katılımcı ?? 0), icon: weekChange !== null && weekChange >= 0 ? ArrowUp : ArrowDown,
@@ -222,7 +222,7 @@ export default function TrendClient({ user, year, units, activityTypes }: Props)
         {/* Ana Trend Grafiği */}
         <div className="premium-card p-5">
           <h3 className="text-sm font-semibold text-slate-700 mb-4 flex items-center gap-2">
-            <TrendingUp className="h-4 w-4" style={{ color: '#1B4E6B' }} />
+            <TrendingUp className="h-4 w-4" style={{ color: '#0E7A3C' }} />
             Katılımcı Trendi
             <span className="text-xs font-normal text-slate-400 ml-1">
               ({gender === 'K' ? 'Kadın Kolu' : gender === 'E' ? 'Erkek Kolu' : 'Birleşik'}, son {weeks} hafta)
@@ -230,7 +230,7 @@ export default function TrendClient({ user, year, units, activityTypes }: Props)
           </h3>
           {isLoading ? (
             <div className="h-64 flex items-center justify-center">
-              <RefreshCw className="h-6 w-6 animate-spin" style={{ color: '#1B4E6B' }} />
+              <RefreshCw className="h-6 w-6 animate-spin" style={{ color: '#0E7A3C' }} />
             </div>
           ) : chartData.length === 0 ? (
             <div className="h-64 flex items-center justify-center text-sm text-slate-400">Veri bulunamadı</div>
@@ -248,8 +248,8 @@ export default function TrendClient({ user, year, units, activityTypes }: Props)
                     <Bar dataKey="erkek" name="Erkek" stackId="a" fill="#1D4ED8" radius={[4, 4, 0, 0]} />
                   </>
                 ) : (
-                  <Bar dataKey="katılımcı" name="Katılımcı" fill="#1B4E6B" radius={[4, 4, 0, 0]}>
-                    {chartData.map((_: any, i: number) => <Cell key={i} fill={i === chartData.length - 1 ? '#16A34A' : '#1B4E6B'} />)}
+                  <Bar dataKey="katılımcı" name="Katılımcı" fill="#2563EB" radius={[4, 4, 0, 0]}>
+                    {chartData.map((_: any, i: number) => <Cell key={i} fill={i === chartData.length - 1 ? '#16A34A' : '#2563EB'} />)}
                   </Bar>
                 )}
               </BarChart>
@@ -268,7 +268,7 @@ export default function TrendClient({ user, year, units, activityTypes }: Props)
                     <Line type="monotone" dataKey="erkek" name="Erkek" stroke="#1D4ED8" strokeWidth={2} dot={{ r: 3 }} />
                   </>
                 ) : (
-                  <Line type="monotone" dataKey="katılımcı" name="Katılımcı" stroke="#1B4E6B" strokeWidth={2.5} dot={{ r: 4 }} />
+                  <Line type="monotone" dataKey="katılımcı" name="Katılımcı" stroke="#0E7A3C" strokeWidth={2.5} dot={{ r: 4 }} />
                 )}
               </LineChart>
             </ResponsiveContainer>
@@ -278,8 +278,8 @@ export default function TrendClient({ user, year, units, activityTypes }: Props)
                 <defs>
                   {['kadın', 'erkek', 'katılımcı'].map((k, i) => (
                     <linearGradient key={k} id={`grad${i}`} x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor={['#BE185D','#1D4ED8','#1B4E6B'][i]} stopOpacity={0.3} />
-                      <stop offset="95%" stopColor={['#BE185D','#1D4ED8','#1B4E6B'][i]} stopOpacity={0} />
+                      <stop offset="5%" stopColor={['#BE185D','#1D4ED8','#0891B2'][i]} stopOpacity={0.3} />
+                      <stop offset="95%" stopColor={['#BE185D','#1D4ED8','#0891B2'][i]} stopOpacity={0} />
                     </linearGradient>
                   ))}
                 </defs>
@@ -294,7 +294,7 @@ export default function TrendClient({ user, year, units, activityTypes }: Props)
                     <Area type="monotone" dataKey="erkek" name="Erkek" stroke="#1D4ED8" fill="url(#grad1)" strokeWidth={2} />
                   </>
                 ) : (
-                  <Area type="monotone" dataKey="katılımcı" name="Katılımcı" stroke="#1B4E6B" fill="url(#grad2)" strokeWidth={2.5} />
+                  <Area type="monotone" dataKey="katılımcı" name="Katılımcı" stroke="#0891B2" fill="url(#grad2)" strokeWidth={2.5} />
                 )}
               </AreaChart>
             </ResponsiveContainer>
@@ -379,7 +379,7 @@ export default function TrendClient({ user, year, units, activityTypes }: Props)
                             ))}
                           </div>
                         </td>
-                        <td className="text-right font-semibold" style={{ color: '#1B4E6B' }}>{formatNumber(d.katılımcı)}</td>
+                        <td className="text-right font-semibold" style={{ color: '#0E7A3C' }}>{formatNumber(d.katılımcı)}</td>
                         {gender === 'ALL' && <>
                           <td className="text-right text-pink-700">{formatNumber(d.kadın)}</td>
                           <td className="text-right text-blue-700">{formatNumber(d.erkek)}</td>

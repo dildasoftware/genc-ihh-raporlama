@@ -28,7 +28,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           {/* Mobile Header */}
           <div className="md:hidden absolute top-0 left-0 right-0 h-14 border-b border-border bg-background flex items-center px-4 z-40 justify-between">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-gradient-to-br from-[#1B4E6B] to-[#16A34A] shadow-md">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-gradient-to-br from-[#0E7A3C] to-[#16A34A] shadow-md">
                 <span className="text-white font-bold text-xs tracking-tight">Gİ</span>
               </div>
               <span className="font-bold text-sm">GENÇ İHH</span>

@@ -27,7 +27,7 @@ export function WeeklyTrendChart({ data }: { data: { weekNo: number, count: numb
             contentStyle={{ borderRadius: '8px', border: '1px solid #E2E8F0', fontSize: '12px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} 
             labelFormatter={(label) => `Hafta ${label}`} 
           />
-          <Bar dataKey="participants" name="Katılımcı" fill="#1B4E6B" radius={[4, 4, 0, 0]} />
+          <Bar dataKey="participants" name="Katılımcı" fill="#2563EB" radius={[4, 4, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </div>
@@ -37,7 +37,7 @@ export function WeeklyTrendChart({ data }: { data: { weekNo: number, count: numb
 export function UnitPieChart({ data }: { data: { name: string, count: number, participants: number }[] }) {
   if (!data || data.length === 0) return <p className="text-sm text-slate-500">Veri yok</p>
 
-  const COLORS = ['#1B4E6B', '#16A34A', '#D97706', '#BE185D', '#7C3AED', '#0891B2']
+  const COLORS = ['#2563EB', '#16A34A', '#D97706', '#BE185D', '#7C3AED', '#0891B2']
 
   return (
     <div className="h-64 w-full flex flex-col items-center justify-center">

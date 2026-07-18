@@ -1,12 +1,11 @@
 /**
  * Grafik paleti — TEK kaynak.
  *
- * ÖNEMLİ: Marka lacivedi #1B4E6B burada YOK. O renk UI kromudur
- * (buton, başlık, sidebar). Veri markı olarak kullanılamaz çünkü
- * dataviz doğrulayıcısında iki kontrolden kalıyor:
- *   - Lightness band: 0.404 (0.43–0.77 bandının dışında, çok koyu)
- *   - Chroma floor:   0.072 (0.1 tabanının altında — grafikte gri okunuyor)
- * Yerine aynı aileden #2563EB kullanılıyor.
+ * ÖNEMLİ: UI krom renkleri (İHH yeşili #0E7A3C, koyu yeşil #0A1F14 —
+ * buton, başlık, sidebar) burada YOK ve veri markı olarak KULLANILMAZ.
+ * Krom rengini grafiğe taşımak doğrulayıcıdan kalır (eski marka lacivedi
+ * #1B4E6B tam bu sebeple elendi: lightness 0.404 bant dışı, chroma 0.072
+ * taban altı — grafikte gri okunuyordu). Mavi veri kimliği için #2563EB.
  *
  * Aşağıdaki 5'li kategorik tema doğrulandı (light, surface #fff):
  *   [PASS] Lightness band · [PASS] Chroma floor

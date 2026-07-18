@@ -565,7 +565,7 @@ export default function HaftalikSoruFormu({ user, provinces, periods, currentPer
         <div className="flex-1 min-w-[160px] space-y-1">
           <div className="flex items-center justify-between">
             <label className="text-xs font-medium text-slate-500">Doldurulma</label>
-            <span className="text-xs font-bold" style={{ color: '#1B4E6B' }}>%{percent}</span>
+            <span className="text-xs font-bold" style={{ color: '#0E7A3C' }}>%{percent}</span>
           </div>
           <div className="progress-bar">
             <div className="progress-fill" style={{ width: `${percent}%` }} />
@@ -671,7 +671,7 @@ export default function HaftalikSoruFormu({ user, provinces, periods, currentPer
             disabled={isSaving || isLoading || !provinceId}
             className="h-11 px-6 rounded-xl text-sm font-semibold text-white shadow-lg transition-all
                        active:scale-95 disabled:opacity-50 flex items-center gap-2"
-            style={{ background: 'linear-gradient(135deg, #1B4E6B, #16A34A)' }}
+            style={{ background: 'linear-gradient(135deg, #0E7A3C, #16A34A)' }}
           >
             {isSaving
               ? <><Loader2 className="h-4 w-4 animate-spin" /> Kaydediliyor…</>
