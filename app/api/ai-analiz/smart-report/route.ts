@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
     if (reg) scopeName = `${reg.name} Bölge`
   }
 
-  activities.forEach(a => {
+  activities.forEach((a: any) => {
     totalParticipants += a.participantCount
     const unitName = a.institution.unit.name
     unitMap.set(unitName, (unitMap.get(unitName) || 0) + a.participantCount)

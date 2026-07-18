@@ -122,7 +122,7 @@ export default function KarneDetayClient({
     const months = new Map<string, string>()
     const weeks = new Map<string, string>()
 
-    periods.forEach(p => {
+    periods.forEach((p: any) => {
       years.add(p.year.toString())
       months.set(`${p.year}-${p.month}`, `${p.year} / ${p.month}. Ay`)
       weeks.set(`${p.year}-${p.weekNo}`, `${p.year} / ${p.weekNo}. Hafta`)
