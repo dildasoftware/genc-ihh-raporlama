@@ -1,132 +1,93 @@
-# 🏛️ GENÇ İHH Raporlama Sistemi
+# 🏛️ GENÇ İHH AI Destekli Raporlama ve Analiz Sistemi (ATOM Hackathon)
 
 > **Saha Verilerinin Dinamik Takibi, Doğru Planlama ve Güçlü Teşkilatlanma Stratejisi**
 
-Genç İHH'nin Türkiye genelindeki saha operasyonlarını kurum bazlı detaylı takip eden, analiz eden ve raporlayan modern web uygulaması. Sistemdeki her sayı kaynağına kadar izlenebilir: karnedeki bir puandan, o puanı üreten tek tek faaliyet kayıtlarına inilebilir.
+## 📖 Proje Özeti
 
-## ✨ Özellikler
+Sivil toplum kuruluşlarının (Örn: Genç İHH) saha operasyonlarında karşılaştığı en büyük problemlerden biri, verilerin manuel ve dağınık (Excel, WhatsApp vb.) toplanmasıdır. Bu durum veri karmaşasına, raporların gecikmesine ve sahanın gerçek performansının merkez tarafından net okunamamasına neden olur. 
 
-### 📊 Veri Girişi
-- **Soru bazlı haftalık form** — İl Yönetimi, Üniversite, Lise, Ortaokul ve Çocuk kategorileri ayrı sekmelerde; her soru "bu hafta hangi kurumlarda, kaç kişiyle yapıldı?" mantığıyla çalışır
-- **Kurum satırı ekleme** — `+` ile kurum eklenir, katılımcı sayısı yazılır; lokasyon sayısı ve toplam katılım elle girilmez, satırlardan otomatik türetilir
-- **Resmî üniversite listesi** — Üniversite adları YÖK listesinden seçilir (serbest metin kapalı); tutarsız yazımlar veriye giremez
-- **İl Künyesi** — Nüfus, kurum sayıları, teşkilat kadrosu ve dönem hedefleri yılda bir girilir
+Geliştirdiğimiz bu proje; Türkiye genelindeki saha operasyonlarını (Kadın Kolu, Erkek Kolu, Lise, Üniversite vb.) hiyerarşik olarak takip eden, analiz eden ve raporlayan **yapay zeka (LLM) destekli modern bir web uygulamasıdır**. 
 
-### 🏆 Karne Sistemi
-- **5 boyutlu puanlama** — Faaliyet Yoğunluğu, Katılım, Kapsam, Süreklilik, Teşkilat; ağırlıklı toplamdan harf notu (AA–DC) üretilir
-- **Ulusal ve bölge sıralaması** — Sıralama daima ülke genelinde hesaplanır, görünürlük role göre kısıtlanır
-- **Kurum kırılımı** — Hangi üniversitede/lisede kaç kişiyle ne yapıldığı, fakülte detayına kadar
-- **Otomatik değerlendirme** — Güçlü/zayıf yönler puanlardan deterministik olarak çıkarılır
+Sistemimiz sayesinde il koordinatörleri verilerini saniyeler içinde girebilir, Genel Merkez yetkilileri ise bu verileri dinamik Türkiye haritası üzerinde anlık olarak izleyebilir. Projemizin en büyük inovasyonu ise; salt veri depolamak yerine, **Yapay Zeka (AI) destekli analiz motoru** ile geçmiş verileri okuyup yöneticilere "Stratejik Özetler" ve "Adil Karne Puanları" sunan bir **Karar Destek Sistemi** olmasıdır.
 
-### 📈 Analiz Araçları
-- **Faaliyet Kayıtları** — Her sayının kaynağı; yıl/hafta/il/birim/faaliyet türü filtreleriyle ham kayıtlara drill-down
-- **Karşılaştır** — İl veya bölge bazında çoklu seçimle yan yana karşılaştırma, metrik ve trend grafikleri
-- **Trend** — Haftalık zaman serisi, aylık kırılımlar
-- **Haftalık Rapor** — Seçilen haftanın il/bölge/ülke özeti
-- **AI Analiz** — İsteğe bağlı yapay zeka yorumu (OpenRouter üzerinden); üretilen her analiz kalıcı kayda dönüşür
+## 🚀 Canlı Demo & Bağlantılar
 
-### 🗄️ Arşiv
-- Üretilen her rapor, karne ve AI analizi **veri anlık görüntüsü (snapshot)** olarak kalıcı saklanır
-- Tür/il/bölge/yıl/tarih aralığı filtreleri, tam metin arama, sayfalama
-- Arşivlenen kayıt silinmez; istenildiğinde geri yüklenir ve kaydedildiği andaki hâliyle yeniden açılır
-- PDF çıktısı tarayıcının yerleşik yazdırma motoruyla alınır (vektörel metin, doğru sayfalama)
+* **Canlı URL (Production):** [https://genc-ihh-raporlama-kpjy-iota.vercel.app/login](https://genc-ihh-raporlama-kpjy-iota.vercel.app/login)
+* **Demo Videosu:** [Proje Sunum/Demo Videosu Linki Buraya Eklenebilir]
 
-### 🔐 Yetkilendirme
-| Rol | Yetki |
-|-----|-------|
-| `ADMIN` | Sistem Yöneticisi: tüm iller, tüm raporlar, tam yetki |
-| `MERKEZ_BIRIM_BASKANI` | Genel Merkez: tüm iller, yalnız kendi birimi (ör. Üniversite) |
-| `IL_KOORDINATOR` | İl Başkanı: yalnız kendi ili ve kendi kolu (K/E); veri girişi bu roldedir |
+*(Not: Sisteme test kullanıcıları ile giriş yapabilirsiniz. Örn: E-posta: `admin@test.com`, Parola: `Test1234!`)*
 
-*Not: İller organizasyonel olarak 1.–4. Bölge altında gruplanır; bölgeler raporlamada kırılım olarak kullanılır, ayrı bir bölge yetki hesabı yoktur.*
+## 👥 Takım Üyeleri (Fatih'in Sultanları)
 
-## 🛠️ Teknoloji Yığını
+* **Sudenur Öztürk** - [Rol/Ünvan eklenebilir]
+* **Dilara Bilişik** - [Rol/Ünvan eklenebilir]
+* **Öznur Çağlayan** - [Rol/Ünvan eklenebilir]
 
-| Katman | Teknoloji |
-|--------|-----------|
-| **Frontend** | Next.js 16 (App Router), React 19, TypeScript |
-| **Styling** | Tailwind CSS 4, shadcn/ui |
-| **Grafikler** | Recharts |
-| **Veritabanı** | PostgreSQL (Neon Serverless) |
-| **ORM** | Prisma 7 |
-| **Auth** | NextAuth.js |
-| **AI Analiz** | OpenRouter API (varsayılan model: Claude Sonnet 4) |
-| **PDF Çıktı** | Tarayıcı yerleşik yazdırma (native print) + özel print CSS |
+## 🛠️ Kullanılan Teknolojiler
 
-## 🚀 Kurulum
+Projemiz, güncel "Full-Stack Serverless" mimarisi ile uçtan uca ölçeklenebilir şekilde tasarlanmıştır.
 
-### Gereksinimler
-- Node.js 18+
-- PostgreSQL veritabanı (önerilen: [Neon](https://neon.tech))
+| Katman | Teknoloji | Açıklama |
+|--------|-----------|-----------|
+| **Frontend & Backend** | `Next.js 16 (App Router)`, `React 19`, `TypeScript` | Sunucusuz API Routes ve modern arayüz mimarisi. |
+| **Styling & UI** | `Tailwind CSS 4`, `shadcn/ui` | Responsive, erişilebilir ve modern komponentler. |
+| **Veritabanı** | `PostgreSQL (Neon DB)` | Ölçeklenebilir Serverless ilişkisel veritabanı. |
+| **ORM** | `Prisma 7` | Tip-güvenli (Type-safe) veritabanı sorguları. |
+| **Kimlik Doğrulama** | `NextAuth.js` | Rol bazlı (RBAC) güvenli erişim kontrolü. |
+| **Yapay Zeka (AI)** | `OpenRouter API (Claude 3.5 Sonnet)` | Dinamik veri analizi ve rapor özetleme. |
 
-### Adımlar
+## ⚙️ Kurulum Adımları (Local Setup)
+
+Projeyi kendi bilgisayarınızda (yerel ortamda) ayağa kaldırmak için aşağıdaki adımları sırasıyla uygulayınız.
+
+### 1. Gereksinimler
+* Node.js (v18 veya üzeri)
+* Git
+* PostgreSQL veritabanı (Önerilen: Neon.tech)
+
+### 2. Kurulum Komutları
 
 ```bash
-# 1. Bağımlılıkları yükle
+# 1. Repoyu bilgisayarınıza klonlayın ve klasöre girin
+git clone https://github.com/dildasoftware/genc-ihh-raporlama.git
+cd genc-ihh-raporlama
+
+# 2. Proje bağımlılıklarını yükleyin
 npm install
 
-# 2. Ortam değişkenlerini ayarla
+# 3. Ortam değişkenleri dosyasını kopyalayın
 cp .env.example .env.local
-# DATABASE_URL, NEXTAUTH_SECRET, NEXTAUTH_URL, OPENROUTER_API_KEY, AI_MODEL
+```
 
-# 3. Veritabanı migration
-npx prisma migrate dev
+### 3. Çevre Değişkenlerini Ayarlama
+Oluşturduğunuz `.env.local` dosyasını açın ve aşağıdaki değerleri kendi ortamınıza göre doldurun:
+```env
+DATABASE_URL="postgresql://kullanici:sifre@host:port/veritabani"
+NEXTAUTH_SECRET="kendi-gizli-anahtariniz"
+NEXTAUTH_URL="http://localhost:3000"
+OPENROUTER_API_KEY="sk-or-v1-..."
+AI_MODEL="anthropic/claude-3.5-sonnet"
+```
 
-# 4. Referans verileri (bölgeler, iller, birimler, resmî üniversite listesi, test kullanıcıları)
-npx prisma db seed
+### 4. Veritabanını Hazırlama ve Projeyi Başlatma
 
-# 5. (Opsiyonel) Zengin demo verisi — 12 il × 13 hafta faaliyet + künye + arşiv örnekleri
-npx tsx prisma/demo-data.ts
+```bash
+# 1. Veritabanı tablolarını oluşturun
+npx prisma db push
 
-# 6. Geliştirme sunucusunu başlat
+# 2. Prisma Client'ı oluşturun
+npx prisma generate
+
+# 3. Rolleri, illeri ve demo test kullanıcılarını veritabanına ekleyin
+npx tsx prisma/seed.ts
+
+# 4. Geliştirme sunucusunu başlatın
 npm run dev
 ```
 
-Uygulama `http://localhost:3000` adresinde çalışır.
+Uygulama başarıyla başlatıldıktan sonra tarayıcınızdan `http://localhost:3000` adresine giderek projeyi test edebilirsiniz.
 
-> ⚠️ `demo-data.ts` mevcut faaliyet kayıtlarını silip yeniden üretir — yalnız demo/geliştirme ortamında çalıştırın.
-
-## 📁 Proje Yapısı
-
-```
-├── app/
-│   ├── api/
-│   │   ├── activities/          # Faaliyet listesi (filtre + sayfalama) ve kayıt
-│   │   ├── ai-analiz/           # AI analiz üretimi (OpenRouter)
-│   │   ├── haftalik-rapor/      # Haftalık özet raporu
-│   │   ├── institutions/search  # Kurum autocomplete
-│   │   ├── karne/               # Karne listesi + il detay/karşılaştırma
-│   │   ├── kesif/               # Gruplu özetler (Karşılaştır sayfasını besler)
-│   │   ├── province-report/     # İl künyesi (yıllık statik veriler)
-│   │   ├── reports/             # Kalıcı rapor arşivi (kaydet/ara/arşivle/geri yükle)
-│   │   ├── trend/               # Zaman serisi
-│   │   └── weekly-entry/        # Soru bazlı haftalık form → Activity kayıtları
-│   ├── arsiv/                   # Arşiv listesi + snapshot görüntüleyici
-│   ├── faaliyetler/             # Ham kayıt drill-down
-│   ├── haftalik-rapor/          # Haftalık rapor ekranı
-│   ├── karne/                   # Karne listesi + il detay karnesi
-│   ├── karsilastir/             # İl/bölge karşılaştırma çalışma alanı
-│   ├── panel/                   # Rol bazlı dashboard
-│   ├── trend/                   # Trend ekranı
-│   └── veri-girisi/             # Haftalık soru formu + İl Künyesi
-├── components/
-│   ├── shared/                  # AppShell, Sidebar, Providers
-│   └── ui/                      # shadcn/ui bileşenleri
-├── lib/
-│   ├── ai.ts / ai-prompts.ts    # AI servis katmanı ve sistem promptları
-│   ├── auth.ts / authz.ts       # NextAuth yapılandırması ve rol bazlı kapsama
-│   ├── chart-colors.ts          # Doğrulanmış grafik paleti (CVD-güvenli)
-│   ├── karne.ts / karne-data.ts # 5 boyutlu puanlama motoru ve veri toplama
-│   ├── questions.ts             # Haftalık form soru katalogu (tek doğruluk kaynağı)
-│   ├── reports.ts               # Arşiv/rapor tür tanımları ve snapshot yardımcıları
-│   ├── universities.ts          # Resmî YÖK üniversite listesi (il eşleşmeli)
-│   └── prisma.ts / utils.ts     # DB bağlantısı, yardımcılar
-└── prisma/
-    ├── schema.prisma            # Veri modeli
-    ├── seed.ts                  # Referans veriler + test kullanıcıları
-    └── demo-data.ts             # Deterministik zengin demo veri üreticisi
-```
-
-## 📄 Lisans
-
-Bu proje İHH İnsani Yardım Vakfı Genç İHH birimi için hackathon kapsamında geliştirilmiştir.
+## 📊 Öne Çıkan Mühendislik Pratikleri
+* **Immutable Arşiv (Snapshot):** İl koordinatörleri tarafından gönderilen haftalık raporlar veritabanında "JSON Snapshot" olarak dondurulur. Geçmiş raporların sonradan değiştirilmesi (veri manipülasyonu) mimari olarak engellenmiştir.
+* **Rol Bazlı Yetkilendirme (RBAC):** İl Koordinatörü sadece kendi iline veri girebilirken, Genel Merkez tüm illerin istatistiklerini harita üzerinden karşılaştırmalı olarak görebilir.
+* **Serverless Mimari:** Uygulama ve veritabanı kullanılmadığı anlarda uyku moduna geçer (Scale-to-zero), trafik anında ise anlık olarak yük dengeler. Bu sayede işletme maliyeti sıfıra yakındır.
