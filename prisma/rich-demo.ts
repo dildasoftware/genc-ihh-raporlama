@@ -1,4 +1,4 @@
-import { PrismaClient, Role, GenderBranch, ScopeType } from '@prisma/client'
+import { PrismaClient, Role, GenderBranch } from '@prisma/client'
 import { PrismaPg } from '@prisma/adapter-pg'
 import { Pool } from 'pg'
 import bcrypt from 'bcryptjs'
