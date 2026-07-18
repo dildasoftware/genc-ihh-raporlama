@@ -84,6 +84,9 @@ export async function buildProvinceScope(
     case 'MERKEZ_BIRIM_BASKANI':
     case 'ADMIN':
       return null // tüm iller
+      
+    default:
+      return []
   }
 }
 
@@ -112,13 +115,14 @@ export function canDelete(user: SessionUser): boolean {
 }
 
 /** Rol Türkçe karşılığı */
-export function getRoleLabel(role: Role): string {
-  const labels: Record<Role, string> = {
+export function getRoleLabel(role: string): string {
+  const labels: Record<string, string> = {
     IL_KOORDINATOR: 'İl Koordinatörü',
+    BOLGE_KOORDINATOR: 'Bölge Koordinatörü (Eski)',
     MERKEZ_BIRIM_BASKANI: 'Genel Merkez Birim Başkanı',
     ADMIN: 'Sistem Yöneticisi',
   }
-  return labels[role]
+  return labels[role] || role
 }
 
 /** Cinsiyet kolu Türkçe karşılığı */

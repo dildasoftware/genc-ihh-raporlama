@@ -27,10 +27,11 @@ Genç İHH'nin Türkiye genelindeki saha operasyonlarını kurum bazlı detaylı
 ### 🔐 Yetkilendirme
 | Rol | Yetki |
 |-----|-------|
-| `ADMIN` | Tüm iller, tüm veriler |
-| `MERKEZ_BIRIM_BASKANI` | Tüm iller, kendi birimi |
-| `BOLGE_KOORDINATOR` | Kendi bölgesi |
-| `IL_KOORDINATOR` | Kendi ili, veri girişi |
+| `ADMIN` | Sistem Yöneticisi: Tüm iller, tüm raporlar, tam yetki |
+| `MERKEZ_BIRIM_BASKANI` | Genel Merkez: Tüm iller (sadece kendi birimi), tüm analizlere erişim |
+| `IL_KOORDINATOR` | İl Başkanı: Sadece kendi iline veri girişi ve kendi ilinin analizleri |
+
+*(Not: Sistemin bölge yapılandırması coğrafi değil, organizasyonel 1. Bölge, 2. Bölge, 3. Bölge ve 4. Bölge olarak çalışmaktadır.)*
 
 ## 🛠️ Teknoloji Yığını
 
@@ -40,10 +41,10 @@ Genç İHH'nin Türkiye genelindeki saha operasyonlarını kurum bazlı detaylı
 | **Styling** | Tailwind CSS 4, shadcn/ui |
 | **Grafikler** | Recharts |
 | **Veritabanı** | PostgreSQL (Neon Serverless) |
-| **ORM** | Prisma 7 |
+| **ORM** | Prisma |
 | **Auth** | NextAuth.js |
-| **AI** | Google Gemini API |
-| **PDF** | html2canvas + jsPDF |
+| **AI Analiz** | Google Gemini 2.0 Flash API |
+| **PDF Çıktı** | html2canvas + jsPDF |
 
 ## 🚀 Kurulum
 
@@ -59,12 +60,12 @@ npm install
 
 # 2. Ortam değişkenlerini ayarla
 cp .env.example .env
-# .env dosyasını düzenle
+# .env dosyasını düzenle (DATABASE_URL, NEXTAUTH_SECRET, GOOGLE_GEMINI_API_KEY)
 
 # 3. Veritabanı migration
 npx prisma migrate dev
 
-# 4. Seed data (opsiyonel)
+# 4. Seed data (opsiyonel demo verisi oluşturmak için)
 npx prisma db seed
 
 # 5. Geliştirme sunucusunu başlat
@@ -79,22 +80,26 @@ Uygulama `http://localhost:3000` adresinde çalışacaktır.
 ├── app/
 │   ├── api/                    # REST API endpoints
 │   │   ├── activities/         # Faaliyet CRUD
-│   │   ├── karne/              # Karne puanlama
-│   │   ├── province-report/    # İl rapor verisi
+│   │   ├── ai-analiz/          # Gemini API entegrasyonu (smart-report, ai-karne)
+│   │   ├── karne/              # Karne algoritmaları
+│   │   ├── province-report/    # İl detay verileri
 │   │   └── institutions/search # Kurum arama
-│   ├── veri-girisi/            # Veri giriş formları
-│   ├── karne/                  # Karne sistemi
-│   │   └── [provinceId]/       # İl detay karnesi
-│   ├── kesif/                  # Keşif analizi
-│   ├── trend/                  # Trend analizi
-│   ├── karsilastir/            # İl karşılaştırma
-│   └── panel/                  # Dashboard
+│   ├── ai-analiz/              # Yapay zeka veri asistanı
+│   ├── arsiv/                  # Akıllı karne ve analiz arşivi
+│   ├── faaliyetler/            # Faaliyet kayıt listesi
+│   ├── haftalik-rapor/         # Haftalık özet raporlar
+│   ├── karne/                  # Karne sistemi ve PDF çıktıları
+│   ├── karsilastir/            # İl/Bölge karşılaştırma
+│   ├── panel/                  # Dashboard
+│   ├── trend/                  # Zaman serisi trendleri
+│   └── veri-girisi/            # Veri giriş formları
 ├── components/
-│   ├── shared/                 # AppShell, Sidebar
-│   └── ui/                     # shadcn/ui primitives
+│   ├── shared/                 # Navbar, Sidebar, Layout bileşenleri
+│   └── ui/                     # shadcn/ui hazır bileşenler
 ├── lib/
 │   ├── auth.ts                 # NextAuth config
-│   ├── authz.ts                # Rol tabanlı yetkilendirme
+│   ├── authz.ts                # Rol tabanlı yetkilendirme algoritmaları
+│   ├── gemini.ts               # Yapay zeka servis katmanı
 │   ├── prisma.ts               # DB bağlantısı
 │   └── utils.ts                # Yardımcı fonksiyonlar
 └── prisma/
