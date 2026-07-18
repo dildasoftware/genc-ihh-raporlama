@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
     select: { id: true, weekNo: true, month: true, startDate: true },
   })
 
-  const periodIds = periods.map(p => p.id)
+  const periodIds = periods.map((p: any) => p.id)
 
   const where = buildActivityFilter(user, genderFilter ?? 'ALL')
   if (periodIds.length > 0) where.periodId = { in: periodIds }

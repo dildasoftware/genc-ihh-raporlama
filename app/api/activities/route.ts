@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
       },
       select: { id: true },
     })
-    where.periodId = { in: periods.length ? periods.map(p => p.id) : [-1] }
+    where.periodId = { in: periods.length ? periods.map((p: any) => p.id) : [-1] }
   }
 
   // Kurum filtreleri — rol kapsamasıyla birleştir (üzerine yazma!)

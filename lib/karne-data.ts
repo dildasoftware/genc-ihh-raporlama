@@ -84,7 +84,7 @@ export async function loadKarne(f: KarneFilters) {
     select: { id: true, weekNo: true, month: true },
     orderBy: { weekNo: 'asc' },
   })
-  const periodIds = periods.map(p => p.id)
+  const periodIds = periods.map((p: any) => p.id)
   const periodById = new Map(periods.map(p => [p.id, p]))
 
   // ── Filtre ──
