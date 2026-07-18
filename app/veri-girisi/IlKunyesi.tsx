@@ -118,6 +118,7 @@ export default function IlKunyesi({
   const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [newDistrictName, setNewDistrictName] = useState('')
+  const [isReadOnly, setIsReadOnly] = useState(false)
 
   const handleToggleDistrict = (index: number, key: 'hasIhh' | 'hasGencIhh') => {
     const list = [...form.districtDetails]
@@ -168,6 +169,10 @@ export default function IlKunyesi({
     fetch(`/api/province-report?provinceId=${provinceId}&year=${selectedYear}`)
       .then(r => (r.ok ? r.json() : null))
       .then(d => {
+        const hasExisting = !!(d && d.id)
+        const isCenter = user.role === 'ADMIN' || user.role === 'MERKEZ_BIRIM_BASKANI'
+        setIsReadOnly(hasExisting && !isCenter)
+
         const provinceName = provinces.find((p: any) => p.id === provinceId)?.name ?? ''
         const defaultDistricts = (DISTRICTS_MAP[provinceName] ?? []).map(name => ({
           name, hasIhh: false, hasGencIhh: false
@@ -209,6 +214,8 @@ export default function IlKunyesi({
       })
       if (!res.ok) throw new Error((await res.json()).error || 'Kayıt başarısız')
       toast.success('İl künyesi kaydedildi')
+      const isCenter = user.role === 'ADMIN' || user.role === 'MERKEZ_BIRIM_BASKANI'
+      setIsReadOnly(!isCenter)
     } catch (e: any) {
       toast.error('Kayıt hatası', { description: e.message })
     } finally {
@@ -288,6 +295,7 @@ export default function IlKunyesi({
                 <Input
                   type="number"
                   min={0}
+                  disabled={isReadOnly}
                   value={form[item.key] || ''}
                   onChange={e => setForm(p => ({ ...p, [item.key]: parseInt(e.target.value) || 0 }))}
                   className="h-9"
@@ -332,7 +340,7 @@ export default function IlKunyesi({
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-slate-700">{pos.label}</span>
                     <button
-                      disabled={isDisabled}
+                      disabled={isDisabled || isReadOnly}
                       onClick={() => setForm(p => ({
                         ...p,
                         orgStatus: { ...p.orgStatus, [pos.key]: !p.orgStatus[pos.key] },
@@ -369,7 +377,7 @@ export default function IlKunyesi({
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Yeni ilçe ekleme (Bölge yöneticisi hariç) */}
-          {user.role !== 'BOLGE_KOORDINATOR' && (
+          {user.role !== 'BOLGE_KOORDINATOR' && !isReadOnly && (
             <div className="flex gap-2 items-end bg-slate-50 p-3 rounded-lg border border-slate-100">
               <div className="space-y-1.5 flex-1">
                 <Label className="text-xs">Yeni İlçe Ekle</Label>
@@ -404,7 +412,7 @@ export default function IlKunyesi({
                       <label className="flex items-center gap-1 text-xs cursor-pointer select-none">
                         <input
                           type="checkbox"
-                          disabled={isDistrictDisabled}
+                          disabled={isDistrictDisabled || isReadOnly}
                           checked={district.hasIhh}
                           onChange={() => handleToggleDistrict(idx, 'hasIhh')}
                           className="rounded border-slate-300 text-primary focus:ring-primary h-3.5 w-3.5"
@@ -414,7 +422,7 @@ export default function IlKunyesi({
                       <label className="flex items-center gap-1 text-xs cursor-pointer select-none">
                         <input
                           type="checkbox"
-                          disabled={isDistrictDisabled}
+                          disabled={isDistrictDisabled || isReadOnly}
                           checked={district.hasGencIhh}
                           onChange={() => handleToggleDistrict(idx, 'hasGencIhh')}
                           className="rounded border-slate-300 text-primary focus:ring-primary h-3.5 w-3.5"
@@ -452,6 +460,7 @@ export default function IlKunyesi({
                 <Input
                   type="number"
                   min={0}
+                  disabled={isReadOnly}
                   value={form.targets[item.key] || ''}
                   onChange={e => setForm(p => ({
                     ...p,
@@ -469,13 +478,15 @@ export default function IlKunyesi({
       <div className="sticky bottom-4 z-40">
         <button
           onClick={handleSave}
-          disabled={isSaving || !provinceId}
+          disabled={isSaving || !provinceId || isReadOnly}
           className="w-full h-12 rounded-xl text-base font-semibold text-white shadow-lg
                      transition-all active:scale-[0.99] disabled:opacity-50 flex items-center justify-center gap-2"
-          style={{ background: 'linear-gradient(135deg, #0E7A3C, #7C3AED)' }}
+          style={{ background: isReadOnly ? '#94A3B8' : 'linear-gradient(135deg, #0E7A3C, #7C3AED)' }}
         >
           {isSaving
             ? <><Loader2 className="h-5 w-5 animate-spin" /> Kaydediliyor…</>
+            : isReadOnly 
+            ? <><Shield className="h-5 w-5" /> Sadece Genel Merkez düzenleyebilir</>
             : <><Save className="h-5 w-5" /> Künyeyi kaydet — {provinceName} {selectedYear}-{selectedYear + 1}</>}
         </button>
       </div>

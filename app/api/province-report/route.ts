@@ -42,6 +42,13 @@ export async function POST(request: Request) {
   }
 
   try {
+    const existing = await prisma.provinceReport.findUnique({
+      where: { provinceId_year: { provinceId, year } }
+    })
+
+    if (existing && user.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'İl raporu gönderildikten sonra sadece Genel Merkez düzenleyebilir.' }, { status: 403 })
+    }
     const report = await prisma.provinceReport.upsert({
       where: { provinceId_year: { provinceId, year } },
       create: {

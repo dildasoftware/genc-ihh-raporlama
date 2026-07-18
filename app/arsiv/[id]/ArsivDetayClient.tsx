@@ -372,7 +372,7 @@ export default function ArsivDetayClient({ id }: { id: string }) {
                 { label: 'Toplam Katılımcı', value: snap.totalParticipants, prev: snap.prevTotalParticipants, icon: Users, color: '#0E7A3C' },
                 { label: 'Faaliyet Sayısı', value: snap.totalActivities, prev: snap.prevTotalActivities, icon: BarChart3, color: '#16A34A' },
                 { label: 'Farklı Kurum', value: snap.institutionCount, icon: Building2, color: '#D97706' },
-                { label: 'Kadın/Erkek', value: `${snap.femaleParticipants} / ${snap.maleParticipants}`, icon: Users, color: '#BE185D' },
+                { label: 'Kadın/Erkek', value: `${snap.femaleParticipants ?? '?'} / ${snap.maleParticipants ?? '?'}`, icon: Users, color: '#BE185D' },
               ].map((s: any) => {
                 const perc = s.prev ? ((s.value as number - s.prev) / (s.prev || 1) * 100) : null
                 return (
@@ -429,49 +429,51 @@ export default function ArsivDetayClient({ id }: { id: string }) {
             </div>
 
             {/* Kurum Detayları */}
-            <div className="premium-card p-5 print-avoid-break">
-              <h3 className="text-sm font-semibold text-slate-700 mb-4">Kurum Performansları (İlk 20)</h3>
-              <div className="overflow-x-auto">
-                <table className="data-table">
-                  <thead>
-                    <tr>
-                      <th>Kurum</th>
-                      <th>Birim</th>
-                      <th>İl</th>
-                      <th>Faaliyet Özeti</th>
-                      <th className="text-right">Katılımcı</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {snap.institutions?.slice(0, 20).map((inst: any) => (
-                      <tr key={inst.id}>
-                        <td className="font-medium text-slate-800">{inst.name}</td>
-                        <td>
-                          <span className="inline-flex items-center gap-1.5 text-xs">
-                            <span className="w-2 h-2 rounded-full" style={{ background: unitColor(inst.unitName) }} />
-                            {inst.unitName}
-                          </span>
-                        </td>
-                        <td className="text-xs text-slate-600">{inst.provinceName}</td>
-                        <td className="text-xs text-slate-500">
-                          <div className="flex flex-wrap gap-1">
-                            {inst.activities?.map((a: any) => (
-                              <span key={a.id} className="inline-flex items-center gap-1 bg-slate-50 px-2 py-1 rounded text-slate-700">
-                                <span>{a.type}:</span>
-                                <span className="font-semibold">{a.participants}</span>
-                              </span>
-                            ))}
-                          </div>
-                        </td>
-                        <td className="text-right font-bold" style={{ color: '#0E7A3C' }}>
-                          {formatNumber(inst.totalParticipants)}
-                        </td>
+            {snap.institutions && snap.institutions.length > 0 && (
+              <div className="premium-card p-5 print-avoid-break">
+                <h3 className="text-sm font-semibold text-slate-700 mb-4">Kurum Performansları (İlk 20)</h3>
+                <div className="overflow-x-auto">
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th>Kurum</th>
+                        <th>Birim</th>
+                        <th>İl</th>
+                        <th>Faaliyet Özeti</th>
+                        <th className="text-right">Katılımcı</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {snap.institutions?.slice(0, 20).map((inst: any) => (
+                        <tr key={inst.id}>
+                          <td className="font-medium text-slate-800">{inst.name}</td>
+                          <td>
+                            <span className="inline-flex items-center gap-1.5 text-xs">
+                              <span className="w-2 h-2 rounded-full" style={{ background: unitColor(inst.unitName) }} />
+                              {inst.unitName}
+                            </span>
+                          </td>
+                          <td className="text-xs text-slate-600">{inst.provinceName}</td>
+                          <td className="text-xs text-slate-500">
+                            <div className="flex flex-wrap gap-1">
+                              {inst.activities?.map((a: any) => (
+                                <span key={a.id} className="inline-flex items-center gap-1 bg-slate-50 px-2 py-1 rounded text-slate-700">
+                                  <span>{a.type}:</span>
+                                  <span className="font-semibold">{a.participants}</span>
+                                </span>
+                              ))}
+                            </div>
+                          </td>
+                          <td className="text-right font-bold" style={{ color: '#0E7A3C' }}>
+                            {formatNumber(inst.totalParticipants)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-            </div>
+            )}
           </>
         )
       })()}
