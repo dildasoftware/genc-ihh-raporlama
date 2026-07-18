@@ -118,7 +118,7 @@ export async function GET(request: NextRequest) {
   const topInstitutions = Array.from(instMap.values()).sort((a, b) => b.participants - a.participants).slice(0, 5)
 
   return NextResponse.json({
-    total: { count: activities.length, participants: activities.reduce((s, a) => s + a.participantCount, 0) },
+    total: { count: activities.length, participants: activities.reduce((s: any, a: any) => s + a.participantCount, 0) },
     grouped: result,
     byActivityType,
     topInstitutions

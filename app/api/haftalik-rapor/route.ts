@@ -120,7 +120,7 @@ export async function GET(request: NextRequest) {
         name: i.name,
         unitName: i.unit.name,
         provinceName: i.province.name,
-        totalParticipants: instActivities.reduce((s, a) => s + a.participantCount, 0),
+        totalParticipants: instActivities.reduce((s: any, a: any) => s + a.participantCount, 0),
         activities: instActivities.map(a => ({
           id: a.id,
           type: a.activityType.name,

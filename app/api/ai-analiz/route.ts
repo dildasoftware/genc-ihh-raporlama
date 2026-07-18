@@ -138,7 +138,7 @@ async function buildContextData(
 
   return {
     toplamFaaliyet: activities.length,
-    toplamKatilimci: activities.reduce((s, a) => s + a.participantCount, 0),
+    toplamKatilimci: activities.reduce((s: any, a: any) => s + a.participantCount, 0),
     birimBazinda: byUnit,
     ilBazinda: byProvince,
     kol: user.genderBranch ?? 'Birleşik',
