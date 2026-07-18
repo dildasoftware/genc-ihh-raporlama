@@ -13,15 +13,15 @@ Sistemimiz sayesinde il koordinatörleri verilerini saniyeler içinde girebilir,
 ## 🚀 Canlı Demo & Bağlantılar
 
 * **Canlı URL (Production):** [https://genc-ihh-raporlama-kpjy-iota.vercel.app/login](https://genc-ihh-raporlama-kpjy-iota.vercel.app/login)
-* **Demo Videosu:** [Proje Sunum/Demo Videosu Linki Buraya Eklenebilir]
+* **Sunum Dosyası / Video:** [Google Drive Bağlantısı](https://drive.google.com/drive/folders/17L0QGw6_C7iCWAyzYKj1gGssr7pAoCWK?usp=drive_link)
 
 *(Not: Sisteme test kullanıcıları ile giriş yapabilirsiniz. Örn: E-posta: `admin@test.com`, Parola: `Test1234!`)*
 
 ## 👥 Takım Üyeleri (Fatih'in Sultanları)
 
-* **Sudenur Öztürk** - [Rol/Ünvan eklenebilir]
-* **Dilara Bilişik** - [Rol/Ünvan eklenebilir]
-* **Öznur Çağlayan** - [Rol/Ünvan eklenebilir]
+* **Sudenur Öztürk** - Teknik Lider / Geliştirici (Development & Architecture)
+* **Dilara Bilişik** - Tasarım Lideri (UI/UX Design)
+* **Öznur Çağlayan** - Sunum ve Proje İletişimi (Presentation & Pitch)
 
 ## 🛠️ Kullanılan Teknolojiler
 
