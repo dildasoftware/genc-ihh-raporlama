@@ -20,9 +20,8 @@ Sistemimiz sayesinde il koordinatörleri verilerini saniyeler içinde girebilir,
 
 ## 👥 Takım Üyeleri (Fatih'in Sultanları)
 
-* **Sudenur Öztürk** - Teknik Lider / Geliştirici (Development & Architecture)
-* **Dilara Bilişik** - Tasarım Lideri Sunum (UI/UX Design)
-* **Öznur Çağlayan** - Sunum (Presentation & Pitch)
+* **Sudenur Öztürk** - Teknik Lider / Geliştirici (Development)
+* **Dilara Bilişik** - Tasarım Lideri Sunum (UI/UX Design, Architecture)
 
 ## 🛠️ Kullanılan Teknolojiler
 
